@@ -1,7 +1,5 @@
-/* 基本レイアウト */
 html, body { overflow-x: hidden; width: 100%; position: relative; }
 
-/* サムネイルの横スクロール */
 #thumbContainer { 
     display: flex; flex-wrap: nowrap; overflow-x: auto; 
     -webkit-overflow-scrolling: touch; scroll-behavior: smooth; min-height: 110px; 
@@ -9,13 +7,11 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
 #thumbContainer::-webkit-scrollbar { height: 6px; }
 #thumbContainer::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-/* プレビューキャンバス */
 #resultCanvas { 
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
     display: block; transition: width 0.2s ease-out; transform-origin: top center; 
 }
 
-/* 透過確認用の市松模様背景 */
 .transparent-bg {
     background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb), 
                       linear-gradient(45deg, #e5e7eb 25%, transparent 25%, transparent 75%, #e5e7eb 75%, #e5e7eb);
@@ -29,7 +25,6 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
 #canvasWrapper { max-height: 70vh; }
 .progress-bar-fill { transition: width 0.3s ease; }
 
-/* --- ツールチップ（吹き出し）の完全隠蔽設定 --- */
 .info-icon {
     position: relative;
     display: inline-flex;
@@ -40,7 +35,6 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
 }
 
 .tooltip-box {
-    /* 配置設定 */
     position: absolute;
     top: 160%; 
     left: 50%;
@@ -55,18 +49,16 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
     border-radius: 12px;
     box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4);
     
-    /* 重要：最初は完全に見えなくする */
-    display: block;        /* 念のため要素として存在させる */
-    visibility: hidden;    /* 存在を隠す */
-    opacity: 0;           /* 透明にする */
-    pointer-events: none; /* マウス反応を消す */
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
     
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: pre-wrap;
     text-align: left;
 }
 
-/* 吹き出しの三角 */
 .tooltip-box::after {
     content: "";
     position: absolute;
@@ -78,13 +70,12 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
     border-color: transparent transparent #1e293b transparent;
 }
 
-/* --- 表示される条件を厳密に指定 --- */
 .info-icon:hover .tooltip-box, 
 .info-icon:focus .tooltip-box,
 .info-icon:focus-within .tooltip-box {
-    visibility: visible !important; /* 強制的に表示 */
-    opacity: 1 !important;        /* 強制的に不透明化 */
-    top: 140%;                    /* 少し上にスライド */
+    visibility: visible !important;
+    opacity: 1 !important;
+    top: 140%;
 }
 
 @media (max-width: 640px) {

@@ -1,6 +1,3 @@
-/**
- * Uの創作部屋：共通コンポーネント管理システム
- */
 const siteConfig = {
     siteName: "Uの創作部屋",
     footerText: "© 2026 Uの創作部屋. All rights reserved.",
@@ -9,18 +6,14 @@ const siteConfig = {
     menuGroups: typeof SITE_DATA !== 'undefined' ? SITE_DATA.menuGroups : []
 };
 
-// パス判定：現在のURLに /tools/ が含まれていればサブページとみなす
 const isSubPage = window.location.href.includes('/tools/');
 const basePath = isSubPage ? '../' : './';
 
 function initCommonComponents() {
-    // 現在のページのツール名を取得（site-data.jsのtools配列から検索）
     const currentTool = siteConfig.tools.find(t => window.location.pathname.includes(t.url.split('/').pop()));
     
-    // ヘッダータイトルの構築
     let displayTitle = siteConfig.siteName;
     if (isSubPage && currentTool) {
-        // ツールページにいる場合：「Uの創作部屋 > ツール名」
         displayTitle = `
             <a href="${basePath}index.html" class="hover:text-blue-600 transition-colors">${siteConfig.siteName}</a>
             <span class="mx-2 text-gray-300 font-normal">/</span>
@@ -28,7 +21,6 @@ function initCommonComponents() {
         `;
     }
     
-    // 1. ヘッダー生成
     const headerHtml = `
         <header class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm border-b z-[60]">
             <div class="max-w-6xl mx-auto px-4 py-4 flex items-center">
@@ -45,7 +37,6 @@ function initCommonComponents() {
         <div class="h-[65px]"></div>
     `;
 
-    // 2. サイドメニュー生成
     const drawerHtml = `
         <div id="menuDrawer" class="fixed inset-0 z-[100] invisible">
             <div id="drawerOverlay" class="absolute inset-0 bg-black opacity-0 transition-opacity duration-300"></div>
@@ -73,7 +64,6 @@ function initCommonComponents() {
         </div>
     `;
 
-    // 3. 各要素への流し込み
     const h = document.getElementById('common-header');
     if (h) h.innerHTML = headerHtml;
 
@@ -108,7 +98,6 @@ function initCommonComponents() {
     const f = document.getElementById('common-footer');
     if (f) f.innerHTML = `<footer class="bg-white border-t mt-12 py-8 text-center text-sm text-gray-400">${siteConfig.footerText}</footer>`;
 
-    // 4. メニュー開閉ロジック
     const menuBtn = document.getElementById('menuBtn');
     const closeBtn = document.getElementById('closeBtn');
     const drawer = document.getElementById('menuDrawer');
@@ -129,7 +118,6 @@ function initCommonComponents() {
     closeBtn?.addEventListener('click', () => toggleMenu(false));
     overlay?.addEventListener('click', () => toggleMenu(false));
 
-    // お知らせエリア開閉ロジック (index.html用)
     const newsContainer = document.getElementById('news-container');
     const toggleNewsBtn = document.getElementById('toggle-news-btn');
     if (toggleNewsBtn && newsContainer) {

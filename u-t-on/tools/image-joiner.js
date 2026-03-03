@@ -1,8 +1,3 @@
-/**
- * 画像結合ツール：メインロジック（超軽量読み込み・メモリ最適化版）
- */
-
-// --- 1. 説明文データ管理 ---
 const toolExplanations = {
     step1_upload: {
         title: "画像のアップロード",
@@ -49,7 +44,6 @@ function initExplanations() {
     });
 }
 
-// --- 2. 要素取得 ---
 const imageInput = document.getElementById('imageInput');
 const thumbContainer = document.getElementById('thumbContainer');
 const sortSection = document.getElementById('sortSection');
@@ -82,14 +76,12 @@ const zoomOutBtn = document.getElementById('zoomOutBtn');
 const zoom100Btn = document.getElementById('zoom100Btn');
 const zoomFitBtn = document.getElementById('zoomFitBtn');
 
-// --- 3. 状態変数 ---
 let loadedImages = [];
 let currentDirection = 'vertical';
 let selectedIndex = null;
 let currentZoom = 1.0;
 const ZOOM_STEP = 0.1;
 
-// --- 4. ヘルパー ---
 const updateProgress = (text, percent) => {
     if (progressStatus) progressStatus.innerText = text;
     if (progressPercent) progressPercent.innerText = `${percent}%`;
@@ -120,7 +112,6 @@ transparentCheck.addEventListener('change', () => {
     bgColorInput.disabled = transparentCheck.checked; 
 });
 
-// --- 5. メモリ効率を最大化した画像読み込み ---
 imageInput.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -134,7 +125,6 @@ imageInput.addEventListener('change', async (e) => {
         let blob = files[i];
         const ext = blob.name.split('.').pop().toLowerCase();
 
-        // HEIC変換
         if (['heic', 'heif'].includes(ext)) {
             try {
                 if (typeof heic2any !== 'undefined') {
@@ -148,21 +138,18 @@ imageInput.addEventListener('change', async (e) => {
             const blobUrl = URL.createObjectURL(blob);
             const image = new Image();
             image.onload = () => {
-                // 軽量化ONなら最大2000px、OFFでも4000px程度に制限してメモリ溢れを防ぐ
                 const limit = isOptimizeEnabled ? 2000 : 4000;
                 let scale = 1.0;
                 if (image.width > limit || image.height > limit) {
                     scale = limit / Math.max(image.width, image.height);
                 }
 
-                // オリジナル（結合用）Canvas
                 const oCanvas = document.createElement('canvas');
                 oCanvas.width = image.width * scale;
                 oCanvas.height = image.height * scale;
                 const oCtx = oCanvas.getContext('2d');
                 oCtx.drawImage(image, 0, 0, oCanvas.width, oCanvas.height);
 
-                // プレビュー（表示）用軽量Canvas (最大1000px)
                 const pLimit = 1000;
                 let pScale = 1.0;
                 if (oCanvas.width > pLimit || oCanvas.height > pLimit) {
@@ -173,13 +160,12 @@ imageInput.addEventListener('change', async (e) => {
                 pCanvas.height = oCanvas.height * pScale;
                 pCanvas.getContext('2d').drawImage(oCanvas, 0, 0, pCanvas.width, pCanvas.height);
                 
-                // メモリ解放
                 URL.revokeObjectURL(blobUrl);
 
                 resolve({ 
                     origImg: oCanvas,
                     previewImg: pCanvas, 
-                    src: pCanvas.toDataURL('image/jpeg', 0.5), // サムネイルも軽量化
+                    src: pCanvas.toDataURL('image/jpeg', 0.5), 
                     w: oCanvas.width, 
                     h: oCanvas.height 
                 });
@@ -206,7 +192,6 @@ function renderThumbnails() {
     });
 }
 
-// --- 6. 操作系 ---
 btnVertical.onclick = () => { 
     currentDirection = 'vertical'; 
     btnVertical.className = "flex-1 py-3 bg-blue-600 text-white rounded-lg font-bold shadow-sm transition"; 
@@ -229,7 +214,6 @@ applyPosBtn.onclick = () => {
     }
 };
 
-// --- 7. プレビュー操作 ---
 zoomInBtn.onclick = () => { currentZoom += ZOOM_STEP; applyZoom(); };
 zoomOutBtn.onclick = () => { if (currentZoom > 0.05) { currentZoom -= ZOOM_STEP; applyZoom(); } };
 zoom100Btn.onclick = () => { currentZoom = 1.0; applyZoom(); };
@@ -241,7 +225,6 @@ zoomFitBtn.onclick = () => {
     applyZoom();
 };
 
-// --- 8. 結合処理 ---
 async function processImages(isFinalDownload = false) {
     if (loadedImages.length === 0) return;
     

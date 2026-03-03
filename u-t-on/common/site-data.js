@@ -1,6 +1,3 @@
-/**
- * Uの創作部屋：コンテンツデータ
- */
 const SITE_DATA = {
     news: [
         { date: "2026.03.04", content: "サイト公開しました！" },
@@ -8,7 +5,7 @@ const SITE_DATA = {
     tools: [
         {
             id: "image-joiner",
-            category: "image", // カテゴリ分け用
+            category: "image",
             name: "画像結合ツール",
             description: "複数の画像を縦や横に美しく結合。背景透過やHEIC形式にも対応しています。",
             icon: "🖼️",
@@ -23,6 +20,5 @@ const SITE_DATA = {
                 { name: "画像結合ツール", url: "tools/image-joiner.html" }
             ]
         }
-        // 今後、ここに「テキストツール」などを追加していく予定
     ]
 };
