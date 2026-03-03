@@ -116,19 +116,22 @@ imageInput.addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     
+    loadedImages = [];
+    selectedIndex = null;
+
     progressArea.classList.remove('hidden');
     generateBtn.disabled = true;
     const isOptimizeEnabled = optimizeCheck ? optimizeCheck.checked : false;
 
     for (let i = 0; i < files.length; i++) {
-        updateProgress(`軽量読込中 (${i + 1}/${files.length})`, Math.round(((i + 1) / files.length) * 100));
+        updateProgress(`読込中 (${i + 1}/${files.length})`, Math.round(((i + 1) / files.length) * 100));
         let blob = files[i];
         const ext = blob.name.split('.').pop().toLowerCase();
 
         if (['heic', 'heif'].includes(ext)) {
             try {
                 if (typeof heic2any !== 'undefined') {
-                    const converted = await heic2any({ blob, toType: "image/jpeg", quality: 0.7 });
+                    const converted = await heic2any({ blob, toType: "image/jpeg", quality: 0.8 });
                     blob = Array.isArray(converted) ? converted[0] : converted;
                 }
             } catch (err) { console.error(err); }
@@ -138,17 +141,10 @@ imageInput.addEventListener('change', async (e) => {
             const blobUrl = URL.createObjectURL(blob);
             const image = new Image();
             image.onload = () => {
-                const limit = isOptimizeEnabled ? 2000 : 4000;
-                let scale = 1.0;
-                if (image.width > limit || image.height > limit) {
-                    scale = limit / Math.max(image.width, image.height);
-                }
-
                 const oCanvas = document.createElement('canvas');
-                oCanvas.width = image.width * scale;
-                oCanvas.height = image.height * scale;
-                const oCtx = oCanvas.getContext('2d');
-                oCtx.drawImage(image, 0, 0, oCanvas.width, oCanvas.height);
+                oCanvas.width = image.width;
+                oCanvas.height = image.height;
+                oCanvas.getContext('2d').drawImage(image, 0, 0);
 
                 const pLimit = 1000;
                 let pScale = 1.0;
@@ -165,9 +161,9 @@ imageInput.addEventListener('change', async (e) => {
                 resolve({ 
                     origImg: oCanvas,
                     previewImg: pCanvas, 
-                    src: pCanvas.toDataURL('image/jpeg', 0.5), 
-                    w: oCanvas.width, 
-                    h: oCanvas.height 
+                    src: pCanvas.toDataURL('image/jpeg', 0.5),
+                    w: image.width, 
+                    h: image.height 
                 });
             };
             image.src = blobUrl;
@@ -183,6 +179,9 @@ imageInput.addEventListener('change', async (e) => {
 
 function renderThumbnails() {
     thumbContainer.innerHTML = '';
+    
+    console.log(`現在の画像数: ${loadedImages.length}`);
+
     loadedImages.forEach((data, index) => {
         const thumb = document.createElement('img');
         thumb.src = data.src;
@@ -190,6 +189,11 @@ function renderThumbnails() {
         thumb.onclick = () => { selectedIndex = index; renderThumbnails(); };
         thumbContainer.appendChild(thumb);
     });
+
+    if (loadedImages.length === 0) {
+        sortSection.classList.add('hidden');
+        imageInput.value = "";
+    }
 }
 
 btnVertical.onclick = () => { 
@@ -205,7 +209,7 @@ btnHorizontal.onclick = () => {
 
 moveLeftBtn.onclick = () => { if (selectedIndex > 0) { [loadedImages[selectedIndex - 1], loadedImages[selectedIndex]] = [loadedImages[selectedIndex], loadedImages[selectedIndex - 1]]; selectedIndex--; renderThumbnails(); } };
 moveRightBtn.onclick = () => { if (selectedIndex !== null && selectedIndex < loadedImages.length - 1) { [loadedImages[selectedIndex + 1], loadedImages[selectedIndex]] = [loadedImages[selectedIndex], loadedImages[selectedIndex + 1]]; selectedIndex++; renderThumbnails(); } };
-deleteBtn.onclick = () => { if (selectedIndex !== null && confirm("この画像を削除しますか？")) { loadedImages.splice(selectedIndex, 1); selectedIndex = null; renderThumbnails(); if (loadedImages.length === 0) sortSection.classList.add('hidden'); } };
+deleteBtn.onclick = () => { if (selectedIndex !== null && confirm("この画像を削除しますか？")) { loadedImages.splice(selectedIndex, 1); selectedIndex = null; renderThumbnails(); } };
 applyPosBtn.onclick = () => {
     let n = parseInt(positionInput.value) - 1;
     if (selectedIndex !== null && !isNaN(n) && n >= 0 && n < loadedImages.length) {
@@ -230,7 +234,7 @@ async function processImages(isFinalDownload = false) {
     
     generateBtn.disabled = true; downloadBtn.disabled = true;
     progressArea.classList.remove('hidden');
-    updateProgress(isFinalDownload ? "高画質で生成中..." : "プレビュー中...", 10);
+    updateProgress(isFinalDownload ? "最高画質で生成中..." : "プレビュー中...", 10);
     
     const useOptimizedPreview = optimizeCheck ? optimizeCheck.checked : false;
     let targetData = loadedImages.map(d => ({ 
@@ -242,36 +246,38 @@ async function processImages(isFinalDownload = false) {
         const isSmall = syncTypeSelect.value === 'small';
         if (currentDirection === 'vertical') {
             const targetW = isSmall ? Math.min(...targetData.map(i => i.w)) : Math.max(...targetData.map(i => i.w));
-            targetData = targetData.map(item => ({ img: item.img, w: targetW, h: item.h * (targetW / item.w) }));
+            targetData = targetData.map(item => ({ img: item.img, drawW: targetW, drawH: item.h * (targetW / item.w) }));
         } else {
             const targetH = isSmall ? Math.min(...targetData.map(i => i.h)) : Math.max(...targetData.map(i => i.h));
-            targetData = targetData.map(item => ({ img: item.img, w: item.w * (targetH / item.h), h: targetH }));
+            targetData = targetData.map(item => ({ img: item.img, drawW: item.w * (targetH / item.h), drawH: targetH }));
         }
+    } else {
+        targetData = targetData.map(item => ({ img: item.img, drawW: item.w, drawH: item.h }));
     }
 
-    let tw = 0, th = 0;
-    if (currentDirection === 'vertical') { tw = Math.max(...targetData.map(i => i.w)); th = targetData.reduce((s, i) => s + i.h, 0); }
-    else { tw = targetData.reduce((s, i) => s + i.w, 0); th = Math.max(...targetData.map(i => i.h)); }
+    let finalW = 0, finalH = 0;
+    if (currentDirection === 'vertical') { finalW = Math.max(...targetData.map(i => i.drawW)); finalH = targetData.reduce((s, i) => s + i.drawH, 0); }
+    else { finalW = targetData.reduce((s, i) => s + i.drawW, 0); finalH = Math.max(...targetData.map(i => i.drawH)); }
 
     const canvas = isFinalDownload ? document.createElement('canvas') : resultCanvas;
-    canvas.width = tw; canvas.height = th;
+    canvas.width = finalW; canvas.height = finalH;
     const ctx = canvas.getContext('2d');
 
-    if (!transparentCheck.checked) { ctx.fillStyle = bgColorInput.value; ctx.fillRect(0, 0, tw, th); }
-    else { ctx.clearRect(0, 0, tw, th); }
+    if (!transparentCheck.checked) { ctx.fillStyle = bgColorInput.value; ctx.fillRect(0, 0, finalW, finalH); }
+    else { ctx.clearRect(0, 0, finalW, finalH); }
 
     let offset = 0;
     for (let i = 0; i < targetData.length; i++) {
         const item = targetData[i];
-        let x = currentDirection === 'vertical' ? (tw - item.w) / 2 : offset;
-        let y = currentDirection === 'vertical' ? offset : (th - item.h) / 2;
-        ctx.drawImage(item.img, x, y, item.w, item.h);
-        offset += (currentDirection === 'vertical' ? item.h : item.w);
+        let x = currentDirection === 'vertical' ? (finalW - item.drawW) / 2 : offset;
+        let y = currentDirection === 'vertical' ? offset : (finalH - item.drawH) / 2;
+        ctx.drawImage(item.img, x, y, item.drawW, item.drawH);
+        offset += (currentDirection === 'vertical' ? item.drawH : item.drawW);
         if (i % 5 === 0) { await new Promise(r => setTimeout(r, 0)); }
     }
 
     if (!isFinalDownload) {
-        canvasSizeInfo.innerText = `${Math.round(tw)} x ${Math.round(th)} px`;
+        canvasSizeInfo.innerText = `出力予定サイズ: ${Math.round(finalW)} x ${Math.round(finalH)} px`;
         resultSection.classList.remove('hidden'); actionArea.classList.remove('hidden');
         progressArea.classList.add('hidden'); generateBtn.disabled = false; downloadBtn.disabled = false;
         setTimeout(() => zoomFitBtn.onclick(), 50);
