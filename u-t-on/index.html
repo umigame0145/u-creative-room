@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uの創作部屋 - 便利ツール集</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="common/style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <div id="common-header"></div>
+
+    <main class="max-w-6xl mx-auto px-4 py-12 flex flex-col lg:flex-row gap-12">
+        <div class="flex-1 min-w-0">
+            <div class="mb-12 text-center lg:text-left">
+                <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
+                    Uの創作部屋へ、<br class="md:hidden">
+                    <span class="text-blue-600">ようこそ。</span>
+                </h2>
+                <div class="text-lg text-gray-600 max-w-2xl leading-relaxed mx-auto lg:mx-0">
+                    <p class="mb-2">サイト主が勉強のためにいろいろ作っています。</p>
+                    <p class="mb-2">基本的にはサーバーにアップロードや保存されない方法で作っています。</p>
+                    <p>「あったらいいな」を今後も実装予定（サイト主の気まぐれ）です。</p>
+                </div>
+            </div>
+
+            <div class="mb-12">
+                <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-2 w-2 rounded-full bg-blue-600 animate-ping"></span>
+                            <h3 class="text-sm font-bold text-gray-800 tracking-wider">お知らせ / アップデート</h3>
+                        </div>
+                        <button id="toggle-news-btn" class="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 focus:outline-none">
+                            <span id="toggle-text">アップデート内容を表示</span>
+                            <span id="toggle-icon" class="inline-block transition-transform duration-300">▼</span>
+                        </button>
+                    </div>
+                    <div id="news-container" class="h-[32px] overflow-hidden transition-all duration-300 ease-in-out custom-scrollbar pr-1">
+                        <ul id="news-list" class="space-y-3">
+                            </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tool-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                </div>
+        </div>
+
+        <aside class="w-full lg:w-80" id="common-ad-sidebar"></aside>
+    </main>
+
+    <div id="common-footer"></div>
+
+    <script src="common/site-data.js"></script>
+    <script src="common/site-manager.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字数カウンター - MyToolSite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> .ad-box { background: #eee; border: 1px dashed #ccc; text-align: center; padding: 20px; } </style>
+</head>
+<body class="bg-gray-50">
+
+    <header class="bg-white shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center">
+            <a href="../index.html" class="text-blue-600 hover:underline mr-4">← 戻る</a>
+            <h1 class="text-xl font-bold">文字数カウンター</h1>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="ad-box mb-6 text-xs text-gray-400">スポンサーリンク</div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <textarea id="textInput" class="w-full h-48 p-4 border rounded" placeholder="ここに文字を入力..."></textarea>
+            <div class="mt-4 text-2xl font-bold text-blue-600">
+                文字数: <span id="count">0</span>
+            </div>
+        </div>
+
+        <article class="mt-12 prose prose-sm max-w-none text-gray-600">
+            <h2 class="text-lg font-bold text-gray-800">文字数カウンターの使い方</h2>
+            <p>入力したテキストの文字数をリアルタイムで計測します。入力されたデータはサーバーに送信されず、あなたのブラウザ内でのみ処理されるため、安全にご利用いただけます。</p>
+        </article>
+
+        <div class="ad-box mt-10 text-xs text-gray-400">スポンサーリンク</div>
+    </main>
+
+    <script>
+        const input = document.getElementById('textInput');
+        const count = document.getElementById('count');
+        input.addEventListener('input', () => {
+            count.innerText = input.value.length;
+        });
+    </script>
+</body>
+</html>
