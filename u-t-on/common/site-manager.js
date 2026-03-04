@@ -1,3 +1,25 @@
+/**
+ * site-manager.js
+ * 共通処理（ヘッダー・フッター・解析タグの一括管理）
+ */
+
+// --- Google Analytics 一括設定 ---
+(function() {
+    const GA_ID = 'G-NVBKR9BVEX'; // ←ここを取得したIDに書き換えてください
+    
+    // スクリプトタグの作成
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+
+    // gtagの初期化
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+})();
+
 const siteConfig = {
     siteName: "Uの創作部屋",
     footerText: "© 2026 Uの創作部屋. All rights reserved.",
