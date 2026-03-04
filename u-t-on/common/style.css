@@ -36,12 +36,14 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
 
 .tooltip-box {
     position: absolute;
-    top: 160%; 
+    /* ★ 下端を基準にして上へ伸ばす設定に変更 */
+    bottom: 150%; 
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
     width: 260px;
-    padding: 12px;
+    /* ★ 下側のパディングを増やして見切れを防止 */
+    padding: 12px 14px 20px 14px; 
     background: #1e293b;
     color: #ffffff;
     font-size: 0.75rem;
@@ -59,15 +61,16 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
     text-align: left;
 }
 
+/* ★ 三角形の位置も下側に変更（吹き出しの下から出るように） */
 .tooltip-box::after {
     content: "";
     position: absolute;
-    bottom: 100%;
+    top: 100%;
     left: 50%;
     margin-left: -6px;
     border-width: 6px;
     border-style: solid;
-    border-color: transparent transparent #1e293b transparent;
+    border-color: #1e293b transparent transparent transparent;
 }
 
 .info-icon:hover .tooltip-box, 
@@ -75,7 +78,8 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
 .info-icon:focus-within .tooltip-box {
     visibility: visible !important;
     opacity: 1 !important;
-    top: 140%;
+    /* ★ ホバー時に少し上に動く演出 */
+    bottom: 130%;
 }
 
 @media (max-width: 640px) {

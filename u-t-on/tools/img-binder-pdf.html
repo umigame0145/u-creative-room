@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>画像梱包（PDF） - Uの創作部屋</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+
+    <div id="common-header"></div>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">画像梱包（PDF）</h1>
+            <p class="text-gray-600">複数の画像を1つのPDFファイルとして綴じます。フォルダ一括読み込み対応。</p>
+        </div>
+
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <label class="text-sm font-bold text-gray-700 tracking-wider">STEP 1: 画像の選択</label>
+                <div class="info-icon" tabindex="0">
+                    <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                    <div class="tooltip-box" data-explain-id="step1_upload"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-blue-400 transition-all group">
+                    <input type="file" id="imageInput" multiple accept="image/*,.heic,.heif,.tiff,.tif" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="text-blue-600 font-bold group-hover:scale-105 transition-transform">ファイルを選択</div>
+                </div>
+                <div class="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-green-400 transition-all group">
+                    <input type="file" id="folderInput" webkitdirectory directory class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="text-green-600 font-bold group-hover:scale-105 transition-transform">フォルダを選択</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sortSection" class="hidden bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <label class="text-sm font-bold text-gray-700 tracking-wider">STEP 2: 並び替え・管理</label>
+                <div class="info-icon" tabindex="0">
+                    <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                    <div class="tooltip-box" data-explain-id="step2_sort"></div>
+                </div>
+            </div>
+            <div id="listScrollArea" class="border rounded-2xl overflow-y-auto mb-6 bg-gray-50" style="max-height: 400px;">
+                <ul id="imageList" class="divide-y divide-gray-200"></ul>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="flex items-center gap-2 bg-gray-100 p-2 rounded-xl">
+                    <input type="number" id="targetPage" class="w-12 p-2 rounded-lg border-0 text-center font-bold outline-none" value="1">
+                    <button id="movePageBtn" class="flex-1 text-xs font-bold bg-white py-2 rounded-lg shadow-sm">移動</button>
+                </div>
+                <button id="moveUpBtn" class="font-bold bg-gray-100 py-3 rounded-xl hover:bg-gray-200 transition">↑</button>
+                <button id="moveDownBtn" class="font-bold bg-gray-100 py-3 rounded-xl hover:bg-gray-200 transition">↓</button>
+                <button id="deleteItemBtn" class="font-bold bg-red-50 text-red-600 py-3 rounded-xl">削除</button>
+                <div class="relative">
+                    <input type="file" id="addMoreInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <button class="w-full font-bold bg-blue-50 text-blue-600 py-3 rounded-xl">追加</button>
+                </div>
+                <button id="undoBtn" class="font-bold bg-yellow-50 text-yellow-700 py-3 rounded-xl">戻る</button>
+            </div>
+        </section>
+
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <h2 class="text-lg font-bold text-gray-700 mb-6 flex items-center">STEP 3: 梱包設定</h2>
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <label class="text-sm font-bold text-gray-600">用紙サイズ</label>
+                            <div class="info-icon" tabindex="0">
+                                <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                                <div class="tooltip-box" data-explain-id="step3_pagesize"></div>
+                            </div>
+                        </div>
+                        <select id="pageSize" class="w-full p-3 bg-gray-50 border-0 rounded-xl font-bold text-gray-700 outline-none appearance-none cursor-pointer">
+                            <option value="original">1ページ1枚（画像サイズ）</option>
+                            <option value="a4">A4 (210mm × 297mm)</option>
+                            <option value="b5">B5 (182mm × 257mm)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <label class="text-sm font-bold text-gray-600">ページ余白 (mm)</label>
+                            <div class="info-icon" tabindex="0">
+                                <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                                <div class="tooltip-box" data-explain-id="step4_margin"></div>
+                            </div>
+                        </div>
+                        <input type="number" id="marginSize" class="w-full p-3 bg-gray-50 border-0 rounded-xl font-bold text-gray-700 outline-none" value="0" min="0">
+                    </div>
+                </div>
+
+                <div id="alignSettings" class="opacity-50 pointer-events-none transition-opacity">
+                    <div class="flex items-center gap-2 mb-3">
+                        <label class="text-sm font-bold text-gray-600">貼り付け位置</label>
+                        <div class="info-icon" tabindex="0">
+                            <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                            <div class="tooltip-box" data-explain-id="step5_align"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 w-36">
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="tl">◤</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="tc">▲</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="tr">◥</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="ml">◀</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition active bg-blue-600 text-white" data-align="mc">■</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="mr">▶</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="bl">◣</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="bc">▼</button>
+                        <button class="align-grid-btn border-2 rounded-lg p-2 transition" data-align="br">◢</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <label class="text-sm font-bold text-gray-600">保存ファイル名</label>
+                        <div class="info-icon" tabindex="0">
+                            <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                            <div class="tooltip-box" data-explain-id="step6_filename"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="pdfFileName" class="flex-1 p-3 bg-gray-50 border-0 rounded-xl font-bold text-gray-700 outline-none" placeholder="保存ファイル名を入力">
+                        <span class="text-gray-400 font-bold">.pdf</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <button id="generatePdfBtn" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition active:scale-95 mb-12">
+            PDFを保存する
+        </button>
+
+        <div id="explanationSummaryArea" class="mt-12 border-t pt-10 space-y-8">
+            <h2 class="text-lg font-bold text-gray-800 text-center mb-6">ツールの使い方・詳細説明</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div data-explain-block="step1_upload" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step2_sort" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step3_pagesize" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step4_margin" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step5_align" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step6_filename" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+            </div>
+        </div>
+
+        <div id="progressArea" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center px-4">
+            <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center">
+                <div class="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                <p id="progressStatus" class="font-bold text-gray-700">準備中...</p>
+            </div>
+        </div>
+    </main>
+
+    <div id="common-footer"></div>
+    <script src="../common/site-data.js"></script>
+    <script src="../common/site-manager.js"></script>
+    <script src="img-binder-pdf.js"></script>
+</body>
+</html>
