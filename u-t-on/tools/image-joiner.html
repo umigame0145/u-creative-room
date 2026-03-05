@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>画像結合ツール - Uの創作部屋</title>
 
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://your-domain.com/common/ogp-image-joiner.jpg">
+
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../common/style.css">
@@ -13,193 +16,164 @@
     <script src="image-joiner.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans">
-
     <div id="common-header"></div>
 
-    <main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 overflow-x-hidden">
-        <div class="flex-1 min-w-0 w-full">
-            <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden">
-                
-                <div class="mb-8">
-                    <div class="flex items-center gap-2 mb-2">
-                        <label class="text-sm font-bold text-gray-700 tracking-wider">STEP 1: 画像をアップロード</label>
-                        <div class="info-icon" tabindex="0">
-                            <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
-                            <div class="tooltip-box" data-explain-id="step1_upload"></div>
-                        </div>
-                    </div>
-                    <input type="file" id="imageInput" multiple accept="image/*,.heic,.heif,.tif,.tiff" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                </div>
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">画像結合ツール</h1>
+            <p class="text-gray-600">複数の画像を縦や横に繋げて、1枚の画像に結合します。</p>
+        </div>
 
-                <div id="sortSection" class="hidden bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8 w-full overflow-hidden">
-                    <div class="flex items-center justify-center gap-2 mb-2">
-                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">STEP 2: 並び替え・削除</label>
-                        <div class="info-icon" tabindex="0">
-                            <span class="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
-                            <div class="tooltip-box" data-explain-id="step2_sort"></div>
-                        </div>
-                    </div>
-                    <div id="thumbContainer" class="p-3 bg-white rounded-lg border w-full overflow-x-auto"></div>
-                    <div class="flex flex-wrap items-center justify-center gap-4 mt-4">
-                        <div class="flex items-center gap-1">
-                            <button id="moveLeftBtn" class="w-10 h-10 bg-white border rounded shadow-sm hover:bg-gray-100 flex items-center justify-center transition active:scale-95"><span class="rotate-[-90deg] text-blue-600 text-xs">▲</span></button>
-                            <button id="moveRightBtn" class="w-10 h-10 bg-white border rounded shadow-sm hover:bg-gray-100 flex items-center justify-center transition active:scale-95"><span class="rotate-[90deg] text-blue-600 text-xs">▲</span></button>
-                            <button id="deleteBtn" class="w-10 h-10 bg-red-50 border border-red-100 rounded shadow-sm hover:bg-red-500 hover:text-white flex items-center justify-center transition active:scale-95">🗑️</button>
-                        </div>
-                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded border shadow-sm">
-                            <span class="text-xs font-bold text-gray-500">位置移動:</span>
-                            <input type="number" id="positionInput" class="w-12 p-1 border-b text-center font-bold text-blue-600 focus:outline-none" placeholder="1">
-                            <button id="applyPosBtn" class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 transition">移動</button>
-                        </div>
-                    </div>
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <label class="text-sm font-bold text-gray-700 tracking-wider">STEP 1: 画像の選択</label>
+                <div class="info-icon" tabindex="0">
+                    <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                    <div class="tooltip-box" data-explain-id="step1_upload"></div>
                 </div>
+            </div>
+            <div id="dropZone" class="relative border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-blue-400 transition-all group">
+                <input type="file" id="imageInput" multiple accept="image/*,.heic,.heif,.tiff,.tif" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <div class="text-blue-600 font-bold group-hover:scale-105 transition-transform">
+                    画像をドラッグ＆ドロップ、またはクリックで選択
+                </div>
+                <p class="text-xs text-gray-400 mt-2">※HEIC, TIFF対応</p>
+            </div>
+        </section>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 border-t pt-6">
+        <section id="sortSection" class="hidden bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <label class="text-sm font-bold text-gray-700 tracking-wider">STEP 2: 並び替え・管理</label>
+                <div class="info-icon" tabindex="0">
+                    <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                    <div class="tooltip-box" data-explain-id="step2_sort"></div>
+                </div>
+            </div>
+            <div id="thumbContainer" class="flex gap-4 p-4 bg-gray-50 rounded-2xl overflow-x-auto min-h-[140px]"></div>
+        </section>
+
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <h2 class="text-lg font-bold text-gray-700 mb-6 flex items-center">STEP 3: 結合設定</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <label class="text-sm font-bold text-gray-700">STEP 3: 結合の方向</label>
+                            <label class="text-sm font-bold text-gray-600">結合方向</label>
                             <div class="info-icon" tabindex="0">
                                 <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
                                 <div class="tooltip-box" data-explain-id="step3_direction"></div>
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button id="btnVertical" class="flex-1 py-3 bg-blue-600 text-white rounded-lg font-bold shadow-sm transition">縦に並べる</button>
-                            <button id="btnHorizontal" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition">横に並べる</button>
+                            <button id="dirVertical" class="flex-1 py-3 rounded-xl font-bold bg-blue-600 text-white shadow-md transition">縦に並べる</button>
+                            <button id="dirHorizontal" class="flex-1 py-3 rounded-xl font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">横に並べる</button>
                         </div>
                     </div>
+
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <label class="text-sm font-bold text-gray-700">STEP 4: 背景色</label>
+                            <label class="text-sm font-bold text-gray-600">背景色</label>
                             <div class="info-icon" tabindex="0">
                                 <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
                                 <div class="tooltip-box" data-explain-id="step4_bgcolor"></div>
                             </div>
                         </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <input type="color" id="bgColorInput" value="#ffffff" class="h-12 w-24 border rounded-lg cursor-pointer p-1 disabled:opacity-30">
-                            <div class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg border">
-                                <input type="checkbox" id="transparentCheck" class="w-4 h-4 rounded text-blue-600">
-                                <label for="transparentCheck" class="text-xs font-bold text-gray-600 cursor-pointer">背景を透過させる</label>
-                            </div>
+                        <div class="flex items-center gap-4">
+                            <input type="color" id="bgColor" class="w-12 h-12 rounded-lg border-0 cursor-pointer" value="#ffffff">
+                            <label class="flex items-center gap-2 text-sm font-bold text-gray-600 cursor-pointer">
+                                <input type="checkbox" id="transparentBg" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                背景を透過させる
+                            </label>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between">
-                        <div class="flex items-center gap-2 text-sm text-blue-900 font-bold">
-                            <input type="checkbox" id="syncSizeCheck" class="w-5 h-5 rounded border-gray-300 text-blue-600">
-                            <span>幅を</span>
-                            <select id="syncTypeSelect" class="p-1 border rounded bg-white font-bold outline-none">
-                                <option value="small">小さい</option>
-                                <option value="large">大きい</option>
-                            </select>
-                            <span>画像に合わせる</span>
-                        </div>
-                        <div class="info-icon" tabindex="0">
-                            <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-blue-400 border border-blue-200 rounded-full bg-white">i</span>
-                            <div class="tooltip-box" data-explain-id="step5_sync"></div>
-                        </div>
-                    </div>
+                <div class="space-y-6">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <label class="text-sm font-bold text-gray-700">STEP 5: 保存形式</label>
+                            <label class="text-sm font-bold text-gray-600">サイズ調整の基準</label>
+                            <div class="info-icon" tabindex="0">
+                                <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                                <div class="tooltip-box" data-explain-id="step5_sync"></div>
+                            </div>
+                        </div>
+                        <select id="sizeBase" class="w-full p-3 bg-gray-50 border-0 rounded-xl font-bold text-gray-700 outline-none appearance-none cursor-pointer">
+                            <option value="none">調整なし（そのまま）</option>
+                            <option value="max">一番大きい画像に合わせる</option>
+                            <option value="min">一番小さい画像に合わせる</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <label class="text-sm font-bold text-gray-600">保存形式</label>
                             <div class="info-icon" tabindex="0">
                                 <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
                                 <div class="tooltip-box" data-explain-id="step6_format"></div>
                             </div>
                         </div>
-                        <select id="formatSelect" class="w-full p-3 border rounded-lg bg-white shadow-sm font-bold text-sm">
-                            <option value="image/png">PNG (.png)</option>
-                            <option value="image/webp">WebP (.webp)</option>
-                            <option value="image/jpeg">JPEG (.jpg) ※透過非対応</option>
+                        <select id="saveFormat" class="w-full p-3 bg-gray-50 border-0 rounded-xl font-bold text-gray-700 outline-none appearance-none cursor-pointer">
+                            <option value="image/png">PNG（高画質・透過対応）</option>
+                            <option value="image/jpeg">JPEG（ファイルサイズ軽量）</option>
+                            <option value="image/webp">WebP（次世代形式）</option>
                         </select>
                     </div>
                 </div>
+            </div>
 
-                <div class="text-center mb-10 border-t pt-8">
-                    <div id="progressArea" class="hidden w-full max-w-md mx-auto mb-6">
-                        <div class="flex justify-between mb-1 text-xs font-bold text-blue-600">
-                            <span id="progressStatus">処理中...</span>
-                            <span id="progressPercent">0%</span>
-                        </div>
-                        <div class="w-full bg-blue-100 rounded-full h-2.5">
-                            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
-                        <button id="generateBtn" class="w-full md:w-auto py-4 px-16 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold shadow-lg transition-all disabled:opacity-50">
-                            プレビューを生成する
-                        </button>
-                        
-                        <div class="flex items-center gap-2 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200 shadow-sm">
-                            <input type="checkbox" id="optimize-check" class="w-5 h-5 rounded text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer">
-                            <div class="text-left">
-                                <label for="optimize-check" class="block text-xs font-bold text-gray-700 cursor-pointer leading-none mb-1">プレビューを軽量化</label>
-                                <span class="text-[10px] text-gray-400 leading-none">動作が重い場合に推奨</span>
-                            </div>
-                        </div>
+            <div class="mt-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <label class="text-sm font-bold text-gray-600">保存ファイル名</label>
+                    <div class="info-icon" tabindex="0">
+                        <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                        <div class="tooltip-box" data-explain-id="step6_filename"></div>
                     </div>
                 </div>
+                <input type="text" id="fileNameInput" class="w-full p-3 bg-gray-50 border-0 rounded-xl font-bold text-gray-700 outline-none" placeholder="結合画像のファイル名を入力">
+            </div>
+        </section>
 
-                <div id="resultSection" class="hidden mb-8 border-t pt-8 text-center w-full">
-                    <div class="max-w-4xl mx-auto mb-4 px-4">
-                        <div class="flex items-center justify-center gap-2 mb-4">
-                            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest">プレビュー操作</h2>
-                            <div class="info-icon" tabindex="0">
-                                <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
-                                <div class="tooltip-box" data-explain-id="step7_preview"></div>
-                            </div>
-                        </div>
+        <button id="generateBtn" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition active:scale-95 disabled:bg-gray-300 mb-12">
+            結合画像を作成する
+        </button>
 
-                        <div class="flex flex-wrap items-center justify-center gap-2 mb-6 bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                            <button id="zoomOutBtn" class="px-4 py-2 bg-white border rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 shadow-sm transition active:scale-95">縮小 -</button>
-                            <button id="zoomInBtn" class="px-4 py-2 bg-white border rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 shadow-sm transition active:scale-95">拡大 +</button>
-                            <div class="h-6 w-px bg-gray-200 mx-1"></div>
-                            <button id="zoom100Btn" class="px-4 py-2 bg-white border rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 shadow-sm transition active:scale-95 text-blue-600">100%</button>
-                            <button id="zoomFitBtn" class="px-4 py-2 bg-white border rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100 shadow-sm transition active:scale-95">全体表示</button>
-                        </div>
-                    </div>
-
-                    <div id="canvasWrapper" class="block w-full overflow-x-auto overflow-y-hidden border border-gray-100 rounded-2xl bg-gray-50 mb-8 p-4">
-                        <canvas id="resultCanvas" class="mx-auto block"></canvas>
-                    </div>
-
-                    <div class="mt-4 mb-8 flex items-center justify-center gap-2">
-                        <p id="canvasSizeInfo" class="text-[11px] text-gray-500 font-mono font-bold uppercase tracking-widest"></p>
-                    </div>
-                </div>
-
-                <div id="actionArea" class="hidden text-center pb-4">
-                    <button id="downloadBtn" class="w-full md:w-auto py-4 px-12 bg-green-600 hover:bg-green-700 text-white rounded-full font-extrabold shadow-lg transition transform hover:scale-105 active:scale-95">
-                        名前をつけて保存する
-                    </button>
-                </div>
-
-                <div id="explanationSummaryArea" class="mt-12 border-t pt-10 space-y-8">
-                    <h2 class="text-lg font-bold text-gray-800 text-center mb-6">ツールの使い方・詳細説明</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div data-explain-block="step1_upload" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div data-explain-block="step2_sort" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div data-explain-block="step3_direction" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div data-explain-block="step4_bgcolor" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div data-explain-block="step5_sync" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div data-explain-block="step6_format" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                        <div data-explain-block="step7_preview" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
-                    </div>
+        <section id="previewSection" class="hidden bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-gray-700">PREVIEW: 結合結果</h2>
+                <div class="info-icon" tabindex="0">
+                    <span class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-gray-400 border border-gray-300 rounded-full">i</span>
+                    <div class="tooltip-box" data-explain-id="step7_preview"></div>
                 </div>
             </div>
-        </div>
+            
+            <div id="canvasWrapper" class="relative bg-gray-100 rounded-2xl overflow-auto p-4 flex justify-center items-start">
+                <canvas id="resultCanvas" class="max-w-full h-auto"></canvas>
+            </div>
 
-        <aside class="w-full lg:w-80 px-4" id="common-ad-sidebar"></aside>
+            <div id="actionArea" class="mt-8 text-center">
+                <button id="downloadBtn" class="w-full md:w-auto py-4 px-12 bg-green-600 hover:bg-green-700 text-white rounded-full font-extrabold shadow-lg transition transform hover:scale-105 active:scale-95">
+                    名前をつけて保存する
+                </button>
+            </div>
+        </section>
+
+        <div id="explanationSummaryArea" class="mt-12 border-t pt-10 space-y-8">
+            <h2 class="text-lg font-bold text-gray-800 text-center mb-6">ツールの使い方・詳細説明</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div data-explain-block="step1_upload" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step2_sort" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step3_direction" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step4_bgcolor" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step5_sync" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step6_format" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+                <div data-explain-block="step7_preview" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
+            </div>
+        </div>
     </main>
 
     <div id="common-footer"></div>
-
     <script src="../common/site-data.js"></script>
     <script src="../common/site-manager.js"></script>
-    <script src="image-joiner.js"></script>
 </body>
 </html>

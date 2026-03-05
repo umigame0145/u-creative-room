@@ -45,14 +45,21 @@ function initCommonComponents() {
     
     const headerHtml = `
         <header class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm border-b z-[60]">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center">
-                <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-lg transition focus:outline-none">
-                    <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
-                    <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
-                    <div class="w-6 h-0.5 bg-gray-600"></div>
-                </button>
-                <div class="ml-4 text-lg font-bold text-gray-800 tracking-tight flex items-center whitespace-nowrap overflow-hidden">
-                    ${displayTitle}
+            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"> <div class="flex items-center overflow-hidden"> <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-lg transition focus:outline-none">
+                        <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
+                        <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
+                        <div class="w-6 h-0.5 bg-gray-600"></div>
+                    </button>
+                    <div class="ml-4 text-lg font-bold text-gray-800 tracking-tight flex items-center whitespace-nowrap overflow-hidden">
+                        ${displayTitle}
+                    </div>
+                </div>
+                
+                <div id="header-share-area" class="flex-shrink-0 ml-2">
+                    <a id="headerShareX" href="#" target="_blank" rel="noopener noreferrer" 
+                       class="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full font-bold hover:opacity-80 transition shadow-sm text-xs md:text-sm">
+                        <span>𝕏</span><span class="hidden md:inline">でシェア</span>
+                    </a>
                 </div>
             </div>
         </header>
@@ -153,6 +160,32 @@ function initCommonComponents() {
             document.getElementById('toggle-icon').style.transform = isNewsOpen ? 'rotate(180deg)' : 'rotate(0deg)';
         });
     }
+
+    // --- 𝕏シェアリンクの全ページ共通設定 ---
+    const setGlobalShareLink = () => {
+        const shareBtn = document.getElementById('headerShareX');
+        if (shareBtn) {
+            // 現在のページのタイトルを取得（SEO_CONFIGがあればそこから、なければHTMLのtitleから）
+            let pageTitle = document.title.split('|')[0].trim();
+            
+            // ツールのIDをURLから判定（例: image-joiner.html -> image-joiner）
+            const path = window.location.pathname;
+            const toolId = path.split('/').pop().replace('.html', '');
+
+            // もしSEO_CONFIGにデータがあれば、より綺麗な名前を取得
+            if (typeof SEO_CONFIG !== 'undefined' && SEO_CONFIG[toolId]) {
+                pageTitle = SEO_CONFIG[toolId].title.split('|')[0].trim();
+            }
+
+            const text = encodeURIComponent(`${pageTitle}が便利！\nインストール不要・ブラウザ完結で安全に使えます。\n\n#Uの創作部屋 #便利ツール\n`);
+            const url = encodeURIComponent(window.location.href);
+            
+            shareBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+        }
+    };
+
+    // ヘッダー生成直後に実行
+    setGlobalShareLink();
 }
 
 initCommonComponents();
