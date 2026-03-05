@@ -1,3 +1,17 @@
+// --- 1. SEO・メタタグ設定（seo-config.jsから取得） ---
+const currentToolId = "image-joiner";
+if (typeof SEO_CONFIG !== 'undefined' && SEO_CONFIG[currentToolId]) {
+    const data = SEO_CONFIG[currentToolId];
+    document.title = data.title;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = "description";
+        document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = data.description;
+}
+
 const toolExplanations = {
     step1_upload: {
         title: "画像のアップロード",
