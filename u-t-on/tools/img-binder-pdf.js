@@ -1,9 +1,24 @@
 /**
  * img-binder-pdf.js
  * 画像梱包（PDF）ツール ロジック
- * 省略なし完全版
+ * SEO外部管理・省略なし完全版
  */
 
+// --- 1. SEO・メタタグ設定（seo-config.jsから取得） ---
+const currentToolId = "img-binder-pdf";
+if (typeof SEO_CONFIG !== 'undefined' && SEO_CONFIG[currentToolId]) {
+    const data = SEO_CONFIG[currentToolId];
+    document.title = data.title;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = "description";
+        document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = data.description;
+}
+
+// --- 2. 各ステップの詳細説明（ここで直接編集してください） ---
 const toolExplanations = {
     step1_upload: {
         title: "画像の選択",
@@ -31,6 +46,8 @@ const toolExplanations = {
     }
 };
 
+// --- 3. アプリケーション機能ロジック ---
+
 function initExplanations() {
     document.querySelectorAll('[data-explain-id]').forEach(el => {
         const id = el.getAttribute('data-explain-id');
@@ -40,7 +57,7 @@ function initExplanations() {
 
             el.parentElement.addEventListener('mouseenter', () => {
                 const rect = el.getBoundingClientRect();
-                box.style.top = 'auto'; // style.cssの上書き防止
+                box.style.top = 'auto'; 
                 if (rect.top < 180) { 
                     box.classList.remove('tooltip-up');
                     box.classList.add('tooltip-down');
@@ -56,7 +73,12 @@ function initExplanations() {
         const id = el.getAttribute('data-explain-block');
         const data = toolExplanations[id];
         if (data) {
-            el.innerHTML = `<h3 class="font-bold text-blue-600 mb-2 flex items-center gap-2"><span class="w-1 h-4 bg-blue-600 rounded-full"></span>${data.title}</h3><p class="text-sm text-gray-600 leading-relaxed">${data.body.replace(/\n/g, '<br>')}</p>`;
+            el.innerHTML = `
+                <h3 class="font-bold text-blue-600 mb-2 flex items-center gap-2">
+                    <span class="w-1 h-4 bg-blue-600 rounded-full"></span>${data.title}
+                </h3>
+                <p class="text-sm text-gray-600 leading-relaxed">${data.body.replace(/\n/g, '<br>')}</p>
+            `;
         }
     });
 }
@@ -136,7 +158,7 @@ async function handleFiles(fileList, isAppend = false) {
     if (targetFiles.length === 0) return;
     if (state.images.length > 0) saveHistory();
     if (!isAppend) state.images = [];
-    toggleProgress(true, `画像を解析中... (0/${targetFiles.length})`);
+    toggleProgress(true, `画像を読み込み中... (0/${targetFiles.length})`);
     for (let i = 0; i < targetFiles.length; i++) {
         updateStatus(`解析中... (${i + 1}/${targetFiles.length})`);
         try {
@@ -147,6 +169,8 @@ async function handleFiles(fileList, isAppend = false) {
     }
     renderList();
     toggleProgress(false);
+    if (imageInput) imageInput.value = '';
+    if (folderInput) folderInput.value = '';
 }
 
 async function processImageMinimal(file) {
@@ -192,7 +216,7 @@ function renderList() {
             state.selectedIndex = idx; renderList();
         });
         li.onclick = () => { state.selectedIndex = idx; renderList(); };
-        li.innerHTML = `<div class="flex items-center gap-4 w-full pointer-events-none"><div class="text-gray-400">☰</div><div class="w-6 text-xs font-bold text-gray-400 font-mono">${idx + 1}</div><img src="${img.thumb}" class="w-12 h-12 object-cover rounded shadow-sm bg-gray-100"><div class="flex-1 truncate text-sm font-bold text-gray-700">${img.name}</div></div>`;
+        li.innerHTML = `<div class="flex items-center gap-4 w-full pointer-events-none"><div class="text-gray-400">☰</div><div class="w-6 text-xs font-bold text-gray-400 font-mono">${idx+1}</div><img src="${img.thumb}" class="w-12 h-12 object-cover rounded shadow-sm bg-gray-100"><div class="flex-1 truncate text-sm font-bold text-gray-700">${img.name}</div></div>`;
         container?.appendChild(li);
     });
 }
@@ -257,9 +281,10 @@ function stepMove(dir) {
     state.selectedIndex = newIdx; renderList();
 }
 function deleteSelected() {
-    if (state.selectedIndex === null || !confirm("この画像を削除しますか？")) return;
+    if (state.selectedIndex === null || !confirm("この画像をリストから削除しますか？")) return;
     saveHistory();
-    state.images.splice(state.selectedIndex, 1); state.selectedIndex = null; renderList();
+    state.images.splice(state.selectedIndex, 1);
+    state.selectedIndex = null; renderList();
 }
 function toggleProgress(show, status = "") {
     const el = document.getElementById('progressArea'); const txt = document.getElementById('progressStatus');
