@@ -125,7 +125,17 @@ function initCommonComponents() {
     }
 
     const f = document.getElementById('common-footer');
-    if (f) f.innerHTML = `<footer class="bg-white border-t mt-12 py-8 text-center text-sm text-gray-400">${siteConfig.footerText}</footer>`;
+        if (f) {
+            f.innerHTML = `
+                <footer class="bg-white border-t mt-12 py-8 text-center text-sm text-gray-400">
+                    <div class="mb-4 flex justify-center gap-6">
+                        <a href="${basePath}privacy.html" class="hover:text-blue-600 transition-colors">プライバシーポリシー</a>
+                        <a href="${basePath}contact.html" class="hover:text-blue-600 transition-colors">お問い合わせ</a>
+                    </div>
+                    ${siteConfig.footerText}
+                </footer>
+            `;
+        }
 
     const menuBtn = document.getElementById('menuBtn');
     const closeBtn = document.getElementById('closeBtn');
