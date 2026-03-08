@@ -1,5 +1,8 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.03.09", content: "新機能コピペったんを追加しました！" },
+        { date: "2026.03.09", content: "お問い合わせを追加しました！" },
+        { date: "2026.03.09", content: "プライバシーポリシーを追加しました！" },
         { date: "2026.03.06", content: "シェア機能ヘッダに追加しました！" },
         { date: "2026.03.05", content: "新ツール「画像梱包（PDF）」を追加しました！" },
         { date: "2026.03.04", content: "サイト公開しました！" }
@@ -12,7 +15,7 @@ const SITE_DATA = {
             description: "複数の画像を縦や横に美しく結合。背景透過やHEIC形式にも対応しています。",
             icon: "🖼️",
             url: "tools/image-joiner.html",
-            isUpdate: true
+            isUpdate: false
         },
         {
             id: "img-binder-pdf",
@@ -21,7 +24,7 @@ const SITE_DATA = {
             description: "複数の画像を1つのPDFファイルにまとめます。A4サイズへの自動収容や余白調整も可能です。",
             icon: "📂",
             url: "tools/img-binder-pdf.html",
-            isUpdate: true
+            isUpdate: false
         },
         {
             id: "copy-pattan",
