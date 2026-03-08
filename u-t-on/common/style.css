@@ -82,6 +82,22 @@ html, body { overflow-x: hidden; width: 100%; position: relative; }
     bottom: 130%;
 }
 
+.common-ad-container {
+    overflow: hidden;
+    clear: both;
+}
+
+/* 広告読み込み前やエラー時に不自然な空白を作らない設定 */
+.common-ad-container:empty {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .common-ad-container {
+        margin: 1rem auto;
+    }
+}
+
 @media (max-width: 640px) {
     .tooltip-box { width: 200px; }
 }

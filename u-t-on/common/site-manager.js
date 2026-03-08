@@ -93,6 +93,22 @@ function initCommonComponents() {
         </div>
     `;
 
+    const adPlaceholder = `
+        <div class="common-ad-container my-8 mx-auto max-w-4xl px-4 text-center">
+            <p class="text-[10px] text-gray-300 tracking-widest mb-2">ADVERTISEMENT</p>
+            <div class="bg-gray-50 border border-dashed border-gray-200 rounded-xl py-8 min-h-[100px] flex items-center justify-center">
+                <span class="text-xs text-gray-400 font-bold">広告掲載エリア</span>
+            </div>
+            </div>
+    `;
+
+    // メインコンテンツの直前に広告枠を挿入
+    const main = document.querySelector('main');
+    if (main) {
+        main.insertAdjacentHTML('afterbegin', adPlaceholder); // コンテンツ上部
+        main.insertAdjacentHTML('beforeend', adPlaceholder);  // コンテンツ下部
+    }
+
     const h = document.getElementById('common-header');
     if (h) h.innerHTML = headerHtml;
 
