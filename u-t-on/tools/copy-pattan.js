@@ -16,7 +16,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveStockBtn = document.getElementById('saveStockBtn');
     const stockList = document.getElementById('stockList');
 
-    // --- ユーティリティ関数 ---
+    // --- 💾 データの保存・読み込みロジック ---
+
+    // 全データをLocalStorageに保存する
+    function saveAllToLocal() {
+        const materialInputs = Array.from(document.querySelectorAll('.material-input')).map(input => input.value);
+        const data = {
+            mainText: mainArea.value,
+            materials: materialInputs,
+            stocks: stockItems
+        };
+        localStorage.setItem('copyPattanData', JSON.stringify(data));
+    }
+
+    // 保存されたデータを復元する
+    function loadFromLocal() {
+        const savedData = localStorage.getItem('copyPattanData');
+        if (!savedData) return;
+
+        const data = JSON.parse(savedData);
+        
+        // 1. 作成エリアの復元
+        mainArea.value = data.mainText || '';
+
+        // 2. 素材行の復元
+        if (data.materials && data.materials.length > 0) {
+            container.innerHTML = ''; // 初期行を一旦消す
+            data.materials.forEach(text => {
+                createNewRow(text);
+            });
+        }
+
+        // 3. 保存済みリストの復元
+        stockItems = data.stocks || [];
+        renderStockList();
+        updateUndoButton();
+    }
+
+    // --- 🛠 共通ユーティリティ ---
 
     function saveState() {
         history.push(mainArea.value);
@@ -29,24 +66,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- メインエリア操作 ---
-    
-    clearAllBtn.onclick = () => {
-        if(mainArea.value && confirm("作成中の文字列を全て消去しますか？")) {
-            saveState();
-            mainArea.value = '';
-            updateUndoButton();
-        }
-    };
+    // --- 🧩 素材行の生成ロジック ---
 
-    saveStockBtn.onclick = () => {
-        const text = mainArea.value;
-        if (!text) return;
-        stockItems.push(text);
-        renderStockList();
-    };
-
-    // --- 素材エリア操作 ---
+    function createNewRow(initialValue = '') {
+        const newRow = document.createElement('div');
+        newRow.className = "flex gap-2 material-row";
+        newRow.innerHTML = `
+            <input type="text" class="flex-1 p-3 bg-gray-50 border-0 rounded-xl font-bold outline-none material-input text-sm" placeholder="素材を入力" value="${initialValue}">
+            <button class="px-5 py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-black transition add-to-main-btn text-xs">追加</button>
+            <button class="px-4 py-3 bg-red-50 text-red-400 rounded-xl font-bold hover:bg-red-100 transition delete-row-btn">🗑️</button>
+        `;
+        container.appendChild(newRow);
+        setupRowEvents(newRow);
+    }
 
     function setupRowEvents(row) {
         const input = row.querySelector('.material-input');
@@ -59,30 +91,30 @@ document.addEventListener('DOMContentLoaded', () => {
             saveState();
             mainArea.value += text;
             updateUndoButton();
+            saveAllToLocal(); // 変更があったら保存
         };
 
         deleteRowBtn.onclick = () => {
             row.remove();
+            saveAllToLocal(); // 削除時も保存
         };
+
+        input.oninput = () => saveAllToLocal(); // 入力内容の変化もリアルタイム保存
     }
 
-    document.querySelectorAll('.material-row').forEach(row => setupRowEvents(row));
-
     addNewRowBtn.onclick = () => {
-        const newRow = document.createElement('div');
-        newRow.className = "flex gap-2 material-row";
-        newRow.innerHTML = `
-            <input type="text" class="flex-1 p-3 bg-gray-50 border-0 rounded-xl font-bold outline-none material-input" placeholder="素材を入力">
-            <button class="px-6 py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-black transition add-to-main-btn">追加</button>
-            <button class="px-4 py-3 bg-red-50 text-red-400 rounded-xl font-bold hover:bg-red-100 transition delete-row-btn">🗑️</button>
-        `;
-        container.appendChild(newRow);
-        setupRowEvents(newRow);
+        createNewRow();
+        saveAllToLocal();
     };
 
-    // --- 保存済みリスト描画（追加ボタンを実装） ---
+    // --- 📦 保存済みリスト描画 ---
 
     function renderStockList() {
+        if (stockItems.length === 0) {
+            stockList.innerHTML = '<p class="text-center py-8 text-gray-300 text-xs italic">保存されたデータはありません</p>';
+            return;
+        }
+
         stockList.innerHTML = '';
         stockItems.forEach((item, index) => {
             const div = document.createElement('div');
@@ -100,47 +132,64 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- window公開関数 ---
+    // --- 🖱 メインエリア・リスト操作 ---
 
-    // リストの文字を作成エリアの末尾に足す
+    clearAllBtn.onclick = () => {
+        if(mainArea.value && confirm("作成中の文字列を全て消去しますか？")) {
+            saveState();
+            mainArea.value = '';
+            updateUndoButton();
+            saveAllToLocal();
+        }
+    };
+
+    saveStockBtn.onclick = () => {
+        const text = mainArea.value;
+        if (!text) return;
+        stockItems.push(text);
+        renderStockList();
+        saveAllToLocal();
+    };
+
     window.appendStock = (index) => {
         saveState();
         mainArea.value += stockItems[index];
         updateUndoButton();
+        saveAllToLocal();
     };
 
     window.copyStock = async (index) => {
         const text = stockItems[index];
         if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
-            alert("クリップボードにコピーしました");
         } else {
-            alert("環境の影響によりコピーできませんでした。編集ボタンで作成エリアに戻してからコピーしてください。");
+            alert("テスト環境のためコピーできません。編集ボタンでエリアに戻してください。");
         }
     };
 
     window.editStock = (index) => {
-        if (mainArea.value && !confirm("現在の作成エリアを上書きしてもよろしいですか？")) return;
+        if (mainArea.value && !confirm("現在の内容を上書きしますか？")) return;
         saveState();
         mainArea.value = stockItems[index];
-        history = []; // 上書き時は履歴をリセット
+        history = [];
         updateUndoButton();
+        saveAllToLocal();
         window.scrollTo({ top: mainArea.offsetTop - 100, behavior: 'smooth' });
     };
 
     window.deleteStock = (index) => {
-        if(confirm("この保存済み文字列を削除しますか？")) {
+        if(confirm("このストックを削除しますか？")) {
             stockItems.splice(index, 1);
             renderStockList();
+            saveAllToLocal();
         }
     };
-
-    // --- コントロール ---
 
     undoBtn.onclick = () => {
         if (history.length > 0) {
             mainArea.value = history.pop();
             updateUndoButton();
+            saveAllToLocal();
         }
     };
 
@@ -149,21 +198,23 @@ document.addEventListener('DOMContentLoaded', () => {
             history = [];
             updateUndoButton();
         }
+        saveAllToLocal(); // リアルタイム保存
     });
 
     copyBtn.onclick = async () => {
         if (!mainArea.value) return;
         if (navigator.clipboard && window.isSecureContext) {
-            try {
-                await navigator.clipboard.writeText(mainArea.value);
-                const original = copyBtn.innerText;
-                copyBtn.innerText = "✅ コピー完了！";
-                setTimeout(() => copyBtn.innerText = original, 2000);
-            } catch (err) {
-                alert("コピーに失敗しました");
-            }
-        } else {
-            alert("コピーに失敗しました。HTTPS環境で実行してください。");
+            await navigator.clipboard.writeText(mainArea.value);
+            const original = copyBtn.innerText;
+            copyBtn.innerText = "✅ コピー完了！";
+            setTimeout(() => copyBtn.innerText = original, 2000);
         }
     };
+
+    // --- 🚀 初期化実行 ---
+    loadFromLocal();
+    // もしデータが何もなければ、空の1行目を作る
+    if (container.children.length === 0) {
+        createNewRow();
+    }
 });
