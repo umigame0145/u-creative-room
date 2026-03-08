@@ -3,7 +3,7 @@
  */
 
 let history = []; 
-let stockItems = []; // 保存済み文字列の配列
+let stockItems = []; 
 
 document.addEventListener('DOMContentLoaded', () => {
     const mainArea = document.getElementById('mainTextArea');
@@ -48,33 +48,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 素材エリア操作 ---
 
-    // 行のイベント（追加・削除）を設定する関数
     function setupRowEvents(row) {
         const input = row.querySelector('.material-input');
         const addBtn = row.querySelector('.add-to-main-btn');
         const deleteRowBtn = row.querySelector('.delete-row-btn');
 
-        // メインエリアへ文字を追加
         addBtn.onclick = () => {
             const text = input.value; 
             if (!text) return;
-            
             saveState();
             mainArea.value += text;
             updateUndoButton();
         };
 
-        // 行そのものを削除
         deleteRowBtn.onclick = () => {
-            // 最後の1行は消さない、あるいは確認なしで消すなど調整可能
             row.remove();
         };
     }
 
-    // 最初にある行にイベントを設定
     document.querySelectorAll('.material-row').forEach(row => setupRowEvents(row));
 
-    // 「＋」ボタンで新しい入力行を増やす
     addNewRowBtn.onclick = () => {
         const newRow = document.createElement('div');
         newRow.className = "flex gap-2 material-row";
@@ -87,19 +80,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setupRowEvents(newRow);
     };
 
-    // --- 保存済みリスト描画 ---
+    // --- 保存済みリスト描画（追加ボタンを実装） ---
 
     function renderStockList() {
         stockList.innerHTML = '';
         stockItems.forEach((item, index) => {
             const div = document.createElement('div');
-            div.className = "flex items-center justify-between p-3 bg-gray-50 rounded-xl gap-2 shadow-sm border border-gray-100";
+            div.className = "p-4 bg-gray-50 rounded-2xl shadow-sm border border-gray-100 space-y-3";
             div.innerHTML = `
-                <div class="flex-1 truncate text-sm font-medium text-gray-700">${item}</div>
-                <div class="flex gap-1 shrink-0">
-                    <button onclick="copyStock(${index})" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 text-xs font-bold transition">コピー</button>
-                    <button onclick="editStock(${index})" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-yellow-50 text-xs font-bold transition">編集</button>
-                    <button onclick="deleteStock(${index})" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-red-50 text-red-400 text-xs font-bold transition">削除</button>
+                <div class="text-sm font-medium text-gray-700 whitespace-pre-wrap break-all leading-relaxed">${item}</div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-gray-100">
+                    <button onclick="appendStock(${index})" class="py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-bold transition">追加</button>
+                    <button onclick="copyStock(${index})" class="py-2 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 text-xs font-bold transition text-gray-600">コピー</button>
+                    <button onclick="editStock(${index})" class="py-2 bg-white border border-gray-200 rounded-lg hover:bg-yellow-50 text-xs font-bold transition text-gray-600">編集</button>
+                    <button onclick="deleteStock(${index})" class="py-2 bg-white border border-gray-200 rounded-lg hover:bg-red-50 text-red-400 text-xs font-bold transition">削除</button>
                 </div>
             `;
             stockList.appendChild(div);
@@ -107,6 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- window公開関数 ---
+
+    // リストの文字を作成エリアの末尾に足す
+    window.appendStock = (index) => {
+        saveState();
+        mainArea.value += stockItems[index];
+        updateUndoButton();
+    };
 
     window.copyStock = async (index) => {
         const text = stockItems[index];
@@ -119,9 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.editStock = (index) => {
+        if (mainArea.value && !confirm("現在の作成エリアを上書きしてもよろしいですか？")) return;
         saveState();
         mainArea.value = stockItems[index];
-        history = [];
+        history = []; // 上書き時は履歴をリセット
         updateUndoButton();
         window.scrollTo({ top: mainArea.offsetTop - 100, behavior: 'smooth' });
     };
