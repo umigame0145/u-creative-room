@@ -10,44 +10,76 @@
 <body class="bg-gray-50 text-gray-900 font-sans">
     <div id="common-header"></div>
 
-    <main class="max-w-2xl mx-auto px-4 py-8">
+    <main class="max-w-3xl mx-auto px-4 py-8">
         <div class="mb-8 text-center">
             <h1 class="text-3xl font-bold text-gray-800 mb-2">コピペったん</h1>
-            <p class="text-gray-600">素材をポチポチ選んで、コピー＆ペースト！</p>
+            <p class="text-gray-600 text-sm">定型文を組み合わせて、自分だけの文章をクイック作成！</p>
         </div>
 
-        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
-            <div class="flex justify-between items-center mb-2">
-                <label class="text-sm font-bold text-gray-700">文字列作成エリア</label>
-                <button id="clearAllBtn" class="text-xs font-bold text-red-400 hover:text-red-600 transition">全クリア</button>
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div class="flex justify-between items-center mb-1">
+                <label class="text-sm font-bold text-gray-700">✍️ 文字列作成エリア</label>
+                <button id="clearAllBtn" class="text-xs font-bold text-red-400 hover:text-red-600 transition p-1">全て消去</button>
             </div>
-            <textarea id="mainTextArea" class="w-full h-40 p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-400 focus:ring-0 outline-none transition resize-none font-mono" placeholder="ここに文字が溜まるよ..."></textarea>
+            <p class="text-[11px] text-gray-400 mb-3">素材を追加したり、直接入力して文章を完成させる場所です。</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-4">
-                <button id="copyBtn" class="md:col-span-2 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition">📋 クリップボードにコピー</button>
-                <button id="saveStockBtn" class="py-3 bg-green-600 text-white rounded-xl font-bold shadow-md hover:bg-green-700 active:scale-95 transition">💾 保存する</button>
-                <button id="undoBtn" class="md:col-span-3 py-2 bg-gray-100 text-gray-500 rounded-xl font-bold hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition" disabled>↩︎ 戻す</button>
+            <textarea id="mainTextArea" class="w-full h-48 p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-400 focus:ring-0 outline-none transition resize-none font-mono text-sm" placeholder="素材をポチポチして文章を作ろう..."></textarea>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                <button id="copyBtn" class="py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition flex items-center justify-center gap-2">
+                    <span>📋</span> <span>コピー</span>
+                </button>
+                <button id="saveStockBtn" class="py-3 bg-green-600 text-white rounded-xl font-bold shadow-md hover:bg-green-700 active:scale-95 transition flex items-center justify-center gap-2">
+                    <span>💾</span> <span>保存</span>
+                </button>
+                <button id="undoBtn" class="col-span-2 md:col-span-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-bold hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition flex items-center justify-center gap-2" disabled>
+                    <span>↩︎</span> <span>1つ戻す</span>
+                </button>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                <p class="text-[10px] text-gray-400">※「保存」すると下のリストにストックされます</p>
+                <p class="text-[10px] text-gray-400">※ 直接入力すると「1つ戻す」履歴はリセットされます</p>
             </div>
         </section>
 
-        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
-            <label class="block text-sm font-bold text-gray-700 mb-4">素材文字列</label>
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+            <div class="mb-1">
+                <label class="text-sm font-bold text-gray-700">🧩 素材文字列</label>
+            </div>
+            <p class="text-[11px] text-gray-400 mb-4">よく使う単語やフレーズを入力して「追加」で上のエリアへ送ります。「＋」で行を増やせます。</p>
             
             <div id="materialInputContainer" class="space-y-3 mb-4">
                 <div class="flex gap-2 material-row">
-                    <input type="text" class="flex-1 p-3 bg-gray-50 border-0 rounded-xl font-bold outline-none material-input" placeholder="素材を入力">
-                    <button class="px-6 py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-black transition add-to-main-btn">追加</button>
+                    <input type="text" class="flex-1 p-3 bg-gray-50 border-0 rounded-xl font-bold outline-none material-input text-sm" placeholder="素材（例：#Uの創作部屋）">
+                    <button class="px-5 py-3 bg-gray-800 text-white rounded-xl font-bold hover:bg-black transition add-to-main-btn text-xs">追加</button>
                     <button class="px-4 py-3 bg-red-50 text-red-400 rounded-xl font-bold hover:bg-red-100 transition delete-row-btn">🗑️</button>
                 </div>
             </div>
 
-            <button id="addNewRowBtn" class="w-full py-2 bg-gray-100 text-gray-400 rounded-xl font-bold hover:bg-gray-200 hover:text-gray-600 transition text-2xl">+</button>
+            <button id="addNewRowBtn" class="w-full py-3 bg-gray-50 text-gray-400 rounded-xl font-bold hover:bg-gray-100 hover:text-gray-500 transition text-xl flex items-center justify-center border-2 border-dashed border-gray-100">
+                <span class="mr-2 text-sm">行を増やす</span> ＋
+            </button>
         </section>
 
         <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <label class="block text-sm font-bold text-gray-700 mb-4">保存済み文字列</label>
-            <div id="stockList" class="space-y-3">
-                </div>
+            <div class="mb-1">
+                <label class="text-sm font-bold text-gray-700">📦 保存済み文字列（ストック）</label>
+            </div>
+            <p class="text-[11px] text-gray-400 mb-4">よく使う完成文をストックしておく場所です。再利用や編集が可能です。</p>
+            
+            <div id="stockList" class="space-y-4">
+                <p class="text-center py-8 text-gray-300 text-xs italic">保存されたデータはありません</p>
+            </div>
+            
+            <div class="mt-6 p-4 bg-blue-50/50 rounded-2xl">
+                <h4 class="text-[11px] font-bold text-blue-600 mb-2">💡 ボタンの機能説明</h4>
+                <ul class="text-[10px] text-blue-500 space-y-1.5 leading-relaxed">
+                    <li><strong class="bg-blue-600 text-white px-1 rounded">追加</strong>：作成エリアの末尾に、この文章を付け足します。</li>
+                    <li><strong class="bg-white border border-gray-200 px-1 rounded">コピー</strong>：この文章を直接クリップボードにコピーします。</li>
+                    <li><strong class="bg-white border border-gray-200 px-1 rounded">編集</strong>：作成エリアの内容をこの文章に置き換えて編集します。</li>
+                    <li><strong class="bg-white border border-gray-200 px-1 rounded">削除</strong>：このストックをリストから消去します。</li>
+                </ul>
+            </div>
         </section>
     </main>
 
