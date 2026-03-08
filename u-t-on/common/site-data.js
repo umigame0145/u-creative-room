@@ -22,7 +22,16 @@ const SITE_DATA = {
             icon: "📂",
             url: "tools/img-binder-pdf.html",
             isUpdate: true
-        }
+        },
+        {
+            id: "copy-pattan",
+            category: "other",
+            name: "コピペったん",
+            description: "よく使うフレーズを組み合わせて、素早くクリップボードにコピーします。",
+            icon: "📋",
+            url: "tools/copy-pattan.html",
+            isUpdate: true
+        },
     ],
     menuGroups: [
         {
@@ -30,6 +39,12 @@ const SITE_DATA = {
             items: [
                 { name: "画像結合ツール", url: "tools/image-joiner.html" },
                 { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" }
+            ]
+        },
+        {
+            groupName: "その他",
+            items: [
+                { name: "コピペったん", url: "tools/copy-pattan.html" }
             ]
         }
     ]
