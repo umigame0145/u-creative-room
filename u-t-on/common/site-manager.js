@@ -210,9 +210,17 @@ function initCommonComponents() {
     // 𝕏シェアリンク設定
     const shareBtn = document.getElementById('headerShareX');
     if (shareBtn) {
+        // ページタイトルをより適切に取得
         let title = document.title.split('|')[0].trim();
-        const text = encodeURIComponent(`${title}\nインストール不要・ブラウザ完結で安全に使えます。\n\n#Uの創作部屋 #便利ツール\n`);
-        const url = encodeURIComponent(window.location.href);
+        if (isSubPage && currentTool) {
+            title = currentTool.name + " | " + siteConfig.siteName;
+        }
+
+        // encodeURIComponent で URL をしっかり保護
+        const text = encodeURIComponent(`${title}\nインストール不要・ブラウザ完結で安全に使えます。\n\n#Uの創作部屋 #便利ツール`);
+        // window.location.href ではなく、og:url に合わせた正規のURLを渡すのがベスト
+        const url = encodeURIComponent(window.location.origin + window.location.pathname);
+        
         shareBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
     }
 }
