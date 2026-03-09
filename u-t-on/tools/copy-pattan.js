@@ -1,5 +1,5 @@
 /**
- * copy-pattan.js - iOS/Chrome 安定版
+ * copy-pattan.js - 絵文字対応 & iOS/Chrome 安定版
  */
 
 let history = []; 
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveStockBtn = document.getElementById('saveStockBtn');
     const stockList = document.getElementById('stockList');
 
-    // --- 💾 データの保存・読み込み (iOS例外処理付) ---
+    // --- 💾 データの保存・読み込み ---
 
     function saveAllToLocal() {
         try {
@@ -62,12 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         container.appendChild(newRow);
         
-        // 個別にイベントを設定（iOSではこれが一番確実です）
+        // 絵文字を破壊しないための追加処理
         newRow.querySelector('.add-to-main-btn').addEventListener('click', () => {
             const val = newRow.querySelector('.material-input').value;
             if(!val) return;
+            
             saveState();
-            mainArea.value += val;
+            // .value を直接書き換えることで絵文字（サロゲートペア）を保持
+            mainArea.value = mainArea.value + val;
+            
             updateUndoButton();
             saveAllToLocal();
         });
@@ -109,22 +112,19 @@ document.addEventListener('DOMContentLoaded', () => {
             stockList.appendChild(div);
         });
 
-        // リスト内のボタンにイベントを付与
         setupListActions();
     }
 
     function setupListActions() {
-        // 追加
         document.querySelectorAll('.btn-append').forEach(btn => {
             btn.onclick = () => {
                 saveState();
-                mainArea.value += stockItems[btn.dataset.index];
+                mainArea.value = mainArea.value + stockItems[btn.dataset.index];
                 updateUndoButton();
                 saveAllToLocal();
             };
         });
 
-        // コピー (iOS最強対策版)
         document.querySelectorAll('.btn-copy').forEach(btn => {
             btn.onclick = async () => {
                 const text = stockItems[btn.dataset.index];
@@ -132,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     await navigator.clipboard.writeText(text);
                     alert("コピーしました！");
                 } catch (err) {
-                    // フォールバック：昔ながらの手法
                     const el = document.createElement('textarea');
                     el.value = text;
                     document.body.appendChild(el);
@@ -144,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
-        // 編集
         document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.onclick = () => {
                 if (mainArea.value && !confirm("上書きしますか？")) return;
@@ -155,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
-        // 削除
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.onclick = () => {
                 if(confirm("削除しますか？")) {
@@ -167,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- ⌨️ 作成エリア・他 ---
+    // --- ⌨️ 作成エリア・コントロール ---
 
     function saveState() {
         history.push(mainArea.value);
@@ -219,9 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 🚀 初期化 ---
-    loadFromLocal();
-    if (container.children.length === 0) createNewRow();
+    // --- 📂 CSV連携 ---
 
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     if (exportCsvBtn) {
@@ -230,57 +225,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const materials = Array.from(document.querySelectorAll('.material-input'))
                                    .map(input => `"${input.value.replace(/"/g, '""')}"`)
                                    .join(',');
-            
-            let csvContent = `"${mainText}"\n`; 
-            csvContent += `${materials}\n`;     
-            
+            let csvContent = `"${mainText}"\n${materials}\n`;     
             stockItems.forEach(item => {
                 csvContent += `"${item.replace(/"/g, '""')}"\n`;
             });
-
             const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `copy_pattan_backup_${new Date().getTime()}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `copy_pattan_backup.csv`;
             link.click();
-            document.body.removeChild(link);
         };
     }
 
-    // CSVから読み込み
     const csvFileInput = document.getElementById('csvFileInput');
     if (csvFileInput) {
-        csvFileInput.onchange = (event) => {
-            const file = event.target.files[0];
+        csvFileInput.onchange = (e) => {
+            const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target.result;
-                const rows = parseCSV(content);
+            reader.onload = (re) => {
+                const rows = parseCSV(re.target.result);
                 if (rows.length < 1) return;
-
-                if (confirm("現在のデータが上書きされます。よろしいですか？")) {
+                if (confirm("データを上書きしますか？")) {
                     mainArea.value = rows[0][0] || '';
                     if (rows[1]) {
                         container.innerHTML = '';
                         rows[1].forEach(text => createNewRow(text));
                     }
-                    stockItems = rows.slice(2).map(row => row[0]).filter(text => text !== undefined);
+                    stockItems = rows.slice(2).map(r => r[0]).filter(t => t !== undefined);
                     renderStockList();
                     saveAllToLocal();
-                    alert("データの復元が完了しました！");
                 }
-                event.target.value = '';
+                e.target.value = '';
             };
             reader.readAsText(file);
         };
     }
 
-    // CSVパース補助関数
     function parseCSV(text) {
         const rows = [];
         let currentRow = [];
@@ -306,4 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentField || currentRow.length > 0) { currentRow.push(currentField); rows.push(currentRow); }
         return rows;
     }
+
+    // --- 🚀 初期化 ---
+    loadFromLocal();
+    if (container.children.length === 0) createNewRow();
 });
