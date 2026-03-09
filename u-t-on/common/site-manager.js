@@ -1,19 +1,16 @@
 /**
  * site-manager.js
- * 共通処理（ヘッダー・フッター・解析タグの一括管理）
+ * 共通処理（アイコン一括管理・ヘッダー・フッター・解析）
  */
 
 // --- Google Analytics 一括設定 ---
 (function() {
-    const GA_ID = 'G-NVBKR9BVEX'; // ←ここを取得したIDに書き換えてください
-    
-    // スクリプトタグの作成
+    const GA_ID = 'G-NVBKR9BVEX'; 
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
     document.head.appendChild(script);
 
-    // gtagの初期化
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
@@ -25,27 +22,45 @@ const siteConfig = {
     footerText: "© 2026 Uの創作部屋. All rights reserved.",
     news: typeof SITE_DATA !== 'undefined' ? SITE_DATA.news : [],
     tools: typeof SITE_DATA !== 'undefined' ? SITE_DATA.tools : [],
-    menuGroups: typeof SITE_DATA !== 'undefined' ? SITE_DATA.menuGroups : []
+    menuGroups: typeof SITE_DATA !== 'undefined' ? SITE_DATA.menuGroups : [],
+    icons: typeof SITE_DATA !== 'undefined' ? SITE_DATA.icons : {}
 };
 
 const isSubPage = window.location.href.includes('/tools/');
 const basePath = isSubPage ? '../' : './';
 
+/**
+ * アイコンHTMLを生成する共通関数
+ * @param {string} iconKey - SITE_DATA.iconsのキー
+ * @param {string} className - Tailwindのクラス名
+ */
+function getIconHtml(iconKey, className = "w-6 h-6") {
+    const fileName = siteConfig.icons[iconKey] || 'default.svg';
+    // 実際のフォルダ構成「icon」に合わせてパスを修正
+    return `<img src="${basePath}common/icon/${fileName}" class="${className} inline-block" alt="icon" onerror="this.style.display='none'">`;
+}
+
 function initCommonComponents() {
     const currentTool = siteConfig.tools.find(t => window.location.pathname.includes(t.url.split('/').pop()));
     
+    // ヘッダータイトルの構築
     let displayTitle = siteConfig.siteName;
     if (isSubPage && currentTool) {
         displayTitle = `
             <a href="${basePath}index.html" class="hover:text-blue-600 transition-colors">${siteConfig.siteName}</a>
             <span class="mx-2 text-gray-300 font-normal">/</span>
-            <span class="text-gray-500">${currentTool.name}</span>
+            <span class="text-gray-500 flex items-center gap-2">
+                ${getIconHtml(currentTool.icon, "w-5 h-5")} 
+                ${currentTool.name}
+            </span>
         `;
     }
     
     const headerHtml = `
         <header class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm border-b z-[60]">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"> <div class="flex items-center overflow-hidden"> <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-lg transition focus:outline-none">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center overflow-hidden">
+                    <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-lg transition focus:outline-none">
                         <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
                         <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
                         <div class="w-6 h-0.5 bg-gray-600"></div>
@@ -54,7 +69,6 @@ function initCommonComponents() {
                         ${displayTitle}
                     </div>
                 </div>
-                
                 <div id="header-share-area" class="flex-shrink-0 ml-2">
                     <a id="headerShareX" href="#" target="_blank" rel="noopener noreferrer" 
                        class="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full font-bold hover:opacity-80 transition shadow-sm text-xs md:text-sm">
@@ -84,7 +98,12 @@ function initCommonComponents() {
                         <div class="mb-6">
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">${group.groupName}</p>
                             <ul class="space-y-2">
-                                ${group.items.map(item => `<li><a href="${basePath}${item.url}" class="block p-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition">${item.name}</a></li>`).join('')}
+                                ${group.items.map(item => {
+                                    // メニューグループ内のアイテム名からツール情報を紐付け
+                                    const toolInfo = siteConfig.tools.find(t => t.name === item.name);
+                                    const icon = toolInfo ? getIconHtml(toolInfo.icon, "w-4 h-4 mr-2") : '';
+                                    return `<li><a href="${basePath}${item.url}" class="flex items-center p-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition">${icon}${item.name}</a></li>`;
+                                }).join('')}
                             </ul>
                         </div>
                     `).join('')}
@@ -93,11 +112,12 @@ function initCommonComponents() {
         </div>
     `;
 
+    // コンポーネントの挿入
     const h = document.getElementById('common-header');
     if (h) h.innerHTML = headerHtml;
-
     document.body.insertAdjacentHTML('afterbegin', drawerHtml);
 
+    // お知らせの描画
     const newsList = document.getElementById('news-list');
     if (newsList) {
         newsList.innerHTML = siteConfig.news.map(n => `
@@ -108,12 +128,15 @@ function initCommonComponents() {
         `).join('');
     }
 
+    // トップページ：ツール一覧グリッドの描画
     const toolGrid = document.getElementById('tool-grid');
     if (toolGrid) {
         const toolHtml = siteConfig.tools.map(tool => `
             <a href="${basePath}${tool.url}" class="group bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-2xl hover:border-blue-200 transition-all duration-300 transform hover:-translate-y-1">
                 <div class="flex items-start justify-between mb-6">
-                    <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">${tool.icon}</div>
+                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-300">
+                        ${getIconHtml(tool.icon, "w-8 h-8 group-hover:invert")} 
+                    </div>
                     ${tool.isUpdate ? '<span class="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">Update</span>' : ''}
                 </div>
                 <h3 class="text-xl font-bold mb-3 group-hover:text-blue-600 transition-colors">${tool.name}</h3>
@@ -124,19 +147,27 @@ function initCommonComponents() {
         toolGrid.innerHTML = toolHtml + `<div class="bg-gray-50 p-8 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 text-center"><p class="text-sm font-bold tracking-widest">COMING SOON</p></div>`;
     }
 
-    const f = document.getElementById('common-footer');
-        if (f) {
-            f.innerHTML = `
-                <footer class="bg-white border-t mt-12 py-8 text-center text-sm text-gray-400">
-                    <div class="mb-4 flex justify-center gap-6">
-                        <a href="${basePath}privacy.html" class="hover:text-blue-600 transition-colors">プライバシーポリシー</a>
-                        <a href="${basePath}contact.html" class="hover:text-blue-600 transition-colors">お問い合わせ</a>
-                    </div>
-                    ${siteConfig.footerText}
-                </footer>
-            `;
-        }
+    // 各ツールページ：タイトル横にアイコンを追加
+    const pageTitle = document.querySelector('main h1');
+    if (isSubPage && pageTitle && currentTool) {
+        pageTitle.innerHTML = `<span class="flex items-center justify-center gap-3">${getIconHtml(currentTool.icon, "w-8 h-8")} ${currentTool.name}</span>`;
+    }
 
+    // フッターの描画
+    const f = document.getElementById('common-footer');
+    if (f) {
+        f.innerHTML = `
+            <footer class="bg-white border-t mt-12 py-8 text-center text-sm text-gray-400">
+                <div class="mb-4 flex justify-center gap-6">
+                    <a href="${basePath}privacy.html" class="hover:text-blue-600 transition-colors">プライバシーポリシー</a>
+                    <a href="${basePath}contact.html" class="hover:text-blue-600 transition-colors">お問い合わせ</a>
+                </div>
+                ${siteConfig.footerText}
+            </footer>
+        `;
+    }
+
+    // メニュー開閉ロジック
     const menuBtn = document.getElementById('menuBtn');
     const closeBtn = document.getElementById('closeBtn');
     const drawer = document.getElementById('menuDrawer');
@@ -146,7 +177,11 @@ function initCommonComponents() {
     const toggleMenu = (open) => {
         if (open) {
             drawer.classList.remove('invisible');
-            setTimeout(() => { overlay.classList.add('opacity-50'); overlay.classList.remove('opacity-0'); content.classList.remove('-translate-x-full'); }, 10);
+            setTimeout(() => { 
+                overlay.classList.add('opacity-50'); 
+                overlay.classList.remove('opacity-0'); 
+                content.classList.remove('-translate-x-full'); 
+            }, 10);
         } else {
             overlay.classList.replace('opacity-50', 'opacity-0');
             content.classList.add('-translate-x-full');
@@ -157,6 +192,7 @@ function initCommonComponents() {
     closeBtn?.addEventListener('click', () => toggleMenu(false));
     overlay?.addEventListener('click', () => toggleMenu(false));
 
+    // お知らせ開閉ロジック
     const newsContainer = document.getElementById('news-container');
     const toggleNewsBtn = document.getElementById('toggle-news-btn');
     if (toggleNewsBtn && newsContainer) {
@@ -171,31 +207,14 @@ function initCommonComponents() {
         });
     }
 
-    // --- 𝕏シェアリンクの全ページ共通設定 ---
-    const setGlobalShareLink = () => {
-        const shareBtn = document.getElementById('headerShareX');
-        if (shareBtn) {
-            // 現在のページのタイトルを取得（SEO_CONFIGがあればそこから、なければHTMLのtitleから）
-            let pageTitle = document.title.split('|')[0].trim();
-            
-            // ツールのIDをURLから判定（例: image-joiner.html -> image-joiner）
-            const path = window.location.pathname;
-            const toolId = path.split('/').pop().replace('.html', '');
-
-            // もしSEO_CONFIGにデータがあれば、より綺麗な名前を取得
-            if (typeof SEO_CONFIG !== 'undefined' && SEO_CONFIG[toolId]) {
-                pageTitle = SEO_CONFIG[toolId].title.split('|')[0].trim();
-            }
-
-            const text = encodeURIComponent(`${pageTitle}が便利！\nインストール不要・ブラウザ完結で安全に使えます。\n\n#Uの創作部屋 #便利ツール\n`);
-            const url = encodeURIComponent(window.location.href);
-            
-            shareBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-        }
-    };
-
-    // ヘッダー生成直後に実行
-    setGlobalShareLink();
+    // 𝕏シェアリンク設定
+    const shareBtn = document.getElementById('headerShareX');
+    if (shareBtn) {
+        let title = document.title.split('|')[0].trim();
+        const text = encodeURIComponent(`${title}\nインストール不要・ブラウザ完結で安全に使えます。\n\n#Uの創作部屋 #便利ツール\n`);
+        const url = encodeURIComponent(window.location.href);
+        shareBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    }
 }
 
-initCommonComponents();
+document.addEventListener('DOMContentLoaded', initCommonComponents);
