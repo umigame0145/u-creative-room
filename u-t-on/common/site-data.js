@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.03.11", content: "新機能「セクションタイマー」を追加しました！" },
         { date: "2026.03.09", content: "新機能コピペったんを追加しました！" },
         { date: "2026.03.09", content: "お問い合わせを追加しました！" },
         { date: "2026.03.09", content: "プライバシーポリシーを追加しました！" },
@@ -11,7 +12,8 @@ const SITE_DATA = {
         "home": "home_icon.svg",
         "image-joiner": "image-joiner_icon.svg",
         "image-binder": "image-binder_icon.svg",
-        "copy-pattan": "copy-pattan_icon.svg"
+        "copy-pattan": "copy-pattan_icon.svg",
+        "timer": "section-timer_icon.svg"
     },
     tools: [
         {
@@ -33,13 +35,22 @@ const SITE_DATA = {
             isUpdate: false
         },
         {
+            id: "section-timer",
+            category: "count",
+            name: "セクションタイマー",
+            description: "残時間指定や時刻指定など、柔軟な設定が可能な全画面対応型タイマーです。",
+            icon: "timer",
+            url: "tools/section-timer.html",
+            isUpdate: true
+        },
+        {
             id: "copy-pattan",
             category: "other",
             name: "コピペったん",
             description: "よく使うフレーズを組み合わせて、素早くクリップボードにコピーします。",
             icon: "copy-pattan",
             url: "tools/copy-pattan.html",
-            isUpdate: true
+            isUpdate: false
         },
     ],
     menuGroups: [
@@ -48,6 +59,12 @@ const SITE_DATA = {
             items: [
                 { name: "画像結合ツール", url: "tools/image-joiner.html" },
                 { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" }
+            ]
+        },
+        {
+            groupName: "カウントツール",
+            items: [
+                { name: "セクションタイマー", url: "tools/section-timer.html" }
             ]
         },
         {

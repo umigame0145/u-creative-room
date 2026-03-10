@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>セクションタイマー - Uの創作部屋</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/style.css">
+    </head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+    <div id="common-header"></div>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <section id="mainDisplay" class="relative bg-black rounded-3xl shadow-2xl overflow-hidden mb-8 aspect-video flex flex-col items-center justify-center text-white transition-all">
+            <div id="timerDisplay" class="text-7xl md:text-9xl font-mono font-bold tracking-tighter">00:00:00</div>
+            <div id="statusLabel" class="text-sm text-gray-400 mt-4 tracking-widest uppercase">Ready</div>
+
+            <div id="overlayControl" class="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-10">
+                <button id="startBtn" class="group bg-white text-black px-10 py-5 rounded-full font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+                    <span class="text-2xl">▶</span> START
+                </button>
+            </div>
+
+            <button id="fullscreenBtn" class="absolute bottom-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+                <span class="text-xl">⛶</span>
+            </button>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                <h2 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">⏱ モード選択</h2>
+                <div class="flex gap-2 p-1 bg-gray-100 rounded-2xl">
+                    <button id="modeDuration" class="flex-1 py-2 rounded-xl text-sm font-bold transition-all bg-white shadow-sm">残時間指定</button>
+                    <button id="modeTarget" class="flex-1 py-2 rounded-xl text-sm font-bold transition-all text-gray-500">時刻指定</button>
+                </div>
+
+                <div id="inputDuration" class="mt-6 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <input type="number" id="inputMin" value="10" min="0" class="w-full p-4 bg-gray-50 border-0 rounded-2xl text-center text-2xl font-bold outline-none focus:ring-2 focus:ring-blue-400">
+                        <span class="font-bold text-gray-400">分</span>
+                        <input type="number" id="inputSec" value="00" min="0" max="59" class="w-full p-4 bg-gray-50 border-0 rounded-2xl text-center text-2xl font-bold outline-none focus:ring-2 focus:ring-blue-400">
+                        <span class="font-bold text-gray-400">秒</span>
+                    </div>
+                </div>
+
+                <div id="inputTarget" class="mt-6 hidden">
+                    <input type="time" id="targetTime" class="w-full p-4 bg-gray-50 border-0 rounded-2xl text-center text-3xl font-bold outline-none focus:ring-2 focus:ring-blue-400">
+                    <p class="text-[10px] text-gray-400 mt-2 text-center">※指定した時刻になるとタイマーが終了します</p>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                <button id="resetBtn" class="w-full py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition mb-4">リセット</button>
+                <div class="p-4 bg-blue-50 rounded-2xl">
+                    <p class="text-[11px] text-blue-600 leading-relaxed">
+                        <strong>💡 スタートボタンについて</strong><br>
+                        ブラウザの制限により、音を出したり全画面表示を維持したりするには、ユーザーの操作が必要です。開始時にボタンを押すことでこれらを有効化します。
+                    </p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="common-footer"></div>
+    <script src="../common/site-data.js"></script>
+    <script src="../common/site-manager.js"></script>
+    <script src="section-timer.js"></script>
+</body>
+</html>
