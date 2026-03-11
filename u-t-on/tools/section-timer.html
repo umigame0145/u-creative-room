@@ -11,20 +11,37 @@
     <div id="common-header"></div>
 
     <main class="max-w-4xl mx-auto px-4 py-8">
-        <section id="mainDisplay" class="relative bg-black rounded-3xl shadow-2xl overflow-hidden mb-8 aspect-video flex flex-col items-center justify-center text-white transition-all">
+        <section id="mainDisplay" class="relative bg-black rounded-3xl shadow-2xl overflow-hidden mb-8 aspect-video flex flex-col items-center justify-center text-white transition-all z-40">
+    
+            <div class="absolute top-12 w-full flex justify-center px-10">
+                <div id="sectionNameContainer" class="w-full max-w-[320px] md:max-w-[600px] overflow-hidden flex justify-center border-b border-white/10 pb-2">
+                    <div id="sectionNameDisplay" class="text-xl md:text-3xl font-bold text-gray-400 whitespace-nowrap">
+                        </div>
+                </div>
+            </div>
             <div id="timerDisplay" class="text-7xl md:text-9xl font-mono font-bold tracking-tighter">00:00:00</div>
+    
             <div id="statusLabel" class="text-sm text-gray-400 mt-4 tracking-widest uppercase">Ready</div>
-
+            
             <div id="overlayControl" class="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-10">
                 <button id="startBtn" class="group bg-white text-black px-10 py-5 rounded-full font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
                     <span class="text-2xl">▶</span> START
                 </button>
             </div>
-
-            <button id="fullscreenBtn" class="absolute bottom-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-                <span class="text-xl">⛶</span>
-            </button>
+            <div class="absolute bottom-6 right-6 flex gap-2 z-20"> <button id="browserFullBtn" class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors" title="ページ内最大化">
+                    <span>🔳</span>
+                </button>
+                <button id="fullscreenBtn" class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors" title="全画面表示">
+                    <span>⛶</span>
+                </button>
+            </div>
         </section>
+
+        <div class="mt-6">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">最終セクション名</label>
+            <input type="text" id="inputSectionName" placeholder="例：プレゼン終了まで" 
+                class="w-full mt-1 p-4 bg-gray-50 border-0 rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
