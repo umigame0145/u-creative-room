@@ -1,86 +1,552 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>セクションタイマー - Uの創作部屋</title>
+    <meta property="og:url" content="https://u-t-on.com/tools/section-timer.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="セクションタイマー - Uの創作部屋" />
+    <meta property="og:description" content="残時間指定や時刻指定など、柔軟な設定が可能な全画面対応型タイマー。セクションごとにお知らせを設定できます。" />
+    <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../common/style.css">
-    </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .mini-input::-webkit-inner-spin-button,
+        .mini-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        @keyframes scroll-loop {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(calc(-50% - 1.5rem));
+            }
+        }
+
+        .animate-scroll {
+            display: inline-block;
+            animation: scroll-loop 12s linear infinite;
+        }
+
+        /* コンテナクエリの定義 */
+        #mainDisplay {
+            container-type: inline-size;
+            container-name: timer-container;
+        }
+
+        /* スケーリングルール */
+        @container timer-container (min-width: 0px) {
+
+            #totalRemainingDisplay,
+            #nextMilestoneDisplay {
+                font-size: 2.2cqw !important;
+            }
+
+            #nextMilestoneName {
+                font-size: 1.2cqw !important;
+                max-width: 20cqw !important;
+            }
+
+            .status-label-small {
+                font-size: 1.1cqw !important;
+            }
+
+            #timerDisplay {
+                font-size: 18cqw !important;
+            }
+
+            #sectionNameDisplay {
+                font-size: 5cqw !important;
+            }
+
+            .control-btn svg {
+                width: 3.5cqw !important;
+                height: 3.5cqw !important;
+            }
+
+            #statusLabel {
+                font-size: 1.2cqw !important;
+            }
+
+            .control-bar {
+                gap: 2cqw !important;
+                padding: 1cqw 3cqw !important;
+                border-radius: 4cqw !important;
+            }
+
+            .utility-btn svg {
+                width: 2.5cqw !important;
+                height: 2.5cqw !important;
+            }
+        }
+
+        /* ブラウザ内全画面（疑似フルスクリーン）スタイル */
+        .is-browser-fullscreen {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 100 !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
+    </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
     <div id="common-header"></div>
 
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        <section id="mainDisplay" class="relative bg-black rounded-3xl shadow-2xl overflow-hidden mb-8 aspect-video flex flex-col items-center justify-center text-white transition-all z-40">
-    
-            <div class="absolute top-12 w-full flex justify-center px-10">
-                <div id="sectionNameContainer" class="w-full max-w-[320px] md:max-w-[600px] overflow-hidden flex justify-center border-b border-white/10 pb-2">
-                    <div id="sectionNameDisplay" class="text-xl md:text-3xl font-bold text-gray-400 whitespace-nowrap">
-                        </div>
-                </div>
-            </div>
-            <div id="timerDisplay" class="text-7xl md:text-9xl font-mono font-bold tracking-tighter">00:00:00</div>
-    
-            <div id="statusLabel" class="text-sm text-gray-400 mt-4 tracking-widest uppercase">Ready</div>
-            
-            <div id="overlayControl" class="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-10">
-                <button id="startBtn" class="group bg-white text-black px-10 py-5 rounded-full font-bold text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
-                    <span class="text-2xl">▶</span> START
-                </button>
-            </div>
-            <div class="absolute bottom-6 right-6 flex gap-2 z-20"> <button id="browserFullBtn" class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors" title="ページ内最大化">
-                    <span>🔳</span>
-                </button>
-                <button id="fullscreenBtn" class="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors" title="全画面表示">
-                    <span>⛶</span>
-                </button>
-            </div>
-        </section>
-
-        <div class="mt-6">
-            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">最終セクション名</label>
-            <input type="text" id="inputSectionName" placeholder="例：プレゼン終了まで" 
-                class="w-full mt-1 p-4 bg-gray-50 border-0 rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-blue-400">
+    <main class="flex-grow container mx-auto px-4 py-12 max-w-5xl">
+        <div class="mb-12 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">セクションタイマー</h1>
+            <p class="text-gray-600 text-sm">状況に合わせて自由にお知らせポイントを作れる高機能タイマー</p>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                <h2 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">⏱ モード選択</h2>
-                <div class="flex gap-2 p-1 bg-gray-100 rounded-2xl">
-                    <button id="modeDuration" class="flex-1 py-2 rounded-xl text-sm font-bold transition-all bg-white shadow-sm">残時間指定</button>
-                    <button id="modeTarget" class="flex-1 py-2 rounded-xl text-sm font-bold transition-all text-gray-500">時刻指定</button>
+        <div class="flex flex-col gap-8">
+            <!-- タイマーメイン画面 -->
+            <div id="mainDisplay"
+                class="relative w-full aspect-video bg-black rounded-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.4)] border border-gray-800 overflow-hidden transition-all duration-700">
+                <!-- 装飾的背景 -->
+                <div class="absolute top-0 right-0 w-96 h-96 bg-blue-900/10 rounded-full blur-[100px] -mr-48 -mt-48">
+                </div>
+                <div
+                    class="absolute bottom-0 left-0 w-96 h-96 bg-indigo-900/10 rounded-full blur-[100px] -ml-48 -mb-48">
                 </div>
 
-                <div id="inputDuration" class="mt-6 space-y-4">
-                    <div class="flex items-center gap-3">
-                        <input type="number" id="inputMin" value="10" min="0" class="w-full p-4 bg-gray-50 border-0 rounded-2xl text-center text-2xl font-bold outline-none focus:ring-2 focus:ring-blue-400">
-                        <span class="font-bold text-gray-400">分</span>
-                        <input type="number" id="inputSec" value="00" min="0" max="59" class="w-full p-4 bg-gray-50 border-0 rounded-2xl text-center text-2xl font-bold outline-none focus:ring-2 focus:ring-blue-400">
-                        <span class="font-bold text-gray-400">秒</span>
+                <!-- ステータスバー（左上：全体残り時間） -->
+                <div class="absolute top-[5%] left-[5%] flex flex-col gap-[0.2cqw]">
+                    <span class="status-label-small uppercase tracking-[0.3em] font-black text-gray-600">Total
+                        Remaining</span>
+                    <div id="totalRemainingDisplay" class="font-bold text-gray-400 font-mono tracking-tighter">
+                        00:00:00</div>
+                </div>
+
+                <!-- ステータスバー（右上：次のお知らせ） -->
+                <div class="absolute top-[5%] right-[5%] flex flex-col items-end gap-[0.2cqw]">
+                    <span class="status-label-small uppercase tracking-[0.3em] font-black text-gray-600">Next
+                        Milestone</span>
+                    <div id="nextMilestoneDisplay" class="font-bold text-blue-500 font-mono tracking-tighter">
+                        --:--:--</div>
+                    <div id="nextMilestoneName" class="font-bold text-gray-500 truncate text-right mt-1">待機中</div>
+                </div>
+
+                <!-- 中央：メインカウントダウン -->
+                <div class="absolute inset-0 flex items-center justify-center px-[5%] z-10 pointer-events-none">
+                    <div id="timerDisplay"
+                        class="font-bold text-white leading-none select-none drop-shadow-[0_1cqw_2cqw_rgba(0,0,0,0.8)] font-mono tracking-tighter">
+                        00:00:00
                     </div>
                 </div>
 
-                <div id="inputTarget" class="mt-6 hidden">
-                    <input type="time" id="targetTime" class="w-full p-4 bg-gray-50 border-0 rounded-2xl text-center text-3xl font-bold outline-none focus:ring-2 focus:ring-blue-400">
-                    <p class="text-[10px] text-gray-400 mt-2 text-center">※指定した時刻になるとタイマーが終了します</p>
+                <!-- 下部：セクション名（スクロール対応） -->
+                <div
+                    class="absolute bottom-[20%] w-full px-[15%] h-[10cqw] flex items-center justify-center overflow-hidden z-10">
+                    <div id="sectionNameContainer"
+                        class="w-full h-full flex items-center justify-center overflow-hidden">
+                        <div id="sectionNameDisplay"
+                            class="font-black text-blue-400 whitespace-nowrap tracking-tight drop-shadow-md">
+                        </div>
+                    </div>
                 </div>
-            </section>
 
-            <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                <button id="resetBtn" class="w-full py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold hover:bg-gray-200 transition mb-4">リセット</button>
-                <div class="p-4 bg-blue-50 rounded-2xl">
-                    <p class="text-[11px] text-blue-600 leading-relaxed">
-                        <strong>💡 スタートボタンについて</strong><br>
-                        ブラウザの制限により、音を出したり全画面表示を維持したりするには、ユーザーの操作が必要です。開始時にボタンを押すことでこれらを有効化します。
-                    </p>
+                <!-- 操作ボタン（左下：スタート・一時停止・リセット） -->
+                <div
+                    class="absolute bottom-[5%] left-[5%] flex items-center control-bar bg-black/60 backdrop-blur-xl border border-white/10 shadow-2xl z-20">
+                    <button id="startBtn"
+                        class="control-btn p-1 text-blue-400 hover:scale-125 hover:text-blue-300 transition-all active:scale-95"
+                        title="スタート">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </button>
+                    <button id="pauseBtn"
+                        class="control-btn p-1 text-indigo-400 hover:scale-125 hover:text-indigo-300 transition-all active:scale-95 hidden"
+                        title="一時停止">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="10" y1="4" x2="10" y2="20"></line>
+                            <line x1="14" y1="4" x2="14" y2="20"></line>
+                        </svg>
+                    </button>
+                    <button id="resetBtn"
+                        class="control-btn p-1 text-gray-600 hover:text-red-500 transition-all hover:scale-110"
+                        title="リセット">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <polyline points="3 3 3 8 8 8"></polyline>
+                        </svg>
+                    </button>
+                    <div class="w-[1px] h-[3cqw] bg-gray-800 mx-[0.5cqw]"></div>
+                    <span id="statusLabel"
+                        class="font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">Ready</span>
                 </div>
-            </section>
+
+                <!-- フルスクリーン・オーバーレイ制御 -->
+                <div id="overlayControl"
+                    class="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-0 pointer-events-none transition-opacity duration-500">
+                </div>
+                <div class="absolute bottom-[5%] right-[5%] flex gap-[1.5cqw] z-20">
+                    <button id="browserFullBtn"
+                        class="utility-btn p-[1cqw] bg-white/5 hover:bg-white/15 rounded-[1.5cqw] transition-all border border-white/5 text-gray-400 shadow-sm"
+                        title="ページ内最大化">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        </svg>
+                    </button>
+                    <button id="fullscreenBtn"
+                        class="utility-btn p-[1cqw] bg-white/5 hover:bg-white/15 rounded-[1.5cqw] transition-all border border-white/5 text-gray-400 shadow-sm"
+                        title="フルスクリーン">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 設定エリア (下部の白いセクション) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- メイン設定 -->
+                <div class="lg:col-span-1 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 h-fit">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-2 h-8 bg-blue-500 rounded-full"></div>
+                        <h2 class="text-xl font-black text-gray-800 tracking-tight">メイン設定</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label
+                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">セクション名</label>
+                            <input type="text" id="mainSectionName"
+                                class="w-full mt-1 p-3 bg-gray-50 border-0 rounded-2xl text-base font-bold outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+                                placeholder="例：本番">
+                        </div>
+
+                        <div>
+                            <label
+                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">モード</label>
+                            <div class="flex gap-2 mt-2">
+                                <label class="flex-1 cursor-pointer group">
+                                    <input type="radio" name="mainTimeMode" value="duration" class="hidden peer"
+                                        checked>
+                                    <div
+                                        class="p-3 bg-gray-50 text-gray-400 rounded-2xl text-center text-xs font-bold border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
+                                        時間指定</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer group">
+                                    <input type="radio" name="mainTimeMode" value="target" class="hidden peer">
+                                    <div
+                                        class="p-3 bg-gray-50 text-gray-400 rounded-2xl text-center text-xs font-bold border-2 border-transparent peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
+                                        終了時刻指定</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label id="timeInputTitle"
+                                class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">残り時間を設定</label>
+                            <div class="flex items-center gap-2 mt-2 bg-gray-50 p-2 rounded-3xl border border-gray-100">
+                                <div class="flex flex-col items-center flex-1">
+                                    <button type="button" onclick="adjustTime('mainHour', 1)"
+                                        class="p-1 text-gray-300 hover:text-blue-500 transition-colors">▲</button>
+                                    <input type="number" id="mainHour"
+                                        class="w-full bg-transparent border-0 text-center text-2xl font-black outline-none mini-input"
+                                        value="00" min="0" max="99">
+                                    <button type="button" onclick="adjustTime('mainHour', -1)"
+                                        class="p-1 text-gray-300 hover:text-blue-500 transition-colors">▼</button>
+                                    <span class="text-[9px] font-black text-gray-300 uppercase">Hour</span>
+                                </div>
+                                <span class="text-2xl font-black text-gray-200 mb-6">:</span>
+                                <div class="flex flex-col items-center flex-1">
+                                    <button type="button" onclick="adjustTime('mainMin', 1)"
+                                        class="p-1 text-gray-300 hover:text-blue-500 transition-colors">▲</button>
+                                    <input type="number" id="mainMin"
+                                        class="w-full bg-transparent border-0 text-center text-2xl font-black outline-none mini-input"
+                                        value="10" min="0" max="59">
+                                    <button type="button" onclick="adjustTime('mainMin', -1)"
+                                        class="p-1 text-gray-300 hover:text-blue-500 transition-colors">▼</button>
+                                    <span class="text-[9px] font-black text-gray-300 uppercase">Min</span>
+                                </div>
+                                <span class="text-2xl font-black text-gray-200 mb-6">:</span>
+                                <div class="flex flex-col items-center flex-1">
+                                    <button type="button" onclick="adjustTime('mainSec', 1)"
+                                        class="p-1 text-gray-300 hover:text-blue-500 transition-colors">▲</button>
+                                    <input type="number" id="mainSec"
+                                        class="w-full bg-transparent border-0 text-center text-2xl font-black outline-none mini-input"
+                                        value="00" min="0" max="59">
+                                    <button type="button" onclick="adjustTime('mainSec', -1)"
+                                        class="p-1 text-gray-300 hover:text-blue-500 transition-colors">▼</button>
+                                    <span class="text-[9px] font-black text-gray-300 uppercase">Sec</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-50 text-gray-500">
+                            <div class="flex items-center justify-between">
+                                <label
+                                    class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">タイマー完了時の通知音</label>
+                                <label class="flex items-center gap-1 cursor-pointer group">
+                                    <input type="checkbox" id="mainSeRepeat" class="hidden peer">
+                                    <div
+                                        class="w-8 h-4 bg-gray-200 rounded-full relative transition-colors peer-checked:bg-pink-500">
+                                        <div
+                                            class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[9px] font-bold text-gray-400 group-hover:text-pink-500">リピート</span>
+                                </label>
+                            </div>
+                            <select id="mainSeSelect"
+                                class="se-select w-full mt-2 p-3 bg-gray-50 border-0 rounded-2xl text-xs font-bold outline-none cursor-pointer hover:bg-gray-100 transition-colors">
+                                <option value="off">オフ（鳴らさない）</option>
+                                <option value="default" selected>デフォルト（ブザー）</option>
+                            </select>
+                        </div>
+
+                        <!-- BGM設定 (メイン) -->
+                        <div class="pt-4 border-t border-gray-50">
+                            <div class="flex items-center justify-between">
+                                <label
+                                    class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">BGM設定</label>
+                                <label class="flex items-center gap-1 cursor-pointer group">
+                                    <input type="checkbox" id="mainBgmLoop" class="hidden peer" checked>
+                                    <div
+                                        class="w-8 h-4 bg-gray-200 rounded-full relative transition-colors peer-checked:bg-blue-500">
+                                        <div
+                                            class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4">
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="text-[9px] font-bold text-gray-400 group-hover:text-blue-500">ループ</span>
+                                </label>
+                            </div>
+                            <div id="mainBgmList" class="space-y-2 mt-2">
+                                <!-- 動的にBGMプルダウンが追加される -->
+                            </div>
+                            <button type="button" onclick="addBgmSelect('mainBgmList')"
+                                class="w-full mt-2 py-2 bg-gray-50 text-gray-400 rounded-xl text-[10px] font-bold hover:bg-blue-50 hover:text-blue-500 transition-all border border-dashed border-gray-200">
+                                + BGMを追加
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- サブセクション設定 -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between mb-2 px-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-8 bg-indigo-400 rounded-full"></div>
+                            <h2 class="text-xl font-black text-gray-800 tracking-tight">サブセクション（お知らせ点）</h2>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <button id="exportCsvBtn"
+                                class="flex items-center gap-2 px-5 py-2.5 bg-gray-800 text-white rounded-2xl text-xs font-bold hover:bg-black hover:scale-105 active:scale-95 transition-all shadow-sm">
+                                <span>⬇️</span> CSV保存
+                            </button>
+                            <label
+                                class="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-dashed border-gray-200 text-gray-500 rounded-2xl text-xs font-bold hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all shadow-sm">
+                                <span>⬆️</span> CSV読込
+                                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+                            </label>
+                            <button id="addSubSectionBtn"
+                                class="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-500 rounded-2xl text-xs font-bold hover:bg-indigo-100 hover:scale-105 active:scale-95 transition-all shadow-sm">
+                                <span class="text-lg">+</span> お知らせ点を追加
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="subSectionsContainer" class="space-y-4">
+                        <!-- カードはJSで動的に追加 -->
+                    </div>
+
+                    <!-- オーディオ管理 -->
+                    <div class="mt-8 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-8 bg-pink-500 rounded-full"></div>
+                                <h2 class="text-xl font-black text-gray-800 tracking-tight">オーディオ管理</h2>
+                            </div>
+                            <label
+                                class="cursor-pointer px-5 py-2.5 bg-pink-50 text-pink-500 rounded-2xl text-xs font-bold hover:bg-pink-100 hover:scale-105 active:scale-95 transition-all shadow-sm">
+                                <span>+ 音楽を追加</span>
+                                <input type="file" id="audioFileInput" class="hidden" multiple accept="audio/*">
+                            </label>
+                        </div>
+
+                        <!-- 共通ルートパス設定 -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <label
+                                class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">共通ルートパス（CSV保存・読込用）</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="text" id="audioRootPath"
+                                    class="flex-1 p-3 bg-white border border-gray-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-pink-400 transition-all"
+                                    placeholder="例: ./audio/ または C:/Users/Documents/Sounds/">
+                                <div class="group relative flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-gray-300 cursor-help">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                    </svg>
+                                    <div
+                                        class="absolute bottom-full right-0 mb-2 w-64 p-3 bg-gray-800 text-white text-[10px] rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-30 shadow-xl">
+                                        CSV読み込み時に、このパス + ファイル名 で自動読み込みを試行します。相対パス（同一フォルダ内なら空欄でも可）を推奨します。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="audioTracksContainer" class="space-y-3 mb-6">
+                            <!-- オーディオトラックがここに追加される -->
+                        </div>
+
+                        <div class="pt-6 border-t border-gray-100 flex justify-end">
+                            <button id="testSeBtn"
+                                class="flex items-center gap-2 px-6 py-3 bg-gray-50 text-gray-500 rounded-2xl text-[10px] font-black uppercase tracking-tighter hover:bg-gray-100 hover:text-pink-500 transition-all active:scale-95 shadow-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                </svg>
+                                ブザー音テスト
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 操作ガイド -->
+                    <div class="mt-12 space-y-8 pb-12">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-8 bg-gray-800 rounded-full"></div>
+                            <h2 class="text-xl font-black text-gray-800 tracking-tight">操作ガイド</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- 表示エリア -->
+                            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
+                                <div
+                                    class="w-10 h-10 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center font-bold">
+                                    01</div>
+                                <h3 class="font-black text-gray-800">表示エリアの見方</h3>
+                                <ul class="text-[11px] text-gray-500 space-y-2 leading-relaxed font-medium">
+                                    <li><strong class="text-blue-500">中央タイマー</strong>:
+                                        進行中のセクション、または次のお知らせ点までのカウントダウンを表示します。画面サイズに合わせて自動縮小されます。</li>
+                                    <li><strong class="text-gray-700">Total Remaining</strong>:
+                                        全てのセクションが終了するまでの「残り時間」です。</li>
+                                    <li><strong class="text-gray-700">Next Milestone</strong>:
+                                        次に来るお知らせ点の名称と、そこまでの時間です。</li>
+                                </ul>
+                            </div>
+
+                            <!-- メイン設定 -->
+                            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
+                                <div
+                                    class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center font-bold">
+                                    02</div>
+                                <h3 class="font-black text-gray-800">メイン設定</h3>
+                                <ul class="text-[11px] text-gray-500 space-y-2 leading-relaxed font-medium">
+                                    <li><strong class="text-indigo-500">時間・時刻指定</strong>:
+                                        「あと何分」か「何時何分」かをゴールとして設定可能です。</li>
+                                    <li><strong class="text-indigo-500">SEリピート</strong>:
+                                        チェックをONにすると、タイマー終了時にリセットを押すまで通知音が鳴り続けます。</li>
+                                    <li>メインセクションの終了時にも、個別にBGMや通知音を設定可能です。</li>
+                                </ul>
+                            </div>
+
+                            <!-- サブセクション -->
+                            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
+                                <div
+                                    class="w-10 h-10 bg-purple-50 text-purple-500 rounded-2xl flex items-center justify-center font-bold">
+                                    03</div>
+                                <h3 class="font-black text-gray-800">お知らせ点（サブ）</h3>
+                                <ul class="text-[11px] text-gray-500 space-y-2 leading-relaxed font-medium">
+                                    <li>メインタイマーの途中で通知を入れたい地点を複数作成・編集可能です。</li>
+                                    <li>設定は自動的に時間が近い順にソート（並び替え）されて実行されます。</li>
+                                    <li>各お知らせ点ごとに、個別の通知音とBGM（複数可）を指定できます。</li>
+                                </ul>
+                            </div>
+
+                            <!-- BGM設定 -->
+                            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
+                                <div
+                                    class="w-10 h-10 bg-pink-50 text-pink-500 rounded-2xl flex items-center justify-center font-bold">
+                                    04</div>
+                                <h3 class="font-black text-gray-800">BGM・再生の仕組み</h3>
+                                <ul class="text-[11px] text-gray-500 space-y-2 leading-relaxed font-medium">
+                                    <li><strong class="text-pink-500">複数再生</strong>:
+                                        1つの区間に複数のBGMを設定すると、上から順番に再生されます。</li>
+                                    <li><strong class="text-pink-500">フェードアウト</strong>:
+                                        セクション終了の1秒前からBGMが徐々に小さくなり、SEが鳴る瞬間には無音になります。</li>
+                                    <li>ループ設定が有効な場合、リスト内の全ての曲を最初から繰り返します。</li>
+                                </ul>
+                            </div>
+
+                            <!-- オーディオ管理 -->
+                            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
+                                <div
+                                    class="w-10 h-10 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center font-bold">
+                                    05</div>
+                                <h3 class="font-black text-gray-800">オーディオ管理</h3>
+                                <ul class="text-[11px] text-gray-500 space-y-2 leading-relaxed font-medium">
+                                    <li>ファイルを読み込むと、SEやBGMの選択肢に「ファイル名」が表示されるようになります。</li>
+                                    <li>各音声のボリュームを個別に調整でき、設定は内部的に保持されます。</li>
+                                    <li>タイマーリセット時には、流れているすべての音声（BGM/SE）が即座に停止します。</li>
+                                </ul>
+                            </div>
+
+                            <!-- CSV保存・読込 -->
+                            <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-3">
+                                <div
+                                    class="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center font-bold">
+                                    06</div>
+                                <h3 class="font-black text-gray-800">CSV保存・読込</h3>
+                                <ul class="text-[11px] text-gray-500 space-y-2 leading-relaxed font-medium">
+                                    <li>現在の設定（名称・時間・音の割り当て）をCSVファイルとして保存できます。</li>
+                                    <li><strong class="text-emerald-600">CSV自動読込</strong>:
+                                        「共通ルートパス」を設定して保存すると、読込時に音源ファイルを自動で再構築します。ファイルが見当たらない項目は「デフォルト」または「オフ」に自動調整されます。
+                                    </li>
+                                    <li><strong class="text-emerald-600">注意</strong>:
+                                        ブラウザの制限により、ローカルの絶対パスは読み込めない場合があります。同じフォルダ内や、Web上のURLを指定することを推奨します。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <div id="common-footer"></div>
     <script src="../common/site-data.js"></script>
     <script src="../common/site-manager.js"></script>
-    <script src="section-timer.js"></script>
+    <script src="section-timer.js?v=2.5.6-bgm-fix"></script>
 </body>
+
 </html>
