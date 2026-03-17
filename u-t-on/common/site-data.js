@@ -1,7 +1,8 @@
 const SITE_DATA = {
     news: [
-        { date: "2026.03.17", content: "新機能「セクションタイマー」を追加しました！" },
-        { date: "2026.03.09", content: "新機能コピペったんを追加しました！" },
+        { date: "2026.03.18", content: "新ツール「なんでもカウンター」を追加しました！" },
+        { date: "2026.03.17", content: "新ツール「セクションタイマー」を追加しました！" },
+        { date: "2026.03.09", content: "新ツール「コピペったん」を追加しました！" },
         { date: "2026.03.09", content: "お問い合わせを追加しました！" },
         { date: "2026.03.09", content: "プライバシーポリシーを追加しました！" },
         { date: "2026.03.06", content: "シェア機能ヘッダに追加しました！" },
@@ -13,7 +14,8 @@ const SITE_DATA = {
         "image-joiner": "image-joiner_icon.svg",
         "image-binder": "image-binder_icon.svg",
         "copy-pattan": "copy-pattan_icon.svg",
-        "timer": "section-timer_icon.svg"
+        "timer": "section-timer_icon.svg",
+        "counter": "any-counter_icon.svg"
     },
     tools: [
         {
@@ -41,7 +43,7 @@ const SITE_DATA = {
             description: "残時間指定や時刻指定など、柔軟な設定が可能な全画面対応型タイマーです。",
             icon: "timer",
             url: "tools/section-timer.html",
-            isUpdate: true
+            isUpdate: false
         },
         {
             id: "copy-pattan",
@@ -51,6 +53,15 @@ const SITE_DATA = {
             icon: "copy-pattan",
             url: "tools/copy-pattan.html",
             isUpdate: false
+        },
+        {
+            id: "any-counter",
+            category: "count",
+            name: "なんでもカウンター",
+            description: "複数の項目をカウントし、割合や確率（1/N）をリアルタイムで算出する多用途カウンターです。",
+            icon: "counter",
+            url: "tools/any-counter.html",
+            isUpdate: true
         },
     ],
     menuGroups: [
@@ -64,7 +75,8 @@ const SITE_DATA = {
         {
             groupName: "カウントツール",
             items: [
-                { name: "セクションタイマー", url: "tools/section-timer.html" }
+                { name: "セクションタイマー", url: "tools/section-timer.html" },
+                { name: "なんでもカウンター", url: "tools/any-counter.html" }
             ]
         },
         {

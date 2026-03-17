@@ -3,20 +3,6 @@
  * 最終修正版：SEO・シェアボタン・詳細説明対応
  */
 
-// --- 1. SEO・メタタグ設定 ---
-const currentToolId = "image-joiner";
-if (typeof SEO_CONFIG !== 'undefined' && SEO_CONFIG[currentToolId]) {
-    const data = SEO_CONFIG[currentToolId];
-    document.title = data.title;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.name = "description";
-        document.head.appendChild(metaDesc);
-    }
-    metaDesc.content = data.description;
-}
-
 // --- 2. 各ステップの詳細説明 ---
 const toolExplanations = {
     step1_upload: {

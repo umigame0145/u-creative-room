@@ -4,20 +4,6 @@
  * SEO外部管理・省略なし完全版
  */
 
-// --- 1. SEO・メタタグ設定（seo-config.jsから取得） ---
-const currentToolId = "img-binder-pdf";
-if (typeof SEO_CONFIG !== 'undefined' && SEO_CONFIG[currentToolId]) {
-    const data = SEO_CONFIG[currentToolId];
-    document.title = data.title;
-    let metaDesc = document.querySelector('meta[name="description"]');
-    if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.name = "description";
-        document.head.appendChild(metaDesc);
-    }
-    metaDesc.content = data.description;
-}
-
 // --- 2. 各ステップの詳細説明（ここで直接編集してください） ---
 const toolExplanations = {
     step1_upload: {
