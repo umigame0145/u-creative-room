@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>myルーレット | 自作できる多機能ルーレット（減算モード搭載） - Uの創作部屋</title>
+    <meta name="description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。毎回リセットされる完全確率モードと、一度出た項目を減らしていく減算モードを搭載。">
+
+    <meta property="og:url" content="https://u-t-on.com/tools/my-roulette.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="myルーレット | 自作できる多機能ルーレット（減算モード搭載） - Uの創作部屋" />
+    <meta property="og:description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。毎回リセットされる完全確率モードと、一度出た項目を減らしていく減算モードを搭載。" />
+    <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/style.css">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        #rouletteCanvas {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.1));
+        }
+
+        .history-item {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .active-mode {
+            @apply ring-2 ring-blue-500 bg-blue-50;
+        }
+
+        #wheelPointer {
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+    </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
+     crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+    <div id="common-header"></div>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- 左側：当選履歴 -->
+            <div class="lg:col-span-3 order-2 lg:order-1">
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 flex flex-col h-full max-h-[600px] lg:max-h-none">
+                    <h2 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-yellow-400 rounded-full"></span>
+                        当選履歴
+                    </h2>
+                    <div id="historyList" class="flex-grow overflow-y-auto custom-scrollbar space-y-2 pr-2 min-h-[100px]">
+                        <!-- 履歴がここに追加される -->
+                        <div class="text-center py-10 text-gray-300 text-xs italic">履歴はありません</div>
+                    </div>
+                    <button id="clearHistoryBtn" class="mt-4 w-full py-2 bg-gray-50 text-gray-400 text-xs font-bold rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">履歴をクリア</button>
+                </div>
+            </div>
+
+            <!-- 中央：ルーレット盤面 -->
+            <div class="lg:col-span-5 order-1 lg:order-2 flex flex-col items-center justify-center">
+                <div class="relative w-full max-w-[450px] aspect-square flex items-center justify-center">
+                    <!-- ポインター（上部中央） -->
+                    <div id="wheelPointer" class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                        <svg width="40" height="50" viewBox="0 0 40 50">
+                            <path d="M20 50 L0 0 L40 0 Z" fill="#ef4444" stroke="white" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <canvas id="rouletteCanvas" width="800" height="800"></canvas>
+                </div>
+
+                <div class="mt-8 flex gap-4 w-full max-w-[400px]">
+                    <button id="startBtn" class="flex-grow py-5 bg-blue-600 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all">START</button>
+                    <button id="stopBtn" class="flex-grow py-5 bg-gray-400 text-white rounded-[2rem] text-xl font-black shadow-lg cursor-not-allowed transition-all" disabled>STOP</button>
+                </div>
+                
+                <div id="resultDisplay" class="mt-6 text-center h-12">
+                    <div class="text-2xl font-black text-blue-600 animate-bounce hidden">おめでとうございます！</div>
+                </div>
+            </div>
+
+            <!-- 右側：設定パネル -->
+            <div class="lg:col-span-4 order-3">
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 space-y-6">
+                    <div>
+                        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Settings</h2>
+                        
+                        <!-- モード切替 -->
+                        <div class="flex p-1 bg-gray-100 rounded-2xl mb-6">
+                            <button id="modeProbBtn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all bg-white shadow-sm">完全確率</button>
+                            <button id="modeSubBtn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all text-gray-400 hover:text-gray-600">減算モード</button>
+                        </div>
+
+                        <!-- 重み付け方式 -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-gray-500">重み付け方式:</span>
+                            <div class="flex gap-2">
+                                <label class="flex items-center gap-1 cursor-pointer">
+                                    <input type="radio" name="weightType" value="ratio" checked class="hidden peer">
+                                    <span class="px-3 py-1 text-[10px] font-bold border rounded-lg peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 text-gray-400">比率</span>
+                                </label>
+                                <label class="flex items-center gap-1 cursor-pointer">
+                                    <input type="radio" name="weightType" value="percent" class="hidden peer">
+                                    <span class="px-3 py-1 text-[10px] font-bold border rounded-lg peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 border-gray-200 text-gray-400">パーセント</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-black text-gray-800 tracking-tight">項目リスト</h2>
+                            <button id="addItemBtn" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all">+ 追加</button>
+                        </div>
+                        
+                        <div id="itemList" class="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                            <!-- 項目がここに追加される -->
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6 flex gap-2">
+                        <button id="saveCsvBtn" class="flex-1 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-bold hover:bg-indigo-100 transition-all flex items-center justify-center gap-2">
+                            CSV保存
+                        </button>
+                        <button id="loadCsvBtn" class="flex-1 py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-bold hover:bg-indigo-100 transition-all flex items-center justify-center gap-2">
+                            CSV読込
+                        </button>
+                        <input type="file" id="csvFileInput" class="hidden" accept=".csv">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="common-footer"></div>
+
+    <!-- 項目テンプレート -->
+    <template id="itemTemplate">
+        <div class="item-row flex items-center gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 group transition-all">
+            <input type="color" class="item-color w-6 h-6 rounded-lg cursor-pointer bg-transparent border-none">
+            <input type="text" class="item-name flex-grow bg-transparent text-sm font-bold text-gray-700 focus:outline-none border-b border-transparent focus:border-blue-400" placeholder="項目名">
+            <div class="flex items-center gap-1">
+                <input type="number" class="item-weight w-12 bg-white border border-gray-200 rounded-lg px-2 py-1 text-center text-sm font-bold text-blue-600" min="0" step="1">
+                <span class="weight-unit text-[10px] font-bold text-gray-400">個</span>
+            </div>
+            <button class="delete-item-btn text-gray-300 hover:text-red-500 transition-colors p-1">✕</button>
+        </div>
+    </template>
+
+    <script src="../common/site-data.js"></script>
+    <script src="../common/site-manager.js"></script>
+    <script src="my-roulette.js"></script>
+</body>
+</html>

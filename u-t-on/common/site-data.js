@@ -1,7 +1,7 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.03.19", content: "新ツール「myルーレット」を追加しました！" },
         { date: "2026.03.18", content: "新ツール「なんでもカウンター」を追加しました！" },
-        { date: "2026.03.17", content: "新ツール「セクションタイマー」を追加しました！" },
         { date: "2026.03.09", content: "新ツール「コピペったん」を追加しました！" },
         { date: "2026.03.09", content: "お問い合わせを追加しました！" },
         { date: "2026.03.09", content: "プライバシーポリシーを追加しました！" },
@@ -15,7 +15,8 @@ const SITE_DATA = {
         "image-binder": "image-binder_icon.svg",
         "copy-pattan": "copy-pattan_icon.svg",
         "timer": "section-timer_icon.svg",
-        "counter": "any-counter_icon.svg"
+        "counter": "any-counter_icon.svg",
+        "roulette": "my-roulette_icon.svg"
     },
     tools: [
         {
@@ -61,6 +62,15 @@ const SITE_DATA = {
             description: "複数の項目をカウントし、割合や確率（1/N）をリアルタイムで算出する多用途カウンターです。",
             icon: "counter",
             url: "tools/any-counter.html",
+            isUpdate: false
+        },
+        {
+            id: "my-roulette",
+            category: "count",
+            name: "myルーレット",
+            description: "自由に項目を作れるカスタムルーレット。完全確率モードと減算モードを搭載しています。",
+            icon: "roulette",
+            url: "tools/my-roulette.html",
             isUpdate: true
         },
     ],
@@ -76,7 +86,8 @@ const SITE_DATA = {
             groupName: "カウントツール",
             items: [
                 { name: "セクションタイマー", url: "tools/section-timer.html" },
-                { name: "なんでもカウンター", url: "tools/any-counter.html" }
+                { name: "なんでもカウンター", url: "tools/any-counter.html" },
+                { name: "myルーレット", url: "tools/my-roulette.html" }
             ]
         },
         {
