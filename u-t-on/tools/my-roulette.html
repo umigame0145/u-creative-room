@@ -40,6 +40,19 @@
         #wheelPointer {
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
         }
+
+        .blur-settings {
+            filter: blur(12px);
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.7;
+        }
+
+        /* stickyを機能させるための共通スタイル上書き */
+        html, body {
+            overflow: visible !important;
+            height: auto !important;
+        }
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
      crossorigin="anonymous"></script>
@@ -48,15 +61,18 @@
     <div id="common-header"></div>
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             <!-- 左側：当選履歴 -->
             <div class="lg:col-span-3 order-2 lg:order-1">
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 flex flex-col h-full max-h-[600px] lg:max-h-none">
-                    <h2 class="text-lg font-black text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="w-2 h-6 bg-yellow-400 rounded-full"></span>
-                        当選履歴
-                    </h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-black text-gray-800 flex items-center gap-2">
+                            <span class="w-2 h-6 bg-yellow-400 rounded-full"></span>
+                            当選履歴
+                        </h2>
+                        <button id="clearHistoryBtnTop" class="text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors">クリア</button>
+                    </div>
                     <div id="historyList" class="flex-grow overflow-y-auto custom-scrollbar space-y-2 pr-2 min-h-[100px]">
                         <!-- 履歴がここに追加される -->
                         <div class="text-center py-10 text-gray-300 text-xs italic">履歴はありません</div>
@@ -65,8 +81,7 @@
                 </div>
             </div>
 
-            <!-- 中央：ルーレット盤面 -->
-            <div class="lg:col-span-5 order-1 lg:order-2 flex flex-col items-center justify-center">
+            <div class="lg:col-span-5 order-1 lg:order-2 flex flex-col items-center justify-start lg:sticky lg:top-8 lg:self-start">
                 <div class="relative w-full max-w-[450px] aspect-square flex items-center justify-center">
                     <!-- ポインター（上部中央） -->
                     <div id="wheelPointer" class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
@@ -85,16 +100,33 @@
                 <div id="resultDisplay" class="mt-6 text-center h-12">
                     <div class="text-2xl font-black text-blue-600 animate-bounce hidden">おめでとうございます！</div>
                 </div>
+
+                <!-- 全体残数表示（一律表示時などに利用） -->
+                <div id="totalCountContainer" class="mt-2 px-6 py-2 bg-gray-100 rounded-full border border-gray-200 hidden">
+                    <span class="text-xs font-bold text-gray-500">全体残数: </span>
+                    <span id="totalCountValue" class="text-sm font-black text-blue-600">0</span>
+                </div>
             </div>
 
-            <!-- 右側：設定パネル -->
-            <div class="lg:col-span-4 order-3">
+            <div class="lg:col-span-4 order-3 lg:sticky lg:top-8 lg:self-start">
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 space-y-6">
                     <div>
                         <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Settings</h2>
                         
+                        <!-- 拡張機能チェックボックス -->
+                        <div class="space-y-3 mb-6 bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" id="hideSettingsCheckbox" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">設定を隠す (モザイク)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" id="uniformAppearanceCheckbox" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">見た目を一律にする</span>
+                            </label>
+                        </div>
+
                         <!-- モード切替 -->
-                        <div class="flex p-1 bg-gray-100 rounded-2xl mb-6">
+                        <div id="modeToggleContainer" class="flex p-1 bg-gray-100 rounded-2xl mb-6">
                             <button id="modeProbBtn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all bg-white shadow-sm">完全確率</button>
                             <button id="modeSubBtn" class="flex-1 py-2 text-xs font-bold rounded-xl transition-all text-gray-400 hover:text-gray-600">減算モード</button>
                         </div>
@@ -138,6 +170,67 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 詳細な説明セクション -->
+        <div class="mt-24 space-y-16">
+            <section>
+                <h2 class="text-2xl font-black text-gray-800 text-center mb-8">このツールの特徴</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50">
+                        <h3 class="text-lg font-bold text-blue-600 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            選べる2つの動作モード
+                        </h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            毎回同じ確率で抽選する「完全確率モード」と、当選した項目を母数から減らしていく「減算モード」を搭載。抽選の結果を次に反映させたい場合（くじ引きなど）に「減算モード」が威力を発揮します。
+                        </p>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50">
+                        <h3 class="text-lg font-bold text-indigo-600 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            柔軟な重み付けとCSV保存
+                        </h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            個数（比率）による設定だけでなく、合計を100%としたパーセント指定にも対応。作成したルーレット構成はCSVファイルとして保存・読み込みができるため、お気に入りの設定をいつでも呼び出せます。
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-gray-100 p-10 rounded-[3rem]">
+                <h2 class="text-xl font-black text-gray-800 mb-6">よくある活用シーン</h2>
+                <ul class="space-y-4 text-gray-600 pt-2">
+                    <li class="flex items-start gap-3">
+                        <span class="text-blue-500 font-bold">・</span>
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">イベントや飲み会の景品抽選</p>
+                            <p class="text-xs">減算モードを使えば、一度当たった景品を自動的に除外しながら次々と抽選を進めることができます。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-blue-500 font-bold">・</span>
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">今日の献立や行き先の決定</p>
+                            <p class="text-xs">選択肢に重みを付けることで、「時々食べたいもの」と「頻繁に食べたいもの」をバランスよく抽選に含められます。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-blue-500 font-bold">・</span>
+                        <div>
+                            <p class="font-bold text-gray-800 text-sm">ゲームやTRPGのランダムイベント</p>
+                            <p class="text-xs">「設定を隠す」機能を使えば、結果が出るまで項目を内緒にしたままドキドキ感を演出できます。</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="text-center pb-20">
+                <h2 class="text-xl font-black text-gray-800 mb-4">プライバシーとデータについて</h2>
+                <p class="text-gray-500 text-xs max-w-2xl mx-auto leading-relaxed">
+                    作成したルーレットの設定や当選履歴はすべてお客様のブラウザ（LocalStorage）に保存され、サーバーへ送信されることはありません。オフライン環境でも安心してご利用いただけます。
+                </p>
+            </section>
+        </div>
     </main>
 
     <div id="common-footer"></div>
@@ -157,6 +250,6 @@
 
     <script src="../common/site-data.js"></script>
     <script src="../common/site-manager.js"></script>
-    <script src="my-roulette.js"></script>
+    <script src="my-roulette.js?v=1774116000"></script>
 </body>
 </html>

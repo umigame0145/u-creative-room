@@ -13,7 +13,9 @@ let state = {
     ],
     config: {
         mode: 'probability', // 'probability' or 'subtraction'
-        weightType: 'ratio'   // 'ratio' or 'percent'
+        weightType: 'ratio',  // 'ratio' or 'percent'
+        hideSettings: false,
+        uniformAppearance: false
     },
     // 減算モード等で利用する現在の一時的な重み
     currentWeights: [], 
@@ -24,9 +26,14 @@ let state = {
 // アニメーション用変数
 let angle = 0;
 let speed = 0;
-let isSpinning = false;
+let isSpinning = false; // 旧コード互換性のため維持
+let animState = 'none'; // 'none', 'spinning', 'stopping'
 let targetAngle = 0;
-let stopAngle = 0;
+
+// アニメーション用（時間ベース）
+let stopStartTime = 0;
+let stopStartAngle = 0;
+const stopDuration = 1500; // 1.5秒で停止
 
 const canvas = document.getElementById('rouletteCanvas');
 const ctx = canvas.getContext('2d');
@@ -37,7 +44,10 @@ const stopBtn = document.getElementById('stopBtn');
 function init() {
     loadState();
     setupEventListeners();
-    resetCurrentWeights();
+    // すでにロードされている場合はリセットしない
+    if (!state.currentWeights || state.currentWeights.length === 0) {
+        resetCurrentWeights();
+    }
     render();
 }
 
@@ -45,11 +55,23 @@ function init() {
 function loadState() {
     const saved = localStorage.getItem('my_roulette_data');
     if (saved) {
-        state = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // 保存データをマージ（新規追加されたconfig項目を保護するため）
+        if (parsed.items) state.items = parsed.items;
+        if (parsed.config) state.config = { ...state.config, ...parsed.config };
+        if (parsed.history) state.history = parsed.history;
+        
         // 数値であることを保証
         state.items.forEach(item => {
             item.weight = Number(item.weight) || 0;
         });
+
+        // 減算モードの状態復元
+        if (parsed.currentWeights) {
+            state.currentWeights = parsed.currentWeights;
+            // ロード後にID整合性をチェック（項目削除などに対応）
+            state.currentWeights = state.currentWeights.filter(cw => state.items.some(i => i.id === cw.id));
+        }
     }
 }
 
@@ -91,8 +113,11 @@ function render() {
 }
 
 function drawWheel() {
-    const activeItems = getActiveItems();
-    const totalWeight = activeItems.reduce((acc, item) => acc + item.currentWeight, 0);
+    const isUniform = Boolean(state.config.uniformAppearance);
+    const visualItems = isUniform ? state.items : getActiveItems();
+    const totalWeight = isUniform ? visualItems.length : visualItems.reduce((acc, item) => acc + item.currentWeight, 0);
+    
+    console.log(`[drawWheel] isUniform: ${isUniform}, items: ${visualItems.length}, totalWeight: ${totalWeight}`);
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -109,11 +134,17 @@ function drawWheel() {
     }
 
     let startAngle = angle;
-    activeItems.forEach(item => {
-        const sliceAngle = (item.currentWeight / totalWeight) * Math.PI * 2;
+    visualItems.forEach(item => {
+        const sliceAngle = isUniform ? (Math.PI * 2 / visualItems.length) : (item.currentWeight / totalWeight) * Math.PI * 2;
         
+        const currentWeight = isUniform ? 1 : item.currentWeight;
+
         // セグメント描画
         ctx.fillStyle = item.color;
+        
+        // 減算モードで見ため一律の場合、中身が0の項目は少し薄くするなどの演出も考えられるが、
+        // ユーザーの「初回の一律な見た目を維持する」という意図を尊重し、そのまま描画する。
+        
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
@@ -164,10 +195,20 @@ function renderItemList() {
         const displayWeight = (state.config.mode === 'subtraction') ? current.weight : item.weight;
         weightInput.value = displayWeight;
         
+        // 以前は減算モード時に編集不可にしていたが、ユーザー要望により解除
+        // ただし、値を変更した場合は安全のため resetCurrentWeights() が呼ばれるようにする
         if (state.config.mode === 'subtraction') {
-            weightInput.readOnly = true;
-            weightInput.classList.add('bg-gray-100', 'text-gray-400');
             if (!current.active) row.classList.add('opacity-30', 'grayscale');
+        }
+
+        // 単位の動的表示
+        unit.textContent = (state.config.weightType === 'percent') ? '%' : '個';
+
+        if (state.config.hideSettings) {
+            colorInput.disabled = true;
+            nameInput.disabled = true;
+            weightInput.disabled = true;
+            deleteBtn.disabled = true;
         }
 
         if (index === 0 && state.items.length === 1) {
@@ -243,13 +284,96 @@ function updateButtons() {
         if (isSpinning) startBtn.disabled = true;
     }
     
-    stopBtn.disabled = !isSpinning || stopAngle > 0 || !!state.pendingWinner;
-    stopBtn.className = !isSpinning ? 'flex-grow py-5 bg-gray-400 text-white rounded-[2rem] text-xl font-black shadow-lg cursor-not-allowed' : 'flex-grow py-5 bg-orange-500 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-orange-600 active:scale-95 animate-pulse';
+    stopBtn.disabled = animState !== 'spinning';
+        stopBtn.className = animState !== 'spinning' ? 'flex-grow py-5 bg-gray-400 text-white rounded-[2rem] text-xl font-black shadow-lg cursor-not-allowed' : 'flex-grow py-5 bg-orange-500 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-orange-600 active:scale-95 animate-pulse';
+
+    // ぼかし設定の反映
+    const itemList = document.getElementById('itemList');
+    const modeToggle = document.getElementById('modeToggleContainer');
+    const weightSettings = document.querySelector('input[name="weightType"]').closest('div.flex');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const csvSettings = document.getElementById('saveCsvBtn').closest('div');
+
+    if (state.config.hideSettings) {
+        itemList.classList.add('blur-settings');
+        modeToggle.classList.add('blur-settings');
+        weightSettings.classList.add('blur-settings');
+        addItemBtn.classList.add('blur-settings', 'opacity-50');
+        csvSettings.classList.add('blur-settings');
+        
+        document.querySelectorAll('input[name="weightType"]').forEach(i => i.disabled = true);
+        addItemBtn.disabled = true;
+    } else {
+        itemList.classList.remove('blur-settings');
+        modeToggle.classList.remove('blur-settings');
+        weightSettings.classList.remove('blur-settings');
+        addItemBtn.classList.remove('blur-settings', 'opacity-50');
+        csvSettings.classList.remove('blur-settings');
+        
+        document.querySelectorAll('input[name="weightType"]').forEach(i => i.disabled = false);
+        addItemBtn.disabled = false;
+    }
+
+    // 全体残数の表示
+    const totalCountContainer = document.getElementById('totalCountContainer');
+    const totalCountValue = document.getElementById('totalCountValue');
+    if (state.config.mode === 'subtraction' && state.config.uniformAppearance) {
+        totalCountContainer.classList.remove('hidden');
+        const currentTotal = state.currentWeights.reduce((acc, i) => acc + (i.active ? i.weight : 0), 0);
+        const initialTotal = state.items.reduce((acc, i) => acc + i.weight, 0);
+        totalCountValue.textContent = `${currentTotal} / ${initialTotal}`;
+    } else {
+        totalCountContainer.classList.add('hidden');
+    }
+
+    // チェックボックス・ラジオの状態同期
+    document.getElementById('hideSettingsCheckbox').checked = state.config.hideSettings;
+    document.getElementById('uniformAppearanceCheckbox').checked = state.config.uniformAppearance;
+    
+    const weightRadios = document.querySelectorAll('input[name="weightType"]');
+    weightRadios.forEach(radio => {
+        radio.checked = (radio.value === state.config.weightType);
+    });
 }
 
 // --- 抽選・アニメーション ---
+function animationLoop() {
+    if (animState === 'none') return;
+
+    if (animState === 'spinning') {
+        angle += speed;
+        if (speed < 0.2) {
+            speed += 0.005;
+        } else if (speed < 0.4) {
+            speed += 0.001;
+        }
+    } else if (animState === 'stopping') {
+        const now = performance.now();
+        const elapsed = now - stopStartTime;
+        const t = Math.min(1, elapsed / stopDuration);
+        
+        // 四次イージング (Quartic Ease-Out) - 三次よりさらに終盤がゆったり
+        const easedT = 1 - Math.pow(1 - t, 4);
+        
+        angle = stopStartAngle + (targetAngle - stopStartAngle) * easedT;
+        
+        if (t >= 1) {
+            angle = targetAngle;
+            animState = 'none';
+            isSpinning = false;
+            drawWheel();
+            finishSpin();
+            return;
+        }
+    }
+
+    drawWheel();
+    requestAnimationFrame(animationLoop);
+}
+
 function spin() {
-    if (isSpinning) return;
+    if (animState !== 'none') return;
+    if (state.pendingWinner) return;
 
     const activeItems = getActiveItems();
     if (activeItems.length === 0) {
@@ -257,73 +381,96 @@ function spin() {
         return;
     }
 
+    animState = 'spinning';
     isSpinning = true;
     speed = 0.5;
     document.getElementById('resultDisplay').innerHTML = '';
     updateButtons();
-    animate();
-}
-
-function animate() {
-    if (!isSpinning) return;
-    
-    angle += speed;
-    if (speed < 0.2) {
-        // 徐々に加速
-        speed += 0.005;
-    } else if (speed < 0.4) {
-        speed += 0.001;
-    }
-
-    drawWheel();
-    requestAnimationFrame(animate);
+    animationLoop();
 }
 
 function stop() {
-    if (!isSpinning || stopAngle > 0) return;
+    if (animState !== 'spinning') return;
     
-    // 停止アニメーション開始
-    targetAngle = angle + Math.PI * 4 + Math.random() * Math.PI * 2;
-    slowDown();
+    const winner = pickWinnerByWeight();
+    state.pendingWinner = winner;
+
+    targetAngle = getTargetAngle(winner);
+    
+    animState = 'stopping';
+    stopStartTime = performance.now();
+    stopStartAngle = angle;
+    updateButtons();
 }
 
-function slowDown() {
-    const diff = targetAngle - angle;
-    if (diff > 0.01) {
-        angle += diff * 0.05;
-        drawWheel();
-        requestAnimationFrame(slowDown);
-    } else {
-        isSpinning = false;
-        finishSpin();
-    }
-}
-
-function finishSpin() {
+/**
+ * 重みに基づいて当選項目を決定する
+ */
+function pickWinnerByWeight() {
     const activeItems = getActiveItems();
     const totalWeight = activeItems.reduce((acc, item) => acc + item.currentWeight, 0);
-    
-    // 現在のポインター位置（真上= -PI/2）に対応する項目を特定
-    // 描画は angle から startAngle で開始している
-    // ポインターは 0度 (右) を基準に -90度（上）にある。
-    // キャンバス上の角度 normalizedAngle = (pointerAngle - angle) % (2PI)
-    let normalized = (-Math.PI / 2 - angle) % (Math.PI * 2);
-    while (normalized < 0) normalized += Math.PI * 2;
+    if (totalWeight <= 0) return activeItems[0];
 
-    let currentPos = 0;
-    let winner = activeItems[0];
+    let r = Math.random() * totalWeight;
     for (const item of activeItems) {
-        const slice = (item.currentWeight / totalWeight) * Math.PI * 2;
-        if (normalized >= currentPos && normalized < currentPos + slice) {
-            winner = item;
-            break;
+        if (r < item.currentWeight) return item;
+        r -= item.currentWeight;
+    }
+    return activeItems[activeItems.length - 1];
+}
+
+/**
+ * 当選項目が真上に来るためのターゲット角度を計算する
+ */
+function getTargetAngle(winner) {
+    const isUniform = Boolean(state.config.uniformAppearance);
+    const visualItems = isUniform ? state.items : getActiveItems();
+    const totalWeight = isUniform ? visualItems.length : visualItems.reduce((acc, item) => acc + item.currentWeight, 0);
+    
+    let currentPos = 0;
+    for (const item of visualItems) {
+        const slice = isUniform ? (Math.PI * 2 / visualItems.length) : (item.currentWeight / totalWeight) * Math.PI * 2;
+        if (item.id === winner.id) {
+            // セグメントの中央をポインターに合わせる
+            const targetInWheel = currentPos + slice / 2;
+            
+            // 矢印の位置（-PI/2）に targetInWheel が来る角度を求める
+            let target = -Math.PI / 2 - targetInWheel;
+            
+            // 現在の角度より大きく、かつ最低でも N回転 させる
+            const minRotation = Math.PI * 2 * 3; // 最低3回転
+            while (target < angle + minRotation) {
+                target += Math.PI * 2;
+            }
+            return target;
         }
         currentPos += slice;
     }
+    return angle + Math.PI * 4; // フォールバック
+}
 
-    // 結果特定のみ行い、保留状態にする
-    state.pendingWinner = winner;
+function finishSpin() {
+    // すでに state.pendingWinner に当選者が入っているはず
+    if (!state.pendingWinner) {
+        const activeItems = getActiveItems();
+        const totalWeight = activeItems.reduce((acc, item) => acc + item.currentWeight, 0);
+        let normalized = (-Math.PI / 2 - angle) % (Math.PI * 2);
+        while (normalized < 0) normalized += Math.PI * 2;
 
+        let currentPos = 0;
+        let winner = activeItems[0];
+        for (const item of activeItems) {
+            const slice = (item.currentWeight / totalWeight) * Math.PI * 2;
+            if (normalized >= currentPos && normalized < currentPos + slice) {
+                winner = item;
+                break;
+            }
+            currentPos += slice;
+        }
+        state.pendingWinner = winner;
+    }
+
+    const winner = state.pendingWinner;
     showResult(winner.name);
     updateButtons();
 }
@@ -388,6 +535,17 @@ function setupEventListeners() {
         };
     });
 
+    document.getElementById('hideSettingsCheckbox').onchange = (e) => {
+        state.config.hideSettings = e.target.checked;
+        render();
+        saveState();
+    };
+    document.getElementById('uniformAppearanceCheckbox').onchange = (e) => {
+        state.config.uniformAppearance = e.target.checked;
+        render();
+        saveState();
+    };
+
     document.getElementById('addItemBtn').onclick = () => {
         const id = Date.now().toString();
         const colors = ['#ff4444', '#ffaa00', '#ffcc00', '#44ccff', '#44ff44', '#cc44ff', '#ff44cc'];
@@ -398,15 +556,19 @@ function setupEventListeners() {
         saveState();
     };
 
-    document.getElementById('clearHistoryBtn').onclick = () => {
+    const historyClearHandler = () => {
         if (confirm('履歴をクリアし、減算状態をリセットしますか？')) {
             state.history = [];
             resetCurrentWeights();
             document.getElementById('resultDisplay').innerHTML = '';
+            console.log('History and weights cleared');
             render();
             saveState();
         }
     };
+    document.getElementById('clearHistoryBtn').onclick = historyClearHandler;
+    const clearTopBtn = document.getElementById('clearHistoryBtnTop');
+    if (clearTopBtn) clearTopBtn.onclick = historyClearHandler;
 
     // CSV
     document.getElementById('saveCsvBtn').onclick = exportCSV;
