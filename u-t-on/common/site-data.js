@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.03.23", content: "新ツール「KOKOにモザイク」を追加しました！" },
         { date: "2026.03.22", content: "新ツール「myルーレット」を追加しました！" },
         { date: "2026.03.18", content: "新ツール「なんでもカウンター」を追加しました！" },
         { date: "2026.03.09", content: "新ツール「コピペったん」を追加しました！" },
@@ -16,7 +17,8 @@ const SITE_DATA = {
         "copy-pattan": "copy-pattan_icon.svg",
         "timer": "section-timer_icon.svg",
         "counter": "any-counter_icon.svg",
-        "roulette": "my-roulette_icon.svg"
+        "roulette": "my-roulette_icon.svg",
+        "mosaic": "koko-ni-mosaic_icon.svg"
     },
     tools: [
         {
@@ -71,6 +73,15 @@ const SITE_DATA = {
             description: "自由に項目を作れるカスタムルーレット。完全確率モードと減算モードを搭載しています。",
             icon: "roulette",
             url: "tools/my-roulette.html",
+            isUpdate: false
+        },
+        {
+            id: "koko-ni-mosaic",
+            category: "image",
+            name: "KOKOにモザイク",
+            description: "画像の好きな場所を隠せるモザイクツール。四角や丸、回転などの詳細な指定が可能です。",
+            icon: "mosaic",
+            url: "tools/koko-ni-mosaic.html",
             isUpdate: true
         },
     ],
@@ -79,7 +90,8 @@ const SITE_DATA = {
             groupName: "画像編集ツール",
             items: [
                 { name: "画像結合ツール", url: "tools/image-joiner.html" },
-                { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" }
+                { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" },
+                { name: "KOKOにモザイク", url: "tools/koko-ni-mosaic.html" }
             ]
         },
         {

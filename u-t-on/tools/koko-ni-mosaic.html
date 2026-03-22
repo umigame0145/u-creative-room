@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KOKOにモザイク | 画像の好きな場所にモザイクをかける - Uの創作部屋</title>
+    <meta name="description" content="ブラウザ上で画像内の任意の場所にモザイクをかけることができるツール。サーバーに画像を送信せず、ローカルで安全に処理。四角・丸・回転などの詳細設定が可能。">
+
+    <meta property="og:url" content="https://u-t-on.com/tools/koko-ni-mosaic.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="KOKOにモザイク | 画像の好きな場所にモザイクをかける - Uの創作部屋" />
+    <meta property="og:description"
+        content="ブラウザ上で画像内の任意の場所にモザイクをかけることができるツール。サーバーに画像を送信せず、ローカルで安全に処理。四角・丸・回転などの詳細設定が可能。" />
+    <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
+        crossorigin="anonymous"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/style.css">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+
+        #editorCanvas {
+            max-width: 100%;
+            height: auto;
+            cursor: crosshair;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+
+        .canvas-container {
+            position: relative;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 2rem;
+            padding: 2rem;
+            min-height: 400px;
+        }
+
+        .canvas-container.drag-over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .control-panel {
+            background-color: white;
+            border-radius: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid #f3f4f6;
+            padding: 1.5rem;
+        }
+
+        .tool-btn {
+            flex: 1 1 0%;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 1rem;
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+
+        .tool-btn-active {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .tool-btn-inactive {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .tool-btn-inactive:hover {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+
+        /* 数値入力のスピンボタン隠す */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* stickyを機能させるための共通スタイル上書き */
+        html,
+        body {
+            overflow: visible !important;
+            height: auto !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+    <div id="common-header"></div>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <!-- 左側/中央：メイン編集エリア -->
+            <div class="lg:col-span-8 space-y-6">
+                <div id="dropArea" class="canvas-container group">
+                    <div id="emptyState" class="flex flex-col items-center justify-center space-y-4 py-20">
+                        <div class="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-500">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-lg font-black text-gray-800">画像をここにドラッグ＆ドロップ</p>
+                            <p class="text-sm text-gray-400 mt-1">またはファイルを選択するかクリップボードから貼り付け</p>
+                        </div>
+                        <label
+                            class="px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 cursor-pointer transition-all">
+                            ファイルを選択
+                            <input type="file" id="imageInput" class="hidden" accept="image/*">
+                        </label>
+                    </div>
+                    <canvas id="editorCanvas" class="hidden"></canvas>
+                </div>
+
+                <!-- 履歴コントロール（画像の下） -->
+                <div class="flex items-center justify-between px-4">
+                    <div class="flex gap-4">
+                        <button id="undoBtn"
+                            class="flex items-center gap-2 px-6 py-2 bg-white text-gray-600 rounded-full text-xs font-bold border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                            </svg>
+                            元に戻す
+                        </button>
+                        <button id="clearBtn"
+                            class="flex items-center gap-2 px-6 py-2 bg-white text-gray-600 rounded-full text-xs font-bold border border-gray-200 hover:bg-red-50 hover:text-red-500 hover:border-red-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                </path>
+                            </svg>
+                            全クリア
+                        </button>
+                    </div>
+                    <div id="statusMessage" class="text-xs font-bold text-gray-400 italic"></div>
+                </div>
+            </div>
+
+            <!-- 右側：設定パネル -->
+            <div class="lg:col-span-4 lg:sticky lg:top-8 lg:self-start">
+                <div class="control-panel">
+                    <div>
+                        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Settings</h2>
+
+                        <!-- 形状選択 -->
+                        <div class="flex p-1 bg-gray-100 rounded-2xl mb-6">
+                            <button id="shapeSquareBtn" class="tool-btn tool-btn-active">四角</button>
+                            <button id="shapeCircleBtn" class="tool-btn tool-btn-inactive">丸</button>
+                        </div>
+
+                        <!-- サイズ・角度設定 -->
+                        <div class="space-y-4">
+                            <div id="squareSettings" class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-400 ml-2">横幅 (px)</label>
+                                    <input type="number" id="mosaicWidth" value="100"
+                                        class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-400">
+                                    <input type="range" id="mosaicWidthSlider" min="10" max="1000" value="100"
+                                        class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-1">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-400 ml-2">縦幅 (px)</label>
+                                    <input type="number" id="mosaicHeight" value="100"
+                                        class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-400">
+                                    <input type="range" id="mosaicHeightSlider" min="10" max="1000" value="100"
+                                        class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-1">
+                                </div>
+                                <div class="col-span-2 space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-400 ml-2">回転角 (度)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="range" id="mosaicRotateSlider" min="-180" max="180" value="0"
+                                            class="flex-grow">
+                                        <input type="number" id="mosaicRotate" value="0" min="-180" max="180"
+                                            class="w-16 bg-gray-50 border border-gray-100 rounded-xl px-2 py-1 text-center text-xs font-bold text-blue-600">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="circleSettings" class="hidden space-y-1">
+                                <label class="text-[10px] font-bold text-gray-400 ml-2">直径 (px)</label>
+                                <input type="number" id="mosaicSize" value="100"
+                                    class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 focus:outline-none focus:border-blue-400">
+                                <input type="range" id="mosaicSizeSlider" min="10" max="1000" value="100"
+                                    class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-1">
+                            </div>
+
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-end ml-2">
+                                    <label class="text-[10px] font-bold text-gray-400">モザイク粒度</label>
+                                    <span id="pixelSizeValue" class="text-xs font-black text-blue-600">10</span>
+                                </div>
+                                <input type="range" id="pixelSize" min="2" max="50" value="10" class="w-full">
+                            </div>
+
+                            <!-- Color Invert -->
+                            <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <input type="checkbox" id="invertColors"
+                                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+                                <label for="invertColors"
+                                    class="text-sm font-medium text-gray-700 cursor-pointer select-none">色反転</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t">
+                        <button id="applyBtn"
+                            class="w-full py-4 bg-blue-600 text-white rounded-2xl text-lg font-black shadow-lg hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            適用（決定）
+                        </button>
+                    </div>
+
+                    <div class="pt-6 border-t space-y-4">
+                        <div class="flex items-center justify-between px-2">
+                            <span class="text-[10px] font-bold text-gray-400">微調整</span>
+                            <div class="grid grid-cols-3 gap-1">
+                                <div></div>
+                                <button id="moveUpBtn"
+                                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
+                                        class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 15l7-7 7 7"></path>
+                                    </svg></button>
+                                <div></div>
+                                <button id="moveLeftBtn"
+                                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
+                                        class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 19l-7-7 7-7"></path>
+                                    </svg></button>
+                                <button id="moveDownBtn"
+                                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
+                                        class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg></button>
+                                <button id="moveRightBtn"
+                                    class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
+                                        class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7"></path>
+                                    </svg></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t space-y-4">
+                        <div class="flex items-center justify-between px-2">
+                            <span class="text-[10px] font-bold text-gray-400">出力形式</span>
+                            <div class="flex gap-2">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="format" value="image/png" checked class="hidden peer">
+                                    <span
+                                        class="px-3 py-1 text-[10px] font-bold border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 border-gray-200 text-gray-400">PNG</span>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="format" value="image/jpeg" class="hidden peer">
+                                    <span
+                                        class="px-3 py-1 text-[10px] font-bold border rounded-lg peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 border-gray-200 text-gray-400">JPEG</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button id="downloadBtn"
+                            class="w-full py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-bold hover:bg-indigo-100 transition-all flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            保存（ダウンロード）
+                        </button>
+                        <button id="persistentUploadBtn"
+                            class="w-full py-3 bg-gray-50 text-gray-400 rounded-2xl text-[10px] font-bold hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+                            別の画像を読み込む
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ヘルプ・ヒント -->
+                <div class="mt-6 p-4 bg-gray-100/50 rounded-2xl border border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-500 mb-2 border-b border-gray-200 pb-1">操作ヒント</h3>
+                    <ul class="text-[10px] text-gray-400 space-y-2 leading-relaxed">
+                        <li>・画像上をクリックするとプレビューが表示されます</li>
+                        <li>・設定を変更して「適用（決定）」で確定します</li>
+                        <li>・確定前なら位置やサイズを自由に変更可能です</li>
+                        <li>・貼り付け (Ctrl+V) でクリップボードの画像も読込可能</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 説明セクション -->
+        <div class="mt-24 space-y-16">
+            <section>
+                <h2 class="text-2xl font-black text-gray-800 text-center mb-12">KOKOにモザイクの主な機能</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 1: Local Processing -->
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
+                        <div
+                            class="w-10 h-10 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold mb-2">完全ローカル・安全処理</h3>
+                        <p class="text-gray-400 text-[10px] leading-relaxed">
+                            画像データはサーバーに送信されません。すべてブラウザ上で完結するため、プライバシーが気になる画像も安心して加工できます。</p>
+                    </div>
+                    <!-- 2: Shapes -->
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
+                        <div
+                            class="w-10 h-10 bg-purple-50 text-purple-500 rounded-2xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold mb-2">四角・丸の2タイプ</h3>
+                        <p class="text-gray-400 text-[10px] leading-relaxed">
+                            用途に合わせて「四角形」と「円形」のモザイクを選択可能。人物の顔や特定の文字など、隠したい箇所に最適化できます。</p>
+                    </div>
+                    <!-- 3: Rotation & Size -->
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
+                        <div
+                            class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold mb-2">自由な回転とサイズ</h3>
+                        <p class="text-gray-400 text-[10px] leading-relaxed">
+                            四角モードでは自由な回転角度（-180～180度）を指定可能。縦横比や直径もスライダーで簡単に微調整できます。</p>
+                    </div>
+                    <!-- 4: Color Invert -->
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
+                        <div
+                            class="w-10 h-10 bg-pink-50 text-pink-500 rounded-2xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold mb-2">色反転モザイク</h3>
+                        <p class="text-gray-400 text-[10px] leading-relaxed">
+                            通常のモザイクの代わりに色を反転（ネガ転換）させることができます。プライバシー保護だけでなく、デザイン的な演出にも活用できます。</p>
+                    </div>
+                    <!-- 5: Interaction -->
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
+                        <div
+                            class="w-10 h-10 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold mb-2">スマートな位置指定</h3>
+                        <p class="text-gray-400 text-[10px] leading-relaxed">
+                            画像上をクリックした場所にプレビューが即座にロック。マウス移動に惑わされず、狙った通りの位置に設定を適用できます。</p>
+                    </div>
+                    <!-- 6: Precise Adjustment -->
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
+                        <div
+                            class="w-10 h-10 bg-gray-50 text-gray-500 rounded-2xl flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7l4-4m0 0l4 4m-4-4v18"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold mb-2">1px単位の微調整</h3>
+                        <p class="text-gray-400 text-[10px] leading-relaxed">
+                            矢印ボタンやキーボード操作で、位置を1ピクセルずつ移動可能。細かな位置合わせもストレスなく行えます。</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="common-footer"></div>
+
+    <script src="../common/site-data.js"></script>
+    <script src="../common/site-manager.js"></script>
+    <script src="koko-ni-mosaic.js?v=2026032301"></script>
+</body>
+
+</html>
