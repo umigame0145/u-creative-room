@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.03.23", content: "新ツール「すけ透過？」を追加しました！" },
         { date: "2026.03.23", content: "新ツール「KOKOにモザイク」を追加しました！" },
         { date: "2026.03.22", content: "新ツール「myルーレット」を追加しました！" },
         { date: "2026.03.18", content: "新ツール「なんでもカウンター」を追加しました！" },
@@ -18,7 +19,8 @@ const SITE_DATA = {
         "timer": "section-timer_icon.svg",
         "counter": "any-counter_icon.svg",
         "roulette": "my-roulette_icon.svg",
-        "mosaic": "koko-ni-mosaic_icon.svg"
+        "mosaic": "koko-ni-mosaic_icon.svg",
+        "transparency": "suke-touka_icon.svg"
     },
     tools: [
         {
@@ -82,6 +84,15 @@ const SITE_DATA = {
             description: "画像の好きな場所を隠せるモザイクツール。四角や丸、回転などの詳細な指定が可能です。",
             icon: "mosaic",
             url: "tools/koko-ni-mosaic.html",
+            isUpdate: false
+        },
+        {
+            id: "suke-touka",
+            category: "image",
+            name: "すけ透過？",
+            description: "画像の好きな場所を透明にできる透過ツール。切り抜きやプライバシー保護に活用できます。",
+            icon: "transparency",
+            url: "tools/suke-touka.html",
             isUpdate: true
         },
     ],
@@ -91,7 +102,8 @@ const SITE_DATA = {
             items: [
                 { name: "画像結合ツール", url: "tools/image-joiner.html" },
                 { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" },
-                { name: "KOKOにモザイク", url: "tools/koko-ni-mosaic.html" }
+                { name: "KOKOにモザイク", url: "tools/koko-ni-mosaic.html" },
+                { name: "すけ透過？", url: "tools/suke-touka.html" }
             ]
         },
         {

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect x="10" y="10" width="80" height="80" rx="10" fill="#3b82f6" opacity="0.1"/>
+  <rect x="20" y="20" width="20" height="20" fill="#f0f0f0"/>
+  <rect x="40" y="20" width="20" height="20" fill="#ffffff"/>
+  <rect x="60" y="20" width="20" height="20" fill="#f0f0f0"/>
+  <rect x="20" y="40" width="20" height="20" fill="#ffffff"/>
+  <rect x="40" y="40" width="20" height="20" fill="#f0f0f0"/>
+  <rect x="60" y="40" width="20" height="20" fill="#ffffff"/>
+  <rect x="20" y="60" width="20" height="20" fill="#f0f0f0"/>
+  <rect x="40" y="60" width="20" height="20" fill="#ffffff"/>
+  <rect x="60" y="60" width="20" height="20" fill="#f0f0f0"/>
+  <text x="30" y="31" font-family="sans-serif" font-size="12" font-weight="bold" fill="#3b82f6" text-anchor="middle" dominant-baseline="central">す</text>
+  <text x="70" y="31" font-family="sans-serif" font-size="12" font-weight="bold" fill="#3b82f6" text-anchor="middle" dominant-baseline="central">け</text>
+  <text x="30" y="71" font-family="sans-serif" font-size="12" font-weight="bold" fill="#3b82f6" text-anchor="middle" dominant-baseline="central">透</text>
+  <text x="70" y="71" font-family="sans-serif" font-size="12" font-weight="bold" fill="#3b82f6" text-anchor="middle" dominant-baseline="central">過</text>
+</svg>
