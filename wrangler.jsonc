@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "u-creative-room",
+  "compatibility_date": "2025-09-27",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "u-t-on"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
