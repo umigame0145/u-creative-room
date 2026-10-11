@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="../common/tool-utils.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>すけ透過？ | 画像の好きな場所を透明にする - Uの創作部屋</title>
     <meta name="description" content="ブラウザ上で画像内の任意の場所を透明に（透過）できるツール。サーバーに画像を送信せず、ローカルで安全に処理。四角・丸・回転などの詳細設定が可能。切り抜きやプライバシー保護に。">
 
@@ -18,7 +19,7 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
         crossorigin="anonymous"></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/utilities.css">
     <link rel="stylesheet" href="../common/style.css">
     <style>
         .custom-scrollbar::-webkit-scrollbar {
@@ -111,12 +112,15 @@
             height: auto !important;
         }
     </style>
+<link rel="canonical" href="https://u-t-on.com/tools/suke-touka.html">
+<link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml">
 </head>
 
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
-    <div id="common-header"></div>
+    <div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+<div class="tool-page-heading"><p class="eyebrow">画像・PDF</p><h1>すけ透過？</h1><p>画像の好きな場所を透明にできる透過ツール。切り抜きや、重ねて使う素材作りに活用できます。</p></div>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
             <!-- 左側/中央：メイン編集エリア -->
@@ -174,7 +178,7 @@
             <div class="lg:col-span-4 lg:sticky lg:top-8 lg:self-start">
                 <div class="control-panel">
                     <div>
-                        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Settings</h2>
+                        <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">設定</h2>
 
                         <!-- 形状選択 -->
                         <div class="flex p-1 bg-gray-100 rounded-2xl mb-6">
@@ -242,26 +246,26 @@
                             <span class="text-[10px] font-bold text-gray-400">微調整</span>
                             <div class="grid grid-cols-3 gap-1">
                                 <div></div>
-                                <button id="moveUpBtn"
+                                <button id="moveUpBtn" aria-label="上に1px移動"
                                     class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
                                         class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 15l7-7 7 7"></path>
                                     </svg></button>
                                 <div></div>
-                                <button id="moveLeftBtn"
+                                <button id="moveLeftBtn" aria-label="左に1px移動"
                                     class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
                                         class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 19l-7-7 7-7"></path>
                                     </svg></button>
-                                <button id="moveDownBtn"
+                                <button id="moveDownBtn" aria-label="下に1px移動"
                                     class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
                                         class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7"></path>
                                     </svg></button>
-                                <button id="moveRightBtn"
+                                <button id="moveRightBtn" aria-label="右に1px移動"
                                     class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-gray-600"><svg
                                         class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -331,9 +335,9 @@
                                 </path>
                             </svg>
                         </div>
-                        <h3 class="text-sm font-bold mb-2">完全ローカル・安全処理</h3>
+                        <h3 class="text-sm font-bold mb-2">画像はブラウザ内で処理</h3>
                         <p class="text-gray-400 text-[10px] leading-relaxed">
-                            画像データはサーバーに送信されません。すべてブラウザ上で完結するため、機密情報が含まれる画像も安心して透過加工できます。</p>
+                            画像データを当サイトのサーバーへ送信せずに加工します。半透明では元の内容が見えるため、保存結果を確認してください。</p>
                     </div>
                     <!-- 2: Shapes -->
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50">
@@ -407,9 +411,10 @@
                 </div>
             </section>
         </div>
-    </main>
+    <section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">必要な部分だけ透明にして、画像を加工</h2><p>画像の一部を四角や丸の範囲で透明にできます。背景の部分削除や、重ねて使う素材作りに向いています。透過度を変えると、完全な透明だけでなく半透明にもできます。</p><ol><li>画像を選び、画像上をタップして透過する位置を決めます。</li><li>形・サイズ・角度・透過度を設定し、「適用」で確定します。</li><li>仕上がりを確認し、透明を残す場合はPNGで保存します。</li></ol><div class="guide-note"><h3>利用時のポイント</h3><p>JPEGは透明を保存できないため、透過した部分は白い背景になります。PNGなら透明を保持できます。半透明では元の内容が見えるため、個人情報を隠す用途では完全に除去できているかを確認してください。</p></div><details><summary>透過度100%はどのような状態ですか？</summary><p>指定範囲を完全に透明にします。0%では透明化しません。プレビューは保存されないので「適用」してからダウンロードしてください。</p></details><p class="guide-bottom">画像・入力内容はブラウザで処理します。サイト閲覧時の外部サービスについては<a href="../privacy.html">プライバシーポリシー</a>をご確認ください。<a href="../contact.html">不具合を報告する →</a></p></section>
+</main>
 
-    <div id="common-footer"></div>
+    <div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a><a href="../contact.html">お問い合わせ</a></nav></div>
 
     <script src="../common/site-data.js"></script>
     <script src="../common/site-manager.js"></script>

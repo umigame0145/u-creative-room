@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://u-t-on.com/sitemap.xml

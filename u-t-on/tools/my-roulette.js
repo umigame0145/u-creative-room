@@ -18,7 +18,7 @@ let state = {
         uniformAppearance: false
     },
     // 減算モード等で利用する現在の一時的な重み
-    currentWeights: [], 
+    currentWeights: [],
     history: [],
     pendingWinner: null
 };
@@ -53,32 +53,28 @@ function init() {
 
 // データの読み込み
 function loadState() {
-    const saved = localStorage.getItem('my_roulette_data');
-    if (saved) {
-        const parsed = JSON.parse(saved);
-        // 保存データをマージ（新規追加されたconfig項目を保護するため）
-        if (parsed.items) state.items = parsed.items;
-        if (parsed.config) state.config = { ...state.config, ...parsed.config };
-        if (parsed.history) state.history = parsed.history;
-        
-        // 数値であることを保証
-        state.items.forEach(item => {
-            item.weight = Number(item.weight) || 0;
-        });
-
-        // 減算モードの状態復元
-        if (parsed.currentWeights) {
-            state.currentWeights = parsed.currentWeights;
-            // ロード後にID整合性をチェック（項目削除などに対応）
-            state.currentWeights = state.currentWeights.filter(cw => state.items.some(i => i.id === cw.id));
-        }
+    const parsed = ToolUtils.readJSON('my_roulette_data', null);
+    if (!parsed || typeof parsed !== 'object') return;
+    const validColor = value => /^#[0-9a-f]{6}$/i.test(value) ? value : '#127b78';
+    if (Array.isArray(parsed.items) && parsed.items.length) {
+        const ids = new Set();
+        const items = parsed.items.filter(i => i && typeof i.id === 'string' && !ids.has(i.id) && ids.add(i.id)).map(i => ({ id: i.id, name: String(i.name ?? '項目'), weight: Number.isFinite(Number(i.weight)) ? Math.max(0, Number(i.weight)) : 0, color: validColor(i.color) }));
+        if (items.length) state.items = items;
     }
+    if (parsed.config) {
+        state.config.mode = parsed.config.mode === 'subtraction' ? 'subtraction' : 'probability';
+        state.config.weightType = parsed.config.weightType === 'percent' ? 'percent' : 'ratio';
+        state.config.hideSettings = Boolean(parsed.config.hideSettings);
+        state.config.uniformAppearance = Boolean(parsed.config.uniformAppearance);
+    }
+    if (Array.isArray(parsed.history)) state.history = parsed.history.filter(h => h && Number.isFinite(h.time)).map(h => ({ id: String(h.id), name: String(h.name ?? ''), color: validColor(h.color), time: h.time }));
+    state.currentWeights = state.items.map(item => {
+        const current = Array.isArray(parsed.currentWeights) && parsed.currentWeights.find(w => w && w.id === item.id);
+        const weight = current && Number.isFinite(Number(current.weight)) ? Math.max(0, Number(current.weight)) : item.weight;
+        return { id: item.id, weight, active: current ? Boolean(current.active) && weight > 0 : weight > 0 };
+    });
 }
-
-// データの保存
-function saveState() {
-    localStorage.setItem('my_roulette_data', JSON.stringify(state));
-}
+function saveState() { ToolUtils.writeJSON('my_roulette_data', state); }
 
 // --- 重み管理 ---
 function resetCurrentWeights() {
@@ -92,7 +88,7 @@ function resetCurrentWeights() {
 // 有効な項目の計算
 function getActiveItems() {
     let source = (state.config.mode === 'subtraction') ? state.currentWeights : state.items.map(i => ({...i, active: true}));
-    
+
     // IDで紐付け
     return state.items.map((item, idx) => {
         const current = source.find(s => s.id === item.id);
@@ -116,11 +112,10 @@ function drawWheel() {
     const isUniform = Boolean(state.config.uniformAppearance);
     const visualItems = isUniform ? state.items : getActiveItems();
     const totalWeight = isUniform ? visualItems.length : visualItems.reduce((acc, item) => acc + item.currentWeight, 0);
-    
-    console.log(`[drawWheel] isUniform: ${isUniform}, items: ${visualItems.length}, totalWeight: ${totalWeight}`);
-    
+
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = canvas.width / 2 - 20;
@@ -136,15 +131,15 @@ function drawWheel() {
     let startAngle = angle;
     visualItems.forEach(item => {
         const sliceAngle = isUniform ? (Math.PI * 2 / visualItems.length) : (item.currentWeight / totalWeight) * Math.PI * 2;
-        
+
         const currentWeight = isUniform ? 1 : item.currentWeight;
 
         // セグメント描画
         ctx.fillStyle = item.color;
-        
+
         // 減算モードで見ため一律の場合、中身が0の項目は少し薄くするなどの演出も考えられるが、
         // ユーザーの「初回の一律な見た目を維持する」という意図を尊重し、そのまま描画する。
-        
+
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
@@ -190,11 +185,11 @@ function renderItemList() {
 
         colorInput.value = item.color;
         nameInput.value = item.name;
-        
+
         // 減算モード時は現在の残り数を表示、そうでなければ設定値を表示
         const displayWeight = (state.config.mode === 'subtraction') ? current.weight : item.weight;
         weightInput.value = displayWeight;
-        
+
         // 以前は減算モード時に編集不可にしていたが、ユーザー要望により解除
         // ただし、値を変更した場合は安全のため resetCurrentWeights() が呼ばれるようにする
         if (state.config.mode === 'subtraction') {
@@ -218,12 +213,12 @@ function renderItemList() {
         // イベント設定
         colorInput.oninput = (e) => { item.color = e.target.value; render(); saveState(); };
         nameInput.onchange = (e) => { item.name = e.target.value; render(); saveState(); };
-        weightInput.onchange = (e) => { 
+        weightInput.onchange = (e) => {
             const val = parseFloat(e.target.value);
-            item.weight = isNaN(val) ? 0 : val;
+            item.weight = Number.isFinite(val) ? Math.max(0, val) : 0;
             resetCurrentWeights(); // 設定変更時は現在の重みもリセット
-            render(); 
-            saveState(); 
+            render();
+            saveState();
         };
         deleteBtn.onclick = () => {
             if (state.items.length > 1) {
@@ -250,10 +245,10 @@ function renderHistory() {
         const div = document.createElement('div');
         div.className = 'history-item flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-2xl shadow-sm';
         div.innerHTML = `
-            <div class="w-2 h-8 rounded-full" style="background-color: ${entry.color}"></div>
+            <div class="w-2 h-8 rounded-full" style="background-color: ${ToolUtils.escapeHTML(entry.color)}"></div>
             <div class="flex-grow">
                 <div class="text-[10px] text-gray-400">${new Date(entry.time).toLocaleString()}</div>
-                <div class="text-sm font-black text-gray-700">${entry.name}</div>
+                <div class="text-sm font-black text-gray-700">${ToolUtils.escapeHTML(entry.name)}</div>
             </div>
         `;
         container.appendChild(div);
@@ -263,7 +258,7 @@ function renderHistory() {
 function updateButtons() {
     const modeProbBtn = document.getElementById('modeProbBtn');
     const modeSubBtn = document.getElementById('modeSubBtn');
-    
+
     if (state.config.mode === 'probability') {
         modeProbBtn.className = 'flex-1 py-2 text-xs font-bold rounded-xl transition-all bg-white shadow-sm';
         modeSubBtn.className = 'flex-1 py-2 text-xs font-bold rounded-xl transition-all text-gray-400 hover:text-gray-600';
@@ -273,17 +268,17 @@ function updateButtons() {
     }
 
     startBtn.disabled = isSpinning;
-    
+
     if (state.pendingWinner) {
         startBtn.textContent = 'SET (確定)';
         startBtn.className = 'flex-grow py-5 bg-green-600 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-green-700 hover:scale-105 active:scale-95 transition-all';
-        startBtn.disabled = false;
+        startBtn.disabled = isSpinning;
     } else {
         startBtn.textContent = 'START';
         startBtn.className = isSpinning ? 'flex-grow py-5 bg-gray-400 text-white rounded-[2rem] text-xl font-black shadow-lg cursor-not-allowed' : 'flex-grow py-5 bg-blue-600 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all';
         if (isSpinning) startBtn.disabled = true;
     }
-    
+
     stopBtn.disabled = animState !== 'spinning';
         stopBtn.className = animState !== 'spinning' ? 'flex-grow py-5 bg-gray-400 text-white rounded-[2rem] text-xl font-black shadow-lg cursor-not-allowed' : 'flex-grow py-5 bg-orange-500 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-orange-600 active:scale-95 animate-pulse';
 
@@ -300,7 +295,7 @@ function updateButtons() {
         weightSettings.classList.add('blur-settings');
         addItemBtn.classList.add('blur-settings', 'opacity-50');
         csvSettings.classList.add('blur-settings');
-        
+
         document.querySelectorAll('input[name="weightType"]').forEach(i => i.disabled = true);
         addItemBtn.disabled = true;
     } else {
@@ -309,11 +304,17 @@ function updateButtons() {
         weightSettings.classList.remove('blur-settings');
         addItemBtn.classList.remove('blur-settings', 'opacity-50');
         csvSettings.classList.remove('blur-settings');
-        
+
         document.querySelectorAll('input[name="weightType"]').forEach(i => i.disabled = false);
         addItemBtn.disabled = false;
     }
 
+    const locked = isSpinning || Boolean(state.pendingWinner);
+    itemList.querySelectorAll('input, button').forEach(el => { el.disabled = locked || state.config.hideSettings; });
+    [modeProbBtn, modeSubBtn, addItemBtn, document.getElementById('saveCsvBtn'), document.getElementById('loadCsvBtn')].forEach(el => { el.disabled = locked || state.config.hideSettings; });
+    document.querySelectorAll('input[name="weightType"]').forEach(el => { el.disabled = locked || state.config.hideSettings; });
+    document.getElementById('uniformAppearanceCheckbox').disabled = locked;
+    ['clearHistoryBtn', 'clearHistoryBtnTop'].forEach(id => { document.getElementById(id).disabled = isSpinning; });
     // 全体残数の表示
     const totalCountContainer = document.getElementById('totalCountContainer');
     const totalCountValue = document.getElementById('totalCountValue');
@@ -329,7 +330,7 @@ function updateButtons() {
     // チェックボックス・ラジオの状態同期
     document.getElementById('hideSettingsCheckbox').checked = state.config.hideSettings;
     document.getElementById('uniformAppearanceCheckbox').checked = state.config.uniformAppearance;
-    
+
     const weightRadios = document.querySelectorAll('input[name="weightType"]');
     weightRadios.forEach(radio => {
         radio.checked = (radio.value === state.config.weightType);
@@ -351,12 +352,12 @@ function animationLoop() {
         const now = performance.now();
         const elapsed = now - stopStartTime;
         const t = Math.min(1, elapsed / stopDuration);
-        
+
         // 四次イージング (Quartic Ease-Out) - 三次よりさらに終盤がゆったり
         const easedT = 1 - Math.pow(1 - t, 4);
-        
+
         angle = stopStartAngle + (targetAngle - stopStartAngle) * easedT;
-        
+
         if (t >= 1) {
             angle = targetAngle;
             animState = 'none';
@@ -391,12 +392,12 @@ function spin() {
 
 function stop() {
     if (animState !== 'spinning') return;
-    
+
     const winner = pickWinnerByWeight();
     state.pendingWinner = winner;
 
     targetAngle = getTargetAngle(winner);
-    
+
     animState = 'stopping';
     stopStartTime = performance.now();
     stopStartAngle = angle;
@@ -426,17 +427,17 @@ function getTargetAngle(winner) {
     const isUniform = Boolean(state.config.uniformAppearance);
     const visualItems = isUniform ? state.items : getActiveItems();
     const totalWeight = isUniform ? visualItems.length : visualItems.reduce((acc, item) => acc + item.currentWeight, 0);
-    
+
     let currentPos = 0;
     for (const item of visualItems) {
         const slice = isUniform ? (Math.PI * 2 / visualItems.length) : (item.currentWeight / totalWeight) * Math.PI * 2;
         if (item.id === winner.id) {
             // セグメントの中央をポインターに合わせる
             const targetInWheel = currentPos + slice / 2;
-            
+
             // 矢印の位置（-PI/2）に targetInWheel が来る角度を求める
             let target = -Math.PI / 2 - targetInWheel;
-            
+
             // 現在の角度より大きく、かつ最低でも N回転 させる
             const minRotation = Math.PI * 2 * 3; // 最低3回転
             while (target < angle + minRotation) {
@@ -476,7 +477,7 @@ function finishSpin() {
 }
 
 function handleSet() {
-    if (!state.pendingWinner) return;
+    if (isSpinning || animState !== 'none' || !state.pendingWinner) return;
 
     const winner = state.pendingWinner;
 
@@ -509,7 +510,7 @@ function handleSet() {
 
 function showResult(name) {
     const display = document.getElementById('resultDisplay');
-    display.innerHTML = `<div class="text-2xl font-black text-blue-600 animate-bounce">【${name}】が当選しました！</div>`;
+    display.innerHTML = `<div class="text-2xl font-black text-blue-600 animate-bounce">【${ToolUtils.escapeHTML(name)}】が当選しました！</div>`;
 }
 
 // --- イベント設定 ---
@@ -547,7 +548,7 @@ function setupEventListeners() {
     };
 
     document.getElementById('addItemBtn').onclick = () => {
-        const id = Date.now().toString();
+        const id = Date.now().toString() + Math.random().toString(36).slice(2);
         const colors = ['#ff4444', '#ffaa00', '#ffcc00', '#44ccff', '#44ff44', '#cc44ff', '#ff44cc'];
         const color = colors[state.items.length % colors.length];
         state.items.push({ id, name: '項目' + (state.items.length + 1), weight: 1, color });
@@ -559,6 +560,7 @@ function setupEventListeners() {
     const historyClearHandler = () => {
         if (confirm('履歴をクリアし、減算状態をリセットしますか？')) {
             state.history = [];
+            state.pendingWinner = null;
             resetCurrentWeights();
             document.getElementById('resultDisplay').innerHTML = '';
             console.log('History and weights cleared');
@@ -581,42 +583,29 @@ function setupEventListeners() {
 }
 
 function exportCSV() {
-    let csv = 'ID,Name,Weight,Color\n';
-    state.items.forEach(i => {
-        csv += `${i.id},"${i.name}",${i.weight},${i.color}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `roulette_config_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
+    const rows = [['ID', 'Name', 'Weight', 'Color'], ...state.items.map(i => [i.id, i.name, i.weight, i.color])];
+    const csv = rows.map(row => row.map(ToolUtils.csvField).join(',')).join('\r\n');
+    ToolUtils.downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }), 'roulette_config_' + new Date().toISOString().slice(0, 10) + '.csv');
 }
-
 function importCSV(file) {
+    if (isSpinning || state.pendingWinner) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
-        const lines = e.target.result.split('\n');
-        const newItems = [];
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            const parts = line.split(',');
-            if (parts.length < 4) continue;
-            newItems.push({
-                id: parts[0],
-                name: parts[1].replace(/"/g, ''),
-                weight: parseFloat(parts[2]) || 0,
-                color: parts[3]
+    reader.onload = event => {
+        try {
+            const rows = ToolUtils.parseCSV(event.target.result);
+            if (rows[0]?.join(',') !== 'ID,Name,Weight,Color') throw new Error('ルーレット用のCSVを選択してください。');
+            const ids = new Set();
+            const items = rows.slice(1).filter(row => row.some(Boolean)).map(([id, name, value, color]) => {
+                const weight = Number(value);
+                if (!id || ids.has(id) || name === undefined || value === undefined || !Number.isFinite(weight) || weight < 0 || !/^#[0-9a-f]{6}$/i.test(color)) throw new Error('CSVの項目ID、重み、または色が不正です。');
+                ids.add(id); return { id, name, weight, color };
             });
-        }
-        if (newItems.length > 0) {
-            state.items = newItems;
-            resetCurrentWeights();
-            render();
-            saveState();
-            alert('設定を読み込みました。');
-        }
+            if (!items.length) throw new Error('抽選項目がありません。');
+            if (!confirm('現在の抽選項目をCSVの内容で上書きしますか？')) return;
+            state.items = items; state.pendingWinner = null; resetCurrentWeights(); render(); saveState(); ToolUtils.notify('設定を読み込みました。');
+        } catch (error) { ToolUtils.notify(error.message); }
     };
+    reader.onerror = () => ToolUtils.notify('CSVを読み込めませんでした。');
     reader.readAsText(file);
 }
 

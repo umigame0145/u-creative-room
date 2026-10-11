@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <script src="../common/tool-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>コピペったん | よく使う定型文を組み合わせて素早くコピペ作成 - Uの創作部屋</title>
     <meta name="description" content="よく使うフレーズを組み合わせて、素早く文章を作成・コピーできる便利ツール。作業効率化に役立ちます。ブラウザ完結で安全なストック機能付き。">
@@ -11,14 +12,16 @@
     <meta property="og:description" content="よく使うフレーズを組み合わせて、素早く文章を作成・コピーできる便利ツール。作業効率化に役立ちます。ブラウザ完結で安全なストック機能付き。" />
     <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/utilities.css">
     <link rel="stylesheet" href="../common/style.css">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
      crossorigin="anonymous"></script>
+<link rel="canonical" href="https://u-t-on.com/tools/copy-pattan.html">
+<link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml">
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans">
-    <div id="common-header"></div>
+    <div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
 
     <main class="max-w-3xl mx-auto px-4 py-8">
         <div class="mb-8 text-center">
@@ -32,9 +35,9 @@
                 <button id="clearAllBtn" class="text-xs font-bold text-red-400 hover:text-red-600 transition p-1">全て消去</button>
             </div>
             <p class="text-[11px] text-gray-400 mb-3">素材を追加したり、直接入力して文章を完成させる場所です。</p>
-            
+
             <textarea id="mainTextArea" class="w-full h-48 p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-blue-400 focus:ring-0 outline-none transition resize-none font-mono text-sm" placeholder="素材をポチポチして文章を作ろう..."></textarea>
-            
+
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
                 <button id="copyBtn" class="py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 active:scale-95 transition flex items-center justify-center gap-2">
                     <span>📋</span> <span>コピー</span>
@@ -57,7 +60,7 @@
                 <label class="text-sm font-bold text-gray-700">🧩 素材文字列</label>
             </div>
             <p class="text-[11px] text-gray-400 mb-4">よく使う単語やフレーズを入力して「追加」で上のエリアへ送ります。「＋」で行を増やせます。</p>
-            
+
             <div id="materialInputContainer" class="space-y-3 mb-4">
                 <div class="flex gap-2 material-row">
                     <input type="text" class="flex-1 p-3 bg-gray-50 border-0 rounded-xl font-bold outline-none material-input text-sm" placeholder="素材（例：#Uの創作部屋）">
@@ -76,11 +79,11 @@
                 <label class="text-sm font-bold text-gray-700">📦 保存済み文字列（ストック）</label>
             </div>
             <p class="text-[11px] text-gray-400 mb-4">よく使う完成文をストックしておく場所です。再利用や編集が可能です。</p>
-            
+
             <div id="stockList" class="space-y-4">
                 <p class="text-center py-8 text-gray-300 text-xs italic">保存されたデータはありません</p>
             </div>
-            
+
             <div class="mt-6 p-4 bg-blue-50/50 rounded-2xl">
                 <h4 class="text-[11px] font-bold text-blue-600 mb-2">💡 ボタンの機能説明</h4>
                 <ul class="text-[10px] text-blue-500 space-y-1.5 leading-relaxed">
@@ -106,9 +109,10 @@
                 </div>
             </div>
         </section>
-    </main>
+    <section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">いつもの言葉を組み合わせて、すぐコピー</h2><p>挨拶、案内文、ハッシュタグなどを素材として登録し、必要なものを順番に追加して文章を作れます。完成した文章は保存済みリストに入れて繰り返し使えます。</p><ol><li>素材欄によく使うフレーズを入力します。素材は追加・削除できます。</li><li>素材の「追加」で作成エリアに連結します。文章の編集や「元に戻す」もできます。</li><li>「コピー」で他のアプリに貼り付けます。バックアップにはCSV保存を使います。</li></ol><div class="guide-note"><h3>利用時のポイント</h3><p>素材の間には空白や改行を自動挿入しません。必要な区切りは文章側で入力してください。データは同じ端末・同じブラウザに保存されます。パスワードなどの秘密情報を保存する用途には適していません。</p></div><details><summary>保存した文章は別の端末に移せますか？</summary><p>CSV保存で書き出し、移動先の端末でCSVを読み込めます。読み込みはそのブラウザの既存データを上書きするため、必要な文章を先に保存してください。</p></details><p class="guide-bottom">画像・入力内容はブラウザで処理します。サイト閲覧時の外部サービスについては<a href="../privacy.html">プライバシーポリシー</a>をご確認ください。<a href="../contact.html">不具合を報告する →</a></p></section>
+</main>
 
-    <div id="common-footer"></div>
+    <div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a><a href="../contact.html">お問い合わせ</a></nav></div>
     <script src="../common/site-data.js"></script>
     <script src="../common/site-manager.js"></script>
     <script src="copy-pattan.js"></script>

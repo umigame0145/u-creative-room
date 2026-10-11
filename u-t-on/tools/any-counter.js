@@ -26,21 +26,20 @@ const defaultGroup = () => ({
  * データの読み込み
  */
 function loadData() {
-    const saved = localStorage.getItem('any_counter_data');
-    if (saved) {
-        state = JSON.parse(saved);
-        // IDの重複などを防ぐため、読み込み後に整合性チェックをしても良い
-    } else {
-        // 初期項目を1つ追加しておく
-        state.children.push(defaultChild());
+    const saved = ToolUtils.readJSON('any_counter_data', null);
+    if (saved && Array.isArray(saved.children) && Array.isArray(saved.groups)) {
+        const ids = new Set();
+        state.children = saved.children.filter(c => c && typeof c.id === 'string' && !ids.has(c.id) && ids.add(c.id)).map(c => ({ id: c.id, name: String(c.name ?? '項目'), count: Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, Math.floor(Number(c.count) || 0))) }));
+        state.groups = saved.groups.filter(g => g && typeof g.id === 'string' && Array.isArray(g.memberIds)).map(g => ({ id: g.id, name: String(g.name ?? 'グループ'), memberIds: [...new Set(g.memberIds)].filter(id => ids.has(id)) }));
     }
+    if (!state.children.length) state.children.push(defaultChild());
 }
 
 /**
  * データの保存
  */
 function saveData() {
-    localStorage.setItem('any_counter_data', JSON.stringify(state));
+    ToolUtils.writeJSON('any_counter_data', state);
 }
 
 /**
@@ -59,7 +58,7 @@ function render() {
 function renderTotal() {
     const total = state.children.reduce((acc, child) => acc + child.count, 0);
     const display = document.getElementById('totalDisplay');
-    
+
     // カウントアップアニメーション（簡易版）
     const startValue = parseInt(display.textContent) || 0;
     if (startValue !== total) {
@@ -76,13 +75,14 @@ function renderTotal() {
  * 数値のアニメーション
  */
 function animateValue(obj, start, end, duration) {
+    cancelAnimationFrame(obj.countAnimation);
     let startTimestamp = null;
     const step = (timestamp) => {
         if (!startTimestamp) startTimestamp = timestamp;
         const progress = Math.min((timestamp - startTimestamp) / duration, 1);
         obj.innerHTML = Math.floor(progress * (end - start) + start);
         if (progress < 1) {
-            window.requestAnimationFrame(step);
+            obj.countAnimation = window.requestAnimationFrame(step);
         } else {
             obj.innerHTML = end;
         }
@@ -115,7 +115,7 @@ function renderChildren() {
         if (total > 0) {
             const ratio = (child.count / total * 100).toFixed(1);
             ratioDisplay.textContent = `割合: ${ratio}%`;
-            
+
             if (child.count > 0) {
                 const prob = (total / child.count).toFixed(2);
                 probDisplay.textContent = `確率: 1/${prob}`;
@@ -150,7 +150,7 @@ function renderChildren() {
 function updateCount(id, amount) {
     const child = state.children.find(c => c.id === id);
     if (child) {
-        child.count = Math.max(0, child.count + amount);
+        child.count = Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, child.count + amount));
         render();
     }
 }
@@ -190,13 +190,13 @@ function renderGroups() {
         const groupTotal = state.children
             .filter(c => group.memberIds.includes(c.id))
             .reduce((acc, c) => acc + c.count, 0);
-        
+
         countDisplay.textContent = groupTotal;
 
         if (total > 0) {
             const ratio = (groupTotal / total * 100).toFixed(1);
             ratioDisplay.textContent = `合計の ${ratio}%`;
-            
+
             if (groupTotal > 0) {
                 const prob = (total / groupTotal).toFixed(2);
                 probDisplay.textContent = `出現率 1/${prob}`;
@@ -243,6 +243,7 @@ function renderGroups() {
 
 // 全リセット
 function resetAll() {
+    if (!confirm('すべてのカウントを0に戻しますか？')) return;
     state.children.forEach(c => c.count = 0);
     render();
 }
@@ -251,73 +252,34 @@ function resetAll() {
  * CSVエクスポート
  */
 function exportCSV() {
-    let csv = 'Type,ID,Name,Value/Members\n';
-    
-    // 子カウンター
-    state.children.forEach(c => {
-        csv += `Child,${c.id},"${c.name}",${c.count}\n`;
-    });
-    
-    // グループ
-    state.groups.forEach(g => {
-        csv += `Group,${g.id},"${g.name}",${g.memberIds.join('|')}\n`;
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    const date = new Date().toISOString().slice(0, 10);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `any-counter_${date}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const rows = [['Type', 'ID', 'Name', 'Value/Members'], ...state.children.map(c => ['Child', c.id, c.name, c.count]), ...state.groups.map(g => ['Group', g.id, g.name, g.memberIds.join('|')])];
+    const csv = rows.map(row => row.map(ToolUtils.csvField).join(',')).join('\r\n');
+    ToolUtils.downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }), 'any-counter_' + new Date().toISOString().slice(0, 10) + '.csv');
 }
-
-/**
- * CSVインポート
- */
 function importCSV(file) {
     const reader = new FileReader();
-    reader.onload = (e) => {
-        const text = e.target.result;
-        const lines = text.split('\n');
-        
-        const newChildren = [];
-        const newGroups = [];
-        
-        // ヘッダーを飛ばして処理
-        for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            
-            // カンマで分割（簡易的なダブルクォーテーション対応）
-            const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-            if (!parts || parts.length < 4) continue;
-            
-            const type = parts[0];
-            const id = parts[1];
-            const name = parts[2].replace(/"/g, '');
-            const value = parts[3];
-            
-            if (type === 'Child') {
-                newChildren.push({ id, name, count: parseInt(value) || 0 });
-            } else if (type === 'Group') {
-                newGroups.push({ id, name, memberIds: value.split('|').filter(v => v) });
+    reader.onload = event => {
+        try {
+            const rows = ToolUtils.parseCSV(event.target.result);
+            if (rows[0]?.join(',') !== 'Type,ID,Name,Value/Members') throw new Error('カウンター用のCSVを選択してください。');
+            const children = [], groups = [], ids = new Set();
+            for (const [type, id, name, value] of rows.slice(1)) {
+                if (!type) continue;
+                if (!id || name === undefined || value === undefined) throw new Error('CSVの列が不足しています。');
+                if (type === 'Child') {
+                    const count = Number(value);
+                    if (ids.has(id) || !Number.isSafeInteger(count) || count < 0) throw new Error('項目IDやカウントの値が不正です。');
+                    ids.add(id); children.push({ id, name, count });
+                } else if (type === 'Group') groups.push({ id, name, memberIds: value.split('|').filter(Boolean) });
+                else throw new Error('CSVの種類が不正です。');
             }
-        }
-        
-        if (newChildren.length > 0) {
-            state.children = newChildren;
-            state.groups = newGroups;
-            render();
-            alert('CSVのインポートが完了しました。');
-        } else {
-            alert('正しい形式のCSVファイルではありません。');
-        }
+            if (!children.length) throw new Error('カウント項目がありません。');
+            groups.forEach(g => { g.memberIds = [...new Set(g.memberIds)].filter(id => ids.has(id)); });
+            if (!confirm('現在のカウンターをCSVの内容で上書きしますか？')) return;
+            state = { children, groups }; render(); ToolUtils.notify('CSVを読み込みました。');
+        } catch (error) { ToolUtils.notify(error.message); }
     };
+    reader.onerror = () => ToolUtils.notify('CSVを読み込めませんでした。');
     reader.readAsText(file);
 }
 

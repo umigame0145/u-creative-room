@@ -43,8 +43,8 @@ function initExplanations() {
 
             el.parentElement.addEventListener('mouseenter', () => {
                 const rect = el.getBoundingClientRect();
-                box.style.top = 'auto'; 
-                if (rect.top < 180) { 
+                box.style.top = 'auto';
+                if (rect.top < 180) {
                     box.classList.remove('tooltip-up');
                     box.classList.add('tooltip-down');
                 } else {
@@ -96,7 +96,7 @@ function updateAlignSettingsState() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    initExplanations(); 
+    initExplanations();
     const imageInput = document.getElementById('imageInput');
     const folderInput = document.getElementById('folderInput');
     const addMoreInput = document.getElementById('addMoreInput');
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         handleFiles(files);
     });
     addMoreInput?.addEventListener('change', (e) => handleFiles(e.target.files, true));
-    
+
     generateBtn?.addEventListener('click', generatePDF);
     pageSize?.addEventListener('change', updateAlignSettingsState);
 
@@ -137,44 +137,38 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('undoBtn')?.addEventListener('click', undoAction);
 });
 
+let imageBatchBusy = false;
 async function handleFiles(fileList, isAppend = false) {
+    if (imageBatchBusy) return;
+    imageBatchBusy = true;
     const files = Array.from(fileList);
-    const supportedExts = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'tiff', 'tif'];
-    const targetFiles = files.filter(f => supportedExts.includes(f.name.split('.').pop().toLowerCase()));
-    if (targetFiles.length === 0) return;
-    if (state.images.length > 0) saveHistory();
-    if (!isAppend) state.images = [];
-    toggleProgress(true, `画像を読み込み中... (0/${targetFiles.length})`);
-    for (let i = 0; i < targetFiles.length; i++) {
-        updateStatus(`解析中... (${i + 1}/${targetFiles.length})`);
-        try {
-            const data = await processImageMinimal(targetFiles[i]);
-            state.images.push(data);
-        } catch (err) { console.error(err); }
-        if (i % 10 === 0) await new Promise(r => setTimeout(r, 0));
+    const loaded = [];
+    toggleProgress(true, '画像を読み込み中...');
+    try {
+        for (let i = 0; i < files.length; i++) {
+            updateStatus('画像を読み込み中... (' + (i + 1) + '/' + files.length + ')');
+            try { loaded.push(await processImageMinimal(files[i])); }
+            catch (error) { ToolUtils.notify(files[i].name + ': ' + error.message); }
+        }
+        if (loaded.length) {
+            saveHistory();
+            state.images = isAppend ? state.images.concat(loaded) : loaded;
+            state.selectedIndex = null; renderList();
+        }
+    } finally {
+        imageBatchBusy = false; toggleProgress(false);
+        ['imageInput', 'folderInput', 'addMoreInput'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
     }
-    renderList();
-    toggleProgress(false);
-    if (imageInput) imageInput.value = '';
-    if (folderInput) folderInput.value = '';
 }
-
 async function processImageMinimal(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const scale = Math.min(120 / img.width, 120 / img.height, 1);
-                canvas.width = img.width * scale; canvas.height = img.height * scale;
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                resolve({ name: file.name, thumb: canvas.toDataURL('image/jpeg', 0.4), file: file, w: img.width, h: img.height });
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
+    const { image: img, file: source, url } = await ToolUtils.decodeImage(file);
+    try {
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(120 / img.width, 120 / img.height, 1);
+        canvas.width = Math.max(1, Math.round(img.width * scale)); canvas.height = Math.max(1, Math.round(img.height * scale));
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        return { name: file.name, thumb: canvas.toDataURL('image/jpeg', 0.4), file: source, w: img.width, h: img.height };
+    } finally { URL.revokeObjectURL(url); }
 }
 
 function renderList() {
@@ -202,54 +196,59 @@ function renderList() {
             state.selectedIndex = idx; renderList();
         });
         li.onclick = () => { state.selectedIndex = idx; renderList(); };
-        li.innerHTML = `<div class="flex items-center gap-4 w-full pointer-events-none"><div class="text-gray-400">☰</div><div class="w-6 text-xs font-bold text-gray-400 font-mono">${idx+1}</div><img src="${img.thumb}" class="w-12 h-12 object-cover rounded shadow-sm bg-gray-100"><div class="flex-1 truncate text-sm font-bold text-gray-700">${img.name}</div></div>`;
+        li.innerHTML = `<div class="flex items-center gap-4 w-full pointer-events-none"><div class="text-gray-400">☰</div><div class="w-6 text-xs font-bold text-gray-400 font-mono">${idx+1}</div><img src="${img.thumb}" class="w-12 h-12 object-cover rounded shadow-sm bg-gray-100"><div class="flex-1 truncate text-sm font-bold text-gray-700">${ToolUtils.escapeHTML(img.name)}</div></div>`;
         container?.appendChild(li);
     });
 }
 
 async function generatePDF() {
-    if (state.images.length === 0) return;
-    const { jsPDF } = window.jspdf;
-    let margin = Math.max(0, parseFloat(document.getElementById('marginSize')?.value || 0));
-    const pageSizeSetting = document.getElementById('pageSize')?.value || 'original';
-    const fileNameInput = document.getElementById('pdfFileName')?.value || 'u-packed-images';
-    toggleProgress(true, `PDFを作成中... (0/${state.images.length})`);
-    const doc = new jsPDF({ orientation: 'p', unit: 'mm' });
-    for (let i = 0; i < state.images.length; i++) {
-        updateStatus(`作成中... (${i + 1}/${state.images.length})`);
-        const imgData = state.images[i];
-        const fullImg = await new Promise((resolve) => {
-            const r = new FileReader();
-            r.onload = (e) => { const img = new Image(); img.onload = () => resolve(img); img.src = e.target.result; };
-            r.readAsDataURL(imgData.file);
-        });
-        let pw, ph;
-        if (pageSizeSetting === 'original') {
-            pw = imgData.w * 0.264583; ph = imgData.h * 0.264583;
-            if (i > 0) doc.addPage([pw, ph], pw > ph ? 'l' : 'p');
-            else { doc.deletePage(1); doc.addPage([pw, ph], pw > ph ? 'l' : 'p'); }
-        } else {
-            if (i > 0) doc.addPage(pageSizeSetting);
-            pw = doc.internal.pageSize.getWidth(); ph = doc.internal.pageSize.getHeight();
+    if (imageBatchBusy || state.images.length === 0) return;
+    if (!window.jspdf?.jsPDF) { ToolUtils.notify('PDF作成機能を読み込めません。接続を確認してページを再読み込みしてください。'); return; }
+    const margin = Math.max(0, Number(document.getElementById('marginSize')?.value) || 0);
+    const pageSize = document.getElementById('pageSize')?.value || 'original';
+    const fileName = (document.getElementById('pdfFileName')?.value.trim() || 'u-packed-images').replace(/\.pdf$/i, '');
+    imageBatchBusy = true;
+    const button = document.getElementById('generatePdfBtn'); button.disabled = true;
+    toggleProgress(true, 'PDFを作成中...');
+    try {
+        const first = state.images[0];
+        const original = pageSize === 'original';
+        const paperFormat = pageSize === 'b5' ? [182, 257] : pageSize;
+        const initialFormat = original ? [first.w * 0.264583, first.h * 0.264583] : paperFormat;
+        const doc = new window.jspdf.jsPDF({ orientation: original && first.w > first.h ? 'l' : 'p', unit: 'mm', format: initialFormat });
+        for (let i = 0; i < state.images.length; i++) {
+            const data = state.images[i];
+            const format = original ? [data.w * 0.264583, data.h * 0.264583] : paperFormat;
+            if (i > 0) doc.addPage(format, original && data.w > data.h ? 'l' : 'p');
+            const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+            if (margin * 2 >= Math.min(pw, ph)) throw new Error('余白が大きすぎます。用紙の短辺の半分未満に設定してください。');
+            const availableW = pw - margin * 2, availableH = ph - margin * 2;
+            const scale = Math.min(availableW / data.w, availableH / data.h);
+            const dw = data.w * scale, dh = data.h * scale;
+            let x = margin + (availableW - dw) / 2, y = margin + (availableH - dh) / 2;
+            if (!original) {
+                if (state.align.includes('l')) x = margin;
+                if (state.align.includes('r')) x = margin + availableW - dw;
+                if (state.align.startsWith('t')) y = margin;
+                if (state.align.startsWith('b')) y = margin + availableH - dh;
+            }
+            const { image, url } = await ToolUtils.decodeImage(data.file);
+            try {
+                const canvas = document.createElement('canvas'); canvas.width = data.w; canvas.height = data.h;
+                const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(image, 0, 0);
+                doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', x, y, dw, dh);
+            } finally { URL.revokeObjectURL(url); }
+            updateStatus('PDFを作成中... (' + (i + 1) + '/' + state.images.length + ')');
+            await new Promise(resolve => setTimeout(resolve, 0));
         }
-        const pW = pw - (margin * 2); const pH = ph - (margin * 2);
-        const s = Math.min(pW / imgData.w, pH / imgData.h);
-        const dW = imgData.w * s; const dH = imgData.h * s;
-        let x = margin + (pW - dW) / 2; let y = margin + (pH - dH) / 2;
-        if (state.align.includes('l')) x = margin;
-        if (state.align.includes('r')) x = margin + (pW - dW);
-        if (state.align.startsWith('t')) y = margin;
-        if (state.align.startsWith('b')) y = margin + (pH - dH);
-        doc.addImage(fullImg, 'JPEG', x, y, dW, dH);
-        fullImg.src = ""; await new Promise(r => setTimeout(r, 10));
-    }
-    doc.save(`${fileNameInput}.pdf`);
-    toggleProgress(false);
+        doc.save(fileName + '.pdf');
+    } catch (error) { ToolUtils.notify(error.message || 'PDFを作成できませんでした。画像の枚数やサイズを減らしてください。'); }
+    finally { imageBatchBusy = false; button.disabled = false; toggleProgress(false); }
 }
-
-function saveHistory() { state.history.push(JSON.stringify(state.images)); if (state.history.length > 20) state.history.shift(); }
-function undoAction() { if (state.history.length === 0) return; state.images = JSON.parse(state.history.pop()); state.selectedIndex = null; renderList(); }
+function saveHistory() { state.history.push(state.images.slice()); if (state.history.length > 20) state.history.shift(); }
+function undoAction() { if (imageBatchBusy || state.history.length === 0) return; state.images = state.history.pop(); state.selectedIndex = null; renderList(); }
 function moveToIndex() {
+    if (imageBatchBusy) return;
     if (state.selectedIndex === null) return;
     const target = parseInt(document.getElementById('targetPage')?.value || 0) - 1;
     if (isNaN(target) || target < 0 || target >= state.images.length) return;
@@ -259,6 +258,7 @@ function moveToIndex() {
     state.selectedIndex = target; renderList();
 }
 function stepMove(dir) {
+    if (imageBatchBusy) return;
     if (state.selectedIndex === null) return;
     const newIdx = state.selectedIndex + dir;
     if (newIdx < 0 || newIdx >= state.images.length) return;
@@ -267,6 +267,7 @@ function stepMove(dir) {
     state.selectedIndex = newIdx; renderList();
 }
 function deleteSelected() {
+    if (imageBatchBusy) return;
     if (state.selectedIndex === null || !confirm("この画像をリストから削除しますか？")) return;
     saveHistory();
     state.images.splice(state.selectedIndex, 1);

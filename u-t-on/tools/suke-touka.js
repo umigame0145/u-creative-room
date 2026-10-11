@@ -24,7 +24,7 @@ class SukeTouka {
         this.mosaicRotateSlider = document.getElementById('mosaicRotateSlider');
         this.mosaicSize = document.getElementById('mosaicSize');
         this.mosaicSizeSlider = document.getElementById('mosaicSizeSlider');
-        
+
         this.opacityInput = document.getElementById('transparencyOpacity');
         this.opacityValueLabel = document.getElementById('opacityValue');
 
@@ -53,7 +53,7 @@ class SukeTouka {
 
     init() {
         // Event Listeners
-        this.imageInput.addEventListener('change', (e) => this.handleImageUpload(e.target.files[0]));
+        this.imageInput.addEventListener('change', (e) => { this.handleImageUpload(e.target.files[0]); e.target.value = ''; });
 
         this.dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -104,7 +104,7 @@ class SukeTouka {
         });
 
         this.canvas.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
-        
+
         this.applyBtn.addEventListener('click', () => this.applyTransparency());
         this.undoBtn.addEventListener('click', () => this.undo());
         this.clearBtn.addEventListener('click', () => this.clearAll());
@@ -118,6 +118,7 @@ class SukeTouka {
         this.moveRightBtn.addEventListener('click', () => this.movePreview(1, 0));
 
         window.addEventListener('keydown', (e) => {
+            if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
             if (!this.isImageLoaded || !this.previewPos) return;
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
@@ -155,8 +156,10 @@ class SukeTouka {
         if (!file || !file.type.startsWith('image/')) return;
 
         const reader = new FileReader();
+        reader.onerror = () => ToolUtils.notify('画像を読み込めませんでした。');
         reader.onload = (e) => {
             const img = new Image();
+            img.onerror = () => ToolUtils.notify('画像を読み込めません。PNG・JPEG・WebPをお試しください。');
             img.onload = () => {
                 this.originalImage = img;
                 this.canvas.width = img.width;
@@ -299,6 +302,7 @@ class SukeTouka {
         const config = this.getCurrentConfig(this.previewPos);
         this.appliedTransparencies.push(config);
 
+        this.previewPos = null;
         this.draw();
         this.statusMessage.textContent = '透過を適用しました。';
 
@@ -309,6 +313,7 @@ class SukeTouka {
     undo() {
         if (this.appliedTransparencies.length > 0) {
             this.appliedTransparencies.pop();
+            this.previewPos = null;
             this.draw();
         }
     }
@@ -316,6 +321,7 @@ class SukeTouka {
     clearAll() {
         if (confirm('すべての透過設定を解除して元に戻しますか？')) {
             this.appliedTransparencies = [];
+            this.previewPos = null;
             this.draw();
         }
     }
@@ -332,7 +338,12 @@ class SukeTouka {
 
         const link = document.createElement('a');
         link.download = `suke-touka-${Date.now()}.${extension}`;
-        link.href = this.canvas.toDataURL(format, 0.9);
+        let output = this.canvas;
+        if (format === 'image/jpeg') {
+            output = document.createElement('canvas'); output.width = this.canvas.width; output.height = this.canvas.height;
+            const ctx = output.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, output.width, output.height); ctx.drawImage(this.canvas, 0, 0);
+        }
+        link.href = output.toDataURL(format, 0.9);
         link.click();
 
         // Restore preview

@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="../common/tool-utils.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>画像結合ツール（縦・横） | 複数画像を1枚に繋げる - Uの創作部屋</title>
     <meta name="description" content="複数の画像を縦または横に結合して1枚の画像にします。比率維持、背景色変更、HEIC対応。SNS投稿や資料作成に最適な無料ツールです。">
 
@@ -14,16 +15,18 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/utilities.css">
     <link rel="stylesheet" href="../common/style.css">
 
     <script src="image-joiner.js"></script>
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
      crossorigin="anonymous"></script>
+<link rel="canonical" href="https://u-t-on.com/tools/image-joiner.html">
+<link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml">
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans">
-    <div id="common-header"></div>
+    <div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
 
     <main class="max-w-4xl mx-auto px-4 py-8">
         <div class="mb-8">
@@ -44,7 +47,7 @@
                 <div class="text-blue-600 font-bold group-hover:scale-105 transition-transform">
                     画像をドラッグ＆ドロップ、またはクリックで選択
                 </div>
-                <p class="text-xs text-gray-400 mt-2">※HEIC, TIFF対応</p>
+                <p class="text-xs text-gray-400 mt-2">PNG・JPEG・WebP推奨 / HEICは変換機能が必要です</p>
             </div>
         </section>
 
@@ -61,7 +64,7 @@
 
         <section class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
             <h2 class="text-lg font-bold text-gray-700 mb-6 flex items-center">STEP 3: 結合設定</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-6">
                     <div>
@@ -153,7 +156,7 @@
                     <div class="tooltip-box" data-explain-id="step7_preview"></div>
                 </div>
             </div>
-            
+
             <div id="canvasWrapper" class="relative bg-gray-100 rounded-2xl overflow-auto p-4 flex justify-center items-start">
                 <canvas id="resultCanvas" class="max-w-full h-auto"></canvas>
             </div>
@@ -177,9 +180,10 @@
                 <div data-explain-block="step7_preview" class="p-5 bg-gray-50 rounded-2xl border border-gray-100"></div>
             </div>
         </div>
-    </main>
+    <section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">スクリーンショットを一枚にまとめたいときに</h2><p>手順の説明画像や、複数の写真を並べた比較画像を作れます。縦結合はスマホで読む資料に、横結合はビフォー・アフターの比較に向いています。</p><ol><li>PNG・JPEG・WebPなどの画像を選択します。複数選択やドラッグ＆ドロップが使えます。</li><li>サムネイルの矢印で順番を調整し、縦・横とサイズの基準を選びます。</li><li>「結合画像を作成する」で確認してから、保存形式と名前を指定してダウンロードします。</li></ol><div class="guide-note"><h3>利用時のポイント</h3><p>透過を残すにはPNGかWebPを選んでください。JPEGでは背景色で塗りつぶします。HEICは変換ライブラリが必要で、TIFFは対応しているブラウザに限られます。大きな画像を大量に結合する場合は、先に解像度を下げてください。</p></div><details><summary>縦に結合すると画像の横幅はどうなりますか？</summary><p>「調整なし」では元のサイズを保ち、幅の差は背景色や透明な余白になります。「最大・最小」では横幅を揃え、縦横比を維持して調整します。横結合では高さが基準です。</p></details><p class="guide-bottom">画像・入力内容はブラウザで処理します。サイト閲覧時の外部サービスについては<a href="../privacy.html">プライバシーポリシー</a>をご確認ください。<a href="../contact.html">不具合を報告する →</a></p></section>
+</main>
 
-    <div id="common-footer"></div>
+    <div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a><a href="../contact.html">お問い合わせ</a></nav></div>
     <script src="../common/site-data.js"></script>
     <script src="../common/site-manager.js"></script>
 </body>

@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.10.12", content: "セクションタイマーを削除しました。" },
         { date: "2026.03.23", content: "新ツール「すけ透過？」を追加しました！" },
         { date: "2026.03.23", content: "新ツール「KOKOにモザイク」を追加しました！" },
         { date: "2026.03.22", content: "新ツール「myルーレット」を追加しました！" },
@@ -16,7 +17,6 @@ const SITE_DATA = {
         "image-joiner": "image-joiner_icon.svg",
         "image-binder": "image-binder_icon.svg",
         "copy-pattan": "copy-pattan_icon.svg",
-        "timer": "section-timer_icon.svg",
         "counter": "any-counter_icon.svg",
         "roulette": "my-roulette_icon.svg",
         "mosaic": "koko-ni-mosaic_icon.svg",
@@ -27,7 +27,7 @@ const SITE_DATA = {
             id: "image-joiner",
             category: "image",
             name: "画像結合ツール",
-            description: "複数の画像を縦や横に美しく結合。背景透過やHEIC形式にも対応しています。",
+            description: "複数の画像を縦や横に美しく結合。元のサイズの維持や、幅・高さを揃えた結合、背景透過に対応しています。",
             icon: "image-joiner",
             url: "tools/image-joiner.html",
             isUpdate: false
@@ -39,15 +39,6 @@ const SITE_DATA = {
             description: "複数の画像を1つのPDFファイルにまとめます。A4サイズへの自動収容や余白調整も可能です。",
             icon: "image-binder",
             url: "tools/img-binder-pdf.html",
-            isUpdate: false
-        },
-        {
-            id: "section-timer",
-            category: "count",
-            name: "セクションタイマー",
-            description: "残時間指定や時刻指定など、柔軟な設定が可能な全画面対応型タイマーです。",
-            icon: "timer",
-            url: "tools/section-timer.html",
             isUpdate: false
         },
         {
@@ -90,7 +81,7 @@ const SITE_DATA = {
             id: "suke-touka",
             category: "image",
             name: "すけ透過？",
-            description: "画像の好きな場所を透明にできる透過ツール。切り抜きやプライバシー保護に活用できます。",
+            description: "画像の好きな場所を透明にできる透過ツール。切り抜きや、重ねて使う素材作りに活用できます。",
             icon: "transparency",
             url: "tools/suke-touka.html",
             isUpdate: true
@@ -109,7 +100,6 @@ const SITE_DATA = {
         {
             groupName: "カウントツール",
             items: [
-                { name: "セクションタイマー", url: "tools/section-timer.html" },
                 { name: "なんでもカウンター", url: "tools/any-counter.html" },
                 { name: "myルーレット", url: "tools/my-roulette.html" }
             ]

@@ -52,7 +52,7 @@ class KokoNiMosaic {
 
     init() {
         // Event Listeners
-        this.imageInput.addEventListener('change', (e) => this.handleImageUpload(e.target.files[0]));
+        this.imageInput.addEventListener('change', (e) => { this.handleImageUpload(e.target.files[0]); e.target.value = ''; });
 
         this.dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -138,6 +138,7 @@ class KokoNiMosaic {
         this.moveRightBtn.addEventListener('click', () => this.movePreview(1, 0));
 
         window.addEventListener('keydown', (e) => {
+            if (e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
             if (!this.isImageLoaded || !this.previewMosaic) return;
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
@@ -175,8 +176,10 @@ class KokoNiMosaic {
         if (!file || !file.type.startsWith('image/')) return;
 
         const reader = new FileReader();
+        reader.onerror = () => ToolUtils.notify('画像を読み込めませんでした。');
         reader.onload = (e) => {
             const img = new Image();
+            img.onerror = () => ToolUtils.notify('画像を読み込めません。PNG・JPEG・WebPをお試しください。');
             img.onload = () => {
                 this.originalImage = img;
                 this.canvas.width = img.width;
@@ -185,6 +188,7 @@ class KokoNiMosaic {
                 this.emptyState.classList.add('hidden');
                 this.isImageLoaded = true;
                 this.appliedMosaics = [];
+                this.previewMosaic = null;
 
                 // Set max values for dimensions
                 const maxDim = Math.max(img.width, img.height);
@@ -402,7 +406,7 @@ class KokoNiMosaic {
         const config = this.getCurrentMosaicConfig(this.previewMosaic);
         this.appliedMosaics.push(config);
 
-        // プレビューを消さずに描画を更新
+        this.previewMosaic = null;
         this.draw();
 
         this.statusMessage.textContent = '確定しました。さらに追加できます。';
@@ -415,6 +419,7 @@ class KokoNiMosaic {
     undo() {
         if (this.appliedMosaics.length > 0) {
             this.appliedMosaics.pop();
+            this.previewMosaic = null;
             this.draw();
         }
     }
@@ -422,6 +427,7 @@ class KokoNiMosaic {
     clearAll() {
         if (confirm('すべてのモザイクを消去して元に戻しますか？')) {
             this.appliedMosaics = [];
+            this.previewMosaic = null;
             this.draw();
         }
     }
@@ -437,7 +443,12 @@ class KokoNiMosaic {
 
         const link = document.createElement('a');
         link.download = `koko-ni-mosaic-${Date.now()}.${extension}`;
-        link.href = this.canvas.toDataURL(format, 0.9);
+        let output = this.canvas;
+        if (format === 'image/jpeg') {
+            output = document.createElement('canvas'); output.width = this.canvas.width; output.height = this.canvas.height;
+            const ctx = output.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, output.width, output.height); ctx.drawImage(this.canvas, 0, 0);
+        }
+        link.href = output.toDataURL(format, 0.9);
         link.click();
 
         // プレビューを戻す

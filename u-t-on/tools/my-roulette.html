@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <script src="../common/tool-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>myルーレット | 自作できる多機能ルーレット（減算モード搭載） - Uの創作部屋</title>
     <meta name="description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。毎回リセットされる完全確率モードと、一度出た項目を減らしていく減算モードを搭載。">
@@ -13,12 +14,12 @@
     <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../common/utilities.css">
     <link rel="stylesheet" href="../common/style.css">
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        
+
         #rouletteCanvas {
             max-width: 100%;
             height: auto;
@@ -33,9 +34,7 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        .active-mode {
-            @apply ring-2 ring-blue-500 bg-blue-50;
-        }
+        .active-mode { outline: 2px solid #2563eb; background: #eff6ff; }
 
         #wheelPointer {
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
@@ -56,13 +55,16 @@
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
      crossorigin="anonymous"></script>
+<link rel="canonical" href="https://u-t-on.com/tools/my-roulette.html">
+<link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml">
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
-    <div id="common-header"></div>
+    <div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+<div class="tool-page-heading"><p class="eyebrow">時間・カウント</p><h1>myルーレット</h1><p>自由に項目を作れるカスタムルーレット。完全確率モードと減算モードを搭載しています。</p></div>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             <!-- 左側：当選履歴 -->
             <div class="lg:col-span-3 order-2 lg:order-1">
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 flex flex-col h-full max-h-[600px] lg:max-h-none">
@@ -96,7 +98,7 @@
                     <button id="startBtn" class="flex-grow py-5 bg-blue-600 text-white rounded-[2rem] text-xl font-black shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all">START</button>
                     <button id="stopBtn" class="flex-grow py-5 bg-gray-400 text-white rounded-[2rem] text-xl font-black shadow-lg cursor-not-allowed transition-all" disabled>STOP</button>
                 </div>
-                
+
                 <div id="resultDisplay" class="mt-6 text-center h-12">
                     <div class="text-2xl font-black text-blue-600 animate-bounce hidden">おめでとうございます！</div>
                 </div>
@@ -112,7 +114,7 @@
                 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 space-y-6">
                     <div>
                         <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Settings</h2>
-                        
+
                         <!-- 拡張機能チェックボックス -->
                         <div class="space-y-3 mb-6 bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
                             <label class="flex items-center gap-2 cursor-pointer group">
@@ -152,7 +154,7 @@
                             <h2 class="text-lg font-black text-gray-800 tracking-tight">項目リスト</h2>
                             <button id="addItemBtn" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all">+ 追加</button>
                         </div>
-                        
+
                         <div id="itemList" class="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
                             <!-- 項目がここに追加される -->
                         </div>
@@ -170,7 +172,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- 詳細な説明セクション -->
         <div class="mt-24 space-y-16">
             <section>
@@ -231,9 +233,10 @@
                 </p>
             </section>
         </div>
-    </main>
+    <section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">項目と重みを決めて、抽選を作る</h2><p>今日の作業、食事の候補、イベントの順番などを決める抽選に使えます。同じ項目を繰り返し選ぶ完全確率モードと、確定するたびに残数を減らす減算モードを選べます。</p><ol><li>項目名、色、重みを設定します。重みが0の項目は抽選対象になりません。</li><li>STARTで回転、STOPで停止します。結果が表示されたらSETで確定します。</li><li>減算モードでは確定後に残数が減ります。履歴クリアで履歴と残数をリセットできます。</li></ol><div class="guide-note"><h3>利用時のポイント</h3><p>重みは相対的な比率として扱います。例えば1と3なら25%と75%です。％表示でも合計を100に正規化して抽選します。「見た目を一律にする」は円の見た目だけを変え、抽選の重みは変えません。</p></div><details><summary>停止しただけで残数は減りますか？</summary><p>SETで確定したときに減ります。比率指定では1つ減り、％指定の減算モードでは当選した項目が次の抽選対象から外れます。</p></details><p class="guide-bottom">画像・入力内容はブラウザで処理します。サイト閲覧時の外部サービスについては<a href="../privacy.html">プライバシーポリシー</a>をご確認ください。<a href="../contact.html">不具合を報告する →</a></p></section>
+</main>
 
-    <div id="common-footer"></div>
+    <div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a><a href="../contact.html">お問い合わせ</a></nav></div>
 
     <!-- 項目テンプレート -->
     <template id="itemTemplate">

@@ -7,11 +7,11 @@
 const toolExplanations = {
     step1_upload: {
         title: "画像のアップロード",
-        body: "結合したい画像をフォルダから選択、またはこのエリアにドラッグ＆ドロップしてください。iPhoneのHEIC形式やTIFF形式にも対応しています。"
+        body: "結合したい画像をフォルダから選択、またはこのエリアにドラッグ＆ドロップしてください。HEICは変換機能が読み込まれている場合、TIFFはブラウザが対応している場合に利用できます。"
     },
     step2_sort: {
         title: "並び替え・削除",
-        body: "読み込まれた画像はサムネイルを左右にドラッグして順序を入れ替えられます。不要な画像は「×」ボタンで即座に除外できます。"
+        body: "読み込まれた画像はサムネイルの矢印、またはドラッグで順序を入れ替えられます。不要な画像は「×」ボタンで即座に除外できます。"
     },
     step3_direction: {
         title: "結合の方向（縦・横）",
@@ -29,6 +29,7 @@ const toolExplanations = {
         title: "保存形式の選択",
         body: "JPG、PNG、WebPから用途に合わせて保存形式を選べます。画質優先ならPNG、軽量化ならJPEGが最適です。"
     },
+    step6_filename: { title: '保存ファイル名', body: '保存する画像の名前を入力します。未入力ならcombined-imageという名前で保存します。' },
     step7_preview: {
         title: "プレビューと保存",
         body: "作成された画像を確認し、「名前をつけて保存する」でデバイスにダウンロードします。サーバーには保存されないため安全です。"
@@ -78,73 +79,82 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    imageInput.onchange = (e) => handleFiles(e.target.files);
-    
+    imageInput.onchange = async (e) => { await handleFiles(e.target.files); imageInput.value = ''; };
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+    ['bgColor', 'transparentBg', 'sizeBase'].forEach(id => document.getElementById(id).addEventListener('change', invalidatePreview));
+    generateBtn.disabled = true;
+
     dirVertical.onclick = () => {
-        orientation = 'v';
+        orientation = 'v'; invalidatePreview();
         dirVertical.className = "flex-1 py-3 rounded-xl font-bold bg-blue-600 text-white shadow-md transition";
         dirHorizontal.className = "flex-1 py-3 rounded-xl font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition";
     };
 
     dirHorizontal.onclick = () => {
-        orientation = 'h';
+        orientation = 'h'; invalidatePreview();
         dirHorizontal.className = "flex-1 py-3 rounded-xl font-bold bg-blue-600 text-white shadow-md transition";
         dirVertical.className = "flex-1 py-3 rounded-xl font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition";
     };
 
     generateBtn.onclick = () => processImages();
     downloadBtn.onclick = downloadResult;
-    
+
 });
 
+let loadingImages = false;
 async function handleFiles(files) {
-    for (let file of Array.from(files)) {
-        if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
-            const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
-            await addImage(converted, file.name);
-        } else {
-            await addImage(file, file.name);
+    if (loadingImages) return;
+    loadingImages = true;
+    const button = document.getElementById('generateBtn');
+    button.disabled = true;
+    try {
+        for (const file of Array.from(files)) {
+            try { await addImage(file, file.name); }
+            catch (error) { ToolUtils.notify(file.name + ': ' + error.message); }
         }
-    }
-    renderThumbnails();
+        renderThumbnails(); invalidatePreview();
+    } finally { loadingImages = false; button.disabled = images.length === 0; }
 }
-
 async function addImage(file, name) {
-    return new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                images.push({ img, name });
-                resolve();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
+    const { image, url } = await ToolUtils.decodeImage(file);
+    images.push({ img: image, name, url });
 }
-
+function invalidatePreview() {
+    document.getElementById('previewSection').classList.add('hidden');
+}
 function renderThumbnails() {
     const container = document.getElementById('thumbContainer');
-    const section = document.getElementById('sortSection');
+    document.getElementById('sortSection').classList.toggle('hidden', images.length === 0);
+    document.getElementById('generateBtn').disabled = loadingImages || images.length === 0;
     container.innerHTML = '';
-    
-    if (images.length > 0) section.classList.remove('hidden');
-
     images.forEach((data, index) => {
-        const div = document.createElement('div');
-        div.className = "relative flex-shrink-0 group";
-        div.innerHTML = `
-            <img src="${data.img.src}" class="h-24 w-24 object-cover rounded-xl shadow-sm border border-gray-100">
-            <button onclick="removeImage(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity">×</button>
-        `;
+        const div = document.createElement('div'); div.className = 'relative flex-shrink-0'; div.draggable = true;
+        const img = document.createElement('img'); img.src = data.img.src; img.alt = data.name; img.className = 'h-24 w-24 object-cover rounded-xl border border-gray-200';
+        div.appendChild(img);
+        const controls = document.createElement('div'); controls.className = 'flex justify-between gap-1 mt-2';
+        [['←', -1, '前へ移動'], ['→', 1, '後ろへ移動'], ['×', 0, '削除']].forEach(([text, direction, label]) => {
+            const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = text;
+            btn.className = 'px-2 bg-gray-100 rounded-lg text-gray-700'; btn.setAttribute('aria-label', data.name + 'を' + label);
+            btn.disabled = direction !== 0 && (index + direction < 0 || index + direction >= images.length);
+            btn.onclick = () => direction === 0 ? removeImage(index) : moveImage(index, index + direction);
+            controls.appendChild(btn);
+        });
+        div.appendChild(controls);
+        div.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', String(index)));
+        div.addEventListener('dragover', e => e.preventDefault());
+        div.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); const from = Number(e.dataTransfer.getData('text/plain')); if (Number.isInteger(from) && from >= 0 && from < images.length) moveImage(from, index); });
         container.appendChild(div);
     });
 }
-
+function moveImage(from, to) {
+    const [image] = images.splice(from, 1); images.splice(to, 0, image);
+    renderThumbnails(); invalidatePreview();
+}
 function removeImage(index) {
-    images.splice(index, 1);
-    renderThumbnails();
+    URL.revokeObjectURL(images[index].url); images.splice(index, 1);
+    renderThumbnails(); invalidatePreview();
 }
 
 async function processImages() {
@@ -168,13 +178,17 @@ async function processImages() {
 
     let totalW = 0, totalH = 0;
     if (orientation === 'v') {
-        totalW = targetWidth;
-        images.forEach(i => totalH += (targetWidth / i.img.width) * i.img.height);
+        totalW = sizeBase === 'none' ? Math.max(...images.map(i => i.img.width)) : targetWidth;
+        images.forEach(i => totalH += sizeBase === 'none' ? i.img.height : (targetWidth / i.img.width) * i.img.height);
     } else {
-        totalH = targetHeight;
-        images.forEach(i => totalW += (targetHeight / i.img.height) * i.img.width);
+        totalH = sizeBase === 'none' ? Math.max(...images.map(i => i.img.height)) : targetHeight;
+        images.forEach(i => totalW += sizeBase === 'none' ? i.img.width : (targetHeight / i.img.height) * i.img.width);
     }
 
+    totalW = Math.ceil(totalW); totalH = Math.ceil(totalH);
+    if (totalW > 32767 || totalH > 32767 || totalW * totalH > 64000000) {
+        ToolUtils.notify('結合後の画像が大きすぎます。画像の枚数や解像度を減らしてください。'); return;
+    }
     canvas.width = totalW;
     canvas.height = totalH;
 
@@ -189,13 +203,13 @@ async function processImages() {
     images.forEach(data => {
         let drawW, drawH;
         if (orientation === 'v') {
-            drawW = targetWidth;
-            drawH = (targetWidth / data.img.width) * data.img.height;
-            ctx.drawImage(data.img, currentY, currentY, drawW, drawH); // 修正：Y軸方向へ描画
+            drawW = sizeBase === 'none' ? data.img.width : targetWidth;
+            drawH = sizeBase === 'none' ? data.img.height : (targetWidth / data.img.width) * data.img.height;
+            ctx.drawImage(data.img, 0, currentY, drawW, drawH);
             currentY += drawH;
         } else {
-            drawH = targetHeight;
-            drawW = (targetHeight / data.img.height) * data.img.width;
+            drawH = sizeBase === 'none' ? data.img.height : targetHeight;
+            drawW = sizeBase === 'none' ? data.img.width : (targetHeight / data.img.height) * data.img.width;
             ctx.drawImage(data.img, currentX, 0, drawW, drawH);
             currentX += drawW;
         }
@@ -212,6 +226,12 @@ function downloadResult() {
     const fileName = document.getElementById('fileNameInput').value || 'combined-image';
     const link = document.createElement('a');
     link.download = `${fileName}.${format.split('/')[1]}`;
-    link.href = canvas.toDataURL(format);
+    let output = canvas;
+    if (format === 'image/jpeg') {
+        output = document.createElement('canvas'); output.width = canvas.width; output.height = canvas.height;
+        const ctx = output.getContext('2d'); ctx.fillStyle = document.getElementById('bgColor').value;
+        ctx.fillRect(0, 0, output.width, output.height); ctx.drawImage(canvas, 0, 0);
+    }
+    link.href = output.toDataURL(format);
     link.click();
 }

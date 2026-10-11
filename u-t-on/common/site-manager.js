@@ -1,228 +1,89 @@
-/**
- * site-manager.js
- * 共通処理（アイコン一括管理・ヘッダー・フッター・解析）
- */
-
-// --- Google Analytics 一括設定 ---
-(function() {
-    const GA_ID = 'G-NVBKR9BVEX'; 
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-    document.head.appendChild(script);
-
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', GA_ID);
-})();
-
-const siteConfig = {
-    siteName: "Uの創作部屋",
-    footerText: "© 2026 Uの創作部屋. All rights reserved.",
-    news: typeof SITE_DATA !== 'undefined' ? SITE_DATA.news : [],
-    tools: typeof SITE_DATA !== 'undefined' ? SITE_DATA.tools : [],
-    menuGroups: typeof SITE_DATA !== 'undefined' ? SITE_DATA.menuGroups : [],
-    icons: typeof SITE_DATA !== 'undefined' ? SITE_DATA.icons : {}
-};
-
-const isSubPage = window.location.href.includes('/tools/');
+/* Shared navigation and progressive enhancements. */
+const siteConfig = typeof SITE_DATA !== 'undefined' ? SITE_DATA : { tools: [], icons: {}, menuGroups: [], news: [] };
+const isSubPage = window.location.pathname.includes('/tools/');
 const basePath = isSubPage ? '../' : './';
-
-/**
- * アイコンHTMLを生成する共通関数
- * @param {string} iconKey - SITE_DATA.iconsのキー
- * @param {string} className - Tailwindのクラス名
- */
-function getIconHtml(iconKey, className = "w-6 h-6") {
-    const fileName = siteConfig.icons[iconKey] || 'default.svg';
-    // 実際のフォルダ構成「icon」に合わせてパスを修正
-    return `<img src="${basePath}common/icon/${fileName}" class="${className} inline-block" alt="icon" onerror="this.style.display='none'">`;
+function getIconHtml(key, className = '') {
+    const name = siteConfig.icons[key];
+    return name ? `<img src="${basePath}common/icon/${name}" class="${className}" alt="" width="24" height="24">` : '';
 }
-
 function initCommonComponents() {
-    const currentTool = siteConfig.tools.find(t => window.location.pathname.includes(t.url.split('/').pop()));
-    
-    // ヘッダータイトルの構築
-    let displayTitle = siteConfig.siteName;
-    if (isSubPage && currentTool) {
-        displayTitle = `
-            <a href="${basePath}index.html" class="hover:text-blue-600 transition-colors">${siteConfig.siteName}</a>
-            <span class="mx-2 text-gray-300 font-normal">/</span>
-            <span class="text-gray-500 flex items-center gap-2">
-                ${getIconHtml(currentTool.icon, "w-5 h-5")} 
-                ${currentTool.name}
-            </span>
-        `;
+    const currentTool = siteConfig.tools.find(tool => window.location.pathname.endsWith('/' + tool.url.split('/').pop()));
+    const header = document.getElementById('common-header');
+    if (header) header.innerHTML = `
+        <a class="skip-link" href="#main-content">本文へスキップ</a>
+        <header class="site-header"><div class="header-inner">
+            <a class="site-brand" href="${basePath}index.html"><span class="brand-mark">U</span><span>Uの創作部屋<small>暮らしと創作の、ちいさな道具箱。</small></span></a>
+            <div class="header-actions"><a class="header-home" href="${basePath}index.html#tools">ツール一覧</a>
+            <button id="menuBtn" class="menu-button" type="button" aria-label="メニューを開く" aria-expanded="false" aria-controls="menuDrawer"><span aria-hidden="true">☰</span><span>メニュー</span></button></div>
+        </div></header>`;
+    const main = document.querySelector('main');
+    if (main) main.id = 'main-content';
+    const footer = document.getElementById('common-footer');
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(document.title)}&url=${encodeURIComponent(document.querySelector('link[rel="canonical"]')?.href || location.href)}`;
+    if (footer) footer.innerHTML = `<footer class="site-footer"><div><a class="footer-brand" href="${basePath}index.html">Uの創作部屋</a><p>ブラウザで使える、無料の便利ツール。</p></div><nav aria-label="サイト情報"><a href="${basePath}about.html">このサイトについて</a><a href="${basePath}privacy.html">プライバシーポリシー</a><a href="${basePath}contact.html">お問い合わせ</a></nav><small>© ${new Date().getFullYear()} Uの創作部屋</small></footer>`;
+    const drawer = document.createElement('div');
+    if (footer) {
+        const share = document.createElement('a');
+        share.href = shareUrl; share.target = '_blank'; share.rel = 'noopener noreferrer';
+        share.textContent = '𝕏でこのページをシェア'; footer.querySelector('nav').appendChild(share);
     }
-    
-    const headerHtml = `
-        <header class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm border-b z-[60]">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-                <div class="flex items-center overflow-hidden">
-                    <button id="menuBtn" class="p-2 hover:bg-gray-100 rounded-lg transition focus:outline-none">
-                        <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
-                        <div class="w-6 h-0.5 bg-gray-600 mb-1"></div>
-                        <div class="w-6 h-0.5 bg-gray-600"></div>
-                    </button>
-                    <div class="ml-4 text-lg font-bold text-gray-800 tracking-tight flex items-center whitespace-nowrap overflow-hidden">
-                        ${displayTitle}
-                    </div>
-                </div>
-                <div id="header-share-area" class="flex-shrink-0 ml-2">
-                    <a id="headerShareX" href="#" target="_blank" rel="noopener noreferrer" 
-                       class="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full font-bold hover:opacity-80 transition shadow-sm text-xs md:text-sm">
-                        <span>𝕏</span><span class="hidden md:inline">でシェア</span>
-                    </a>
-                </div>
-            </div>
-        </header>
-        <div class="h-[65px]"></div>
-    `;
-
-    const drawerHtml = `
-        <div id="menuDrawer" class="fixed inset-0 z-[100] invisible">
-            <div id="drawerOverlay" class="absolute inset-0 bg-black opacity-0 transition-opacity duration-300"></div>
-            <div id="drawerContent" class="absolute inset-y-0 left-0 w-64 bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 overflow-y-auto">
-                <div class="p-6 border-b flex justify-between items-center bg-gray-50">
-                    <span class="font-bold text-blue-600 tracking-widest text-sm">MENU</span>
-                    <button id="closeBtn" class="text-gray-400 hover:text-gray-600 text-xl focus:outline-none">✕</button>
-                </div>
-                <nav class="p-4">
-                    <div class="mb-6 pb-4 border-b">
-                        <ul class="space-y-2">
-                            <li><a href="${basePath}index.html" class="flex items-center gap-3 p-2 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition">🏠 ホーム</a></li>
-                        </ul>
-                    </div>
-                    ${siteConfig.menuGroups.map(group => `
-                        <div class="mb-6">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">${group.groupName}</p>
-                            <ul class="space-y-2">
-                                ${group.items.map(item => {
-                                    // メニューグループ内のアイテム名からツール情報を紐付け
-                                    const toolInfo = siteConfig.tools.find(t => t.name === item.name);
-                                    const icon = toolInfo ? getIconHtml(toolInfo.icon, "w-4 h-4 mr-2") : '';
-                                    return `<li><a href="${basePath}${item.url}" class="flex items-center p-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition">${icon}${item.name}</a></li>`;
-                                }).join('')}
-                            </ul>
-                        </div>
-                    `).join('')}
-                </nav>
-            </div>
-        </div>
-    `;
-
-    // コンポーネントの挿入
-    const h = document.getElementById('common-header');
-    if (h) h.innerHTML = headerHtml;
-    document.body.insertAdjacentHTML('afterbegin', drawerHtml);
-
-    // お知らせの描画
-    const newsList = document.getElementById('news-list');
-    if (newsList) {
-        newsList.innerHTML = siteConfig.news.map(n => `
-            <li class="flex flex-col md:flex-row md:items-start gap-2 text-sm border-b border-gray-50 pb-2 last:border-0 last:pb-0">
-                <span class="font-mono text-gray-400 text-xs min-w-[80px] pt-0.5">${n.date}</span>
-                <span class="text-gray-600 flex-1 leading-snug">${n.content}</span>
-            </li>
-        `).join('');
-    }
-
-    // トップページ：ツール一覧グリッドの描画
-    const toolGrid = document.getElementById('tool-grid');
-    if (toolGrid) {
-        const toolHtml = siteConfig.tools.map(tool => `
-            <a href="${basePath}${tool.url}" class="group bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-2xl hover:border-blue-200 transition-all duration-300 transform hover:-translate-y-1">
-                <div class="flex items-start justify-between mb-6">
-                    <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 transition-colors duration-300">
-                        ${getIconHtml(tool.icon, "w-8 h-8 group-hover:invert")} 
-                    </div>
-                    ${tool.isUpdate ? '<span class="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">Update</span>' : ''}
-                </div>
-                <h3 class="text-xl font-bold mb-3 group-hover:text-blue-600 transition-colors">${tool.name}</h3>
-                <p class="text-sm text-gray-500 leading-relaxed">${tool.description}</p>
-                <div class="mt-6 flex items-center text-blue-600 font-bold text-sm"><span>使ってみる</span><span class="ml-2 group-hover:ml-4 transition-all">→</span></div>
-            </a>
-        `).join('');
-        toolGrid.innerHTML = toolHtml + `<div class="bg-gray-50 p-8 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 text-center"><p class="text-sm font-bold tracking-widest">COMING SOON</p></div>`;
-    }
-
-    // 各ツールページ：タイトル横にアイコンを追加
-    const pageTitle = document.querySelector('main h1');
-    if (isSubPage && pageTitle && currentTool) {
-        pageTitle.innerHTML = `<span class="flex items-center justify-center gap-3">${getIconHtml(currentTool.icon, "w-8 h-8")} ${currentTool.name}</span>`;
-    }
-
-    // フッターの描画
-    const f = document.getElementById('common-footer');
-    if (f) {
-        f.innerHTML = `
-            <footer class="bg-white border-t mt-12 py-8 text-center text-sm text-gray-400">
-                <div class="mb-4 flex justify-center gap-6">
-                    <a href="${basePath}privacy.html" class="hover:text-blue-600 transition-colors">プライバシーポリシー</a>
-                    <a href="${basePath}contact.html" class="hover:text-blue-600 transition-colors">お問い合わせ</a>
-                </div>
-                ${siteConfig.footerText}
-            </footer>
-        `;
-    }
-
-    // メニュー開閉ロジック
+    drawer.id = 'menuDrawer'; drawer.hidden = true; drawer.className = 'menu-drawer';
+    drawer.innerHTML = `<div class="drawer-overlay"></div><div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-heading"><h2 id="drawer-title">ツールを選ぶ</h2><button id="closeBtn" type="button" aria-label="メニューを閉じる">×</button></div><nav aria-label="ツールメニュー"><a class="drawer-home" href="${basePath}index.html">ホーム</a>${siteConfig.menuGroups.map(group => `<section><h3>${group.groupName}</h3>${group.items.map(item => { const tool = siteConfig.tools.find(t => t.url === item.url); return `<a href="${basePath}${item.url}"${tool === currentTool ? ' aria-current="page"' : ''}>${getIconHtml(tool?.icon)}<span>${item.name}</span></a>`; }).join('')}</section>`).join('')}<a href="${basePath}about.html">このサイトについて</a><a href="${basePath}contact.html">お問い合わせ</a></nav></div>`;
+    document.body.appendChild(drawer);
     const menuBtn = document.getElementById('menuBtn');
     const closeBtn = document.getElementById('closeBtn');
-    const drawer = document.getElementById('menuDrawer');
-    const overlay = document.getElementById('drawerOverlay');
-    const content = document.getElementById('drawerContent');
-
-    const toggleMenu = (open) => {
-        if (open) {
-            drawer.classList.remove('invisible');
-            setTimeout(() => { 
-                overlay.classList.add('opacity-50'); 
-                overlay.classList.remove('opacity-0'); 
-                content.classList.remove('-translate-x-full'); 
-            }, 10);
-        } else {
-            overlay.classList.replace('opacity-50', 'opacity-0');
-            content.classList.add('-translate-x-full');
-            setTimeout(() => drawer.classList.add('invisible'), 300);
-        }
-    };
-    menuBtn?.addEventListener('click', () => toggleMenu(true));
-    closeBtn?.addEventListener('click', () => toggleMenu(false));
-    overlay?.addEventListener('click', () => toggleMenu(false));
-
-    // お知らせ開閉ロジック
-    const newsContainer = document.getElementById('news-container');
-    const toggleNewsBtn = document.getElementById('toggle-news-btn');
-    if (toggleNewsBtn && newsContainer) {
-        let isNewsOpen = false;
-        toggleNewsBtn.addEventListener('click', () => {
-            isNewsOpen = !isNewsOpen;
-            newsContainer.style.height = isNewsOpen ? '180px' : '32px';
-            newsContainer.style.overflowY = isNewsOpen ? 'auto' : 'hidden';
-            if (!isNewsOpen) newsContainer.scrollTop = 0;
-            document.getElementById('toggle-text').textContent = isNewsOpen ? '閉じる' : 'アップデート内容を表示';
-            document.getElementById('toggle-icon').style.transform = isNewsOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-        });
+    const inertTargets = [header, main, footer].filter(Boolean);
+    let previousOverflow = '';
+    function toggleMenu(open) {
+        drawer.hidden = !open;
+        menuBtn?.setAttribute('aria-expanded', String(open));
+        inertTargets.forEach(el => { el.inert = open; });
+        if (open) { previousOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; closeBtn.focus(); }
+        else { document.body.style.overflow = previousOverflow; menuBtn?.focus(); }
     }
-
-    // 𝕏シェアリンク設定
-    const shareBtn = document.getElementById('headerShareX');
-    if (shareBtn) {
-        // ページタイトルをより適切に取得
-        let title = document.title.split('|')[0].trim();
-        if (isSubPage && currentTool) {
-            title = currentTool.name + " | " + siteConfig.siteName;
+    menuBtn?.addEventListener('click', () => toggleMenu(true));
+    closeBtn.addEventListener('click', () => toggleMenu(false));
+    drawer.querySelector('.drawer-overlay').addEventListener('click', () => toggleMenu(false));
+    drawer.addEventListener('keydown', event => {
+        if (event.key === 'Escape') { event.preventDefault(); toggleMenu(false); }
+        if (event.key === 'Tab') {
+            const items = [...drawer.querySelectorAll('button, a[href]')];
+            const first = items[0], last = items.at(-1);
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
         }
-
-        // encodeURIComponent で URL をしっかり保護
-        const text = encodeURIComponent(`${title}\nインストール不要・ブラウザ完結で安全に使えます。\n\n#Uの創作部屋 #便利ツール`);
-        // window.location.href ではなく、og:url に合わせた正規のURLを渡すのがベスト
-        const url = encodeURIComponent(window.location.origin + window.location.pathname);
-        
-        shareBtn.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    });
+    const search = document.getElementById('tool-search');
+    const filters = [...document.querySelectorAll('[data-filter]')];
+    const cards = [...document.querySelectorAll('.tool-card')];
+    let category = 'all';
+    function filterTools() {
+        const query = search.value.trim().toLocaleLowerCase();
+        let count = 0;
+        cards.forEach(card => {
+            const visible = (category === 'all' || card.dataset.category === category) && card.textContent.toLocaleLowerCase().includes(query);
+            card.hidden = !visible;
+            if (visible) count++;
+        });
+        document.getElementById('tool-count').textContent = `${count}個のツール`;
+        document.getElementById('no-tools').hidden = count !== 0;
+    }
+    if (search) {
+        search.addEventListener('input', filterTools);
+        filters.forEach(button => button.addEventListener('click', () => {
+            category = button.dataset.filter;
+            filters.forEach(btn => btn.setAttribute('aria-pressed', String(btn === button)));
+            filterTools();
+        }));
+        document.getElementById('tool-discovery').hidden = false;
+    }
+    // Analytics loads only on the public site, never in local previews.
+    if (location.hostname === 'u-t-on.com' || location.hostname === 'www.u-t-on.com') {
+        const script = document.createElement('script'); script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-NVBKR9BVEX'; document.head.appendChild(script);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { window.dataLayer.push(arguments); }
+        gtag('js', new Date()); gtag('config', 'G-NVBKR9BVEX');
     }
 }
-
 document.addEventListener('DOMContentLoaded', initCommonComponents);
