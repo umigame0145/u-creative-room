@@ -1,5 +1,9 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.10.15", content: "7つのツールに具体的な使用例を追加し、歩きスマホラッシュのゲーム内容を完成させました。" },
+        { date: "2026.10.13", content: "歩きスマホラッシュに体の衝突・スマホ破壊・おはじき反射を追加しました。" },
+        { date: "2026.10.12", content: "歩きスマホラッシュを簡易3D表示に対応しました。" },
+        { date: "2026.10.12", content: "ゲーム「歩きスマホラッシュ」の試作版を追加しました。" },
         { date: "2026.10.12", content: "セクションタイマーを削除しました。" },
         { date: "2026.03.23", content: "新ツール「すけ透過？」を追加しました！" },
         { date: "2026.03.23", content: "新ツール「KOKOにモザイク」を追加しました！" },
@@ -20,7 +24,8 @@ const SITE_DATA = {
         "counter": "any-counter_icon.svg",
         "roulette": "my-roulette_icon.svg",
         "mosaic": "koko-ni-mosaic_icon.svg",
-        "transparency": "suke-touka_icon.svg"
+        "transparency": "suke-touka_icon.svg",
+        "smartphone-rush": "smartphone-rush_icon.svg"
     },
     tools: [
         {
@@ -87,6 +92,9 @@ const SITE_DATA = {
             isUpdate: true
         },
     ],
+    games: [
+        { id: "smartphone-rush", name: "歩きスマホラッシュ", icon: "smartphone-rush", url: "games/smartphone-rush.html" }
+    ],
     menuGroups: [
         {
             groupName: "画像編集ツール",
@@ -103,6 +111,10 @@ const SITE_DATA = {
                 { name: "なんでもカウンター", url: "tools/any-counter.html" },
                 { name: "myルーレット", url: "tools/my-roulette.html" }
             ]
+        },
+        {
+            groupName: "ゲーム",
+            items: [{ name: "歩きスマホラッシュ", url: "games/smartphone-rush.html" }]
         },
         {
             groupName: "その他",

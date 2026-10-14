@@ -1,0 +1,143 @@
+.rush-page { background: #101e27; color: #edf4f1; }
+.rush-page #common-header { border-bottom: 1px solid #30434d; }
+.rush-page .site-header, .rush-page .drawer-panel { color: #10232b; }
+.rush-main { max-width: 1136px; margin: auto; padding: 36px 26px 0; }
+.rush-heading { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 26px; }
+.rush-kicker { color: #8caaaa; font-size: 10px; font-weight: 800; letter-spacing: .18em; margin-bottom: 10px; }
+.rush-heading h1 { font-size: clamp(27px, 4vw, 44px); letter-spacing: -.06em; font-weight: 900; line-height: 1.2; }
+.rush-heading h1 span { color: #ffc265; }
+.rush-lead { font-size: 12px; color: #b7c9ca; margin-top: 10px; }
+.rush-badge { white-space: nowrap; color: #d6e2dc; background: #21333c; border: 1px solid #3d5157; border-radius: 40px; padding: 8px 12px; font-size: 10px; font-weight: 700; }
+.rush-badge i { display: inline-block; width: 6px; height: 6px; background: #ffc265; border-radius: 50%; margin-right: 6px; }
+.rush-layout { display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.rush-play { min-width: 0; }
+.rush-hud { position: sticky; top: 73px; z-index: 5; display: flex; align-items: center; gap: 30px; background: #1c2e38; border: 1px solid #3c5259; padding: 13px 18px; border-radius: 14px 14px 0 0; }
+.rush-hud div > span { color: #91acaf; display: block; font-size: 9px; font-weight: 800; letter-spacing: .15em; }
+.rush-hud strong { font-family: ui-monospace, monospace; color: #f2f4e8; font-size: 29px; line-height: 1.2; }
+.rush-hud small { font-size: 11px; margin-left: 4px; color: #91acaf; }
+.rush-time { margin-left: auto; }
+.rush-time.urgent strong { color: #ffa28b; }
+.rush-hud button { width: 44px; border: 1px solid #3c5259; border-radius: 9px; color: #d6e7e4; font-weight: 900; font-size: 16px; }
+.rush-hud button:disabled { opacity: .4; }
+.rush-stage { position: relative; overflow: hidden; background: #283b45; border: 1px solid #3c5259; border-top: 0; }
+#gameCanvas { display: block; width: 100%; height: auto; aspect-ratio: 560 / 620; touch-action: none; outline-offset: -4px; }
+#effectCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.rush-stage-label { position: absolute; left: 16px; right: 16px; top: 12px; display: flex; justify-content: space-between; pointer-events: none; font-size: 9px; letter-spacing: .09em; font-weight: 800; color: #bed0cf; }
+.rush-stage-label span:first-child { color: #ffc265; }
+.rush-overlay { position: absolute; inset: 0; background: rgba(10,24,33,.77); display: grid; place-items: center; padding: 18px; backdrop-filter: blur(3px); }
+.rush-overlay[hidden], .rush-live-controls[hidden], .rush-overlay [hidden] { display: none; }
+.rush-start-card, .rush-pause-card, .rush-result-card { text-align: center; width: min(320px, 100%); }
+.rush-overlay h2 { font-size: clamp(28px, 5vw, 46px); font-weight: 900; line-height: 1.16; letter-spacing: -.03em; margin-bottom: 18px; }
+.rush-overlay p:not(.rush-kicker) { font-size: 12px; line-height: 1.9; color: #c4d5d1; }
+.rush-emblem { font-size: 42px; color: #ffc265; line-height: 1; margin-bottom: 16px; }
+.rush-emblem span { display: inline-grid; place-items: center; background: #ffbf65; width: 24px; height: 24px; color: #182b35; font-size: 18px; border-radius: 50%; vertical-align: top; }
+.rush-primary { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px 18px; background: #ffc265; color: #142832; font-size: 13px; font-weight: 900; border-radius: 9px; margin: 22px 0 14px; box-shadow: 0 4px 0 #c38b43; }
+.rush-primary:hover { background: #ffd48d; }
+.rush-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #c38b43; }
+.rush-overlay small { color: #95abae; font-size: 10px; line-height: 1.8; }
+.rush-secondary { color: #b6cecc; font-size: 12px; text-decoration: underline; }
+.rush-live-controls { position: absolute; inset: auto 16px 18px; display: flex; justify-content: space-between; align-items: end; pointer-events: none; }
+.rush-stick { width: 88px; height: 88px; border-radius: 50%; background: #152630a6; border: 1px solid #8eb4bd66; position: relative; pointer-events: auto; touch-action: none; }
+.rush-stick span { position: absolute; left: 25px; top: 25px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid #96bbc0; background: #4e7b87a6; pointer-events: none; }
+.rush-stick small { position: absolute; bottom: -12px; left: 0; width: 100%; text-align: center; font: 8px ui-monospace, monospace; letter-spacing: .15em; pointer-events: none; }
+.rush-skill-buttons { display: flex; gap: 10px; }
+.rush-skill-buttons .rush-attack { width: 78px; height: 78px; font-size: 10px; }
+.rush-skill-buttons .rush-attack b { font-size: 14px; margin-bottom: 3px; }
+.rush-skill-buttons .rush-flick { background: #83ddd0; border-color: #5cc6ba; box-shadow: 0 4px 0 #348d88; }
+.rush-attack { pointer-events: auto; background: #ffc265; color: #122b35; border-radius: 50%; width: 84px; height: 84px; border: 5px solid #ffa942; box-shadow: 0 4px 0 #bf7d35; display: grid; place-content: center; font-size: 13px; font-weight: 900; touch-action: manipulation; }
+.rush-attack small { display: block; font: 8px ui-monospace, monospace; opacity: .7; margin-top: 4px; }
+.rush-attack:disabled { filter: saturate(.2); opacity: .6; }
+.rush-action-feedback { position: absolute; top: 48px; left: 8px; right: 8px; text-align: center; pointer-events: none; color: #ffe0a1; font-size: 12px; font-weight: 800; text-shadow: 0 2px 5px #142832; }
+.rush-flight-status { position: absolute; top: 33px; left: 12px; padding: 5px 7px; background: #123039df; border-radius: 5px; color: #92e8d9; font: 10px ui-monospace, monospace; pointer-events: none; }
+.rush-flight-status[hidden] { display: none; }
+.rush-energy { padding: 14px 15px; background: #1c2e38; display: flex; align-items: center; gap: 12px; border: 1px solid #3c5259; border-top: 0; border-radius: 0 0 14px 14px; }
+.rush-energy span { font: 8px ui-monospace, monospace; letter-spacing: .12em; color: #9fbbb9; }
+.rush-energy strong { font: 11px ui-monospace, monospace; width: 25px; }
+.rush-energy progress { width: 100%; height: 6px; border: 0; appearance: none; border-radius: 8px; background: #30464e; }
+.rush-energy progress::-webkit-progress-bar { border-radius: 8px; background: #30464e; }
+.rush-energy progress::-webkit-progress-value { border-radius: 8px; background: #7fddd1; }
+.rush-energy progress::-moz-progress-bar { border-radius: 8px; background: #7fddd1; }
+.rush-modes { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 20px; border: 0; padding: 0; }
+.rush-modes legend { font-size: 12px; font-weight: 800; padding-bottom: 10px; width: 100%; }
+.rush-modes legend span { float: right; font-size: 9px; color: #849fa2; font-weight: 500; }
+.rush-modes button { position: relative; padding: 12px 10px; text-align: left; background: #1c2e38; border: 1px solid #38505a; border-radius: 10px; color: #bed2d1; }
+.rush-modes button[aria-pressed="true"] { border-color: #ffc265; background: #3b3830; color: #ffe0a1; }
+.rush-modes strong { display: block; font-size: 13px; margin: 4px 0; }
+.rush-modes small { display: block; font-size: 9px; opacity: .7; }
+.mode-number { font: 10px ui-monospace, monospace; opacity: .6; }
+.rush-mode-hint { color: #a5bebd; font-size: 11px; margin-top: 10px; min-height: 32px; }
+.rush-sidebar { display: grid; gap: 18px; }
+.rush-session, .rush-howto, .rush-rules { border: 1px solid #38505a; background: #1c2e38; border-radius: 14px; padding: 22px; }
+.rush-sidebar h2 { font-size: 17px; font-weight: 800; margin-bottom: 20px; }
+.rush-combo { display: flex; gap: 12px; align-items: center; padding-bottom: 18px; border-bottom: 1px solid #3a4d54; }
+.rush-combo strong { font: 700 44px ui-monospace, monospace; color: #ffc265; }
+.rush-combo span { font-size: 10px; letter-spacing: .1em; color: #c6d5cf; font-weight: 800; }
+.rush-combo small { font-size: 8px; letter-spacing: 0; color: #8eaaaa; font-weight: 500; }
+.rush-combo b { margin-left: auto; border: 1px solid #456063; border-radius: 6px; padding: 6px 9px; font: 12px ui-monospace, monospace; color: #81d5c7; }
+.rush-mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.rush-mini-stats div { border-left: 2px solid #597780; padding-left: 10px; }
+.rush-mini-stats span { display: block; color: #93aead; font-size: 10px; }
+.rush-mini-stats strong { font: 24px ui-monospace, monospace; }
+.rush-effects { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 10px; color: #abc1bd; margin-bottom: 16px; }
+.rush-effects span { display: flex; justify-content: space-between; background: #142832; border-radius: 5px; padding: 8px; }
+.rush-event-list { min-height: 116px; padding: 0; list-style: none; font-size: 11px; }
+.rush-event-list li { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; color: #d3dfd9; }
+.rush-event-list li.rush-event-empty { color: #78969b; font-size: 10px; }
+.rush-event-list b { color: #ffc265; font-family: ui-monospace, monospace; }
+.rush-best { border-top: 1px solid #3a4d54; padding-top: 14px; display: flex; justify-content: space-between; font-size: 10px; color: #91aeaf; }
+.rush-best strong { color: #dce7dd; font-family: ui-monospace, monospace; }
+.rush-howto ol { margin: 0; padding: 0; list-style: none; counter-reset: steps; }
+.rush-howto li { position: relative; padding-left: 32px; margin-bottom: 18px; }
+.rush-howto li::before { counter-increment: steps; content: '0' counter(steps); position: absolute; top: 1px; left: 0; font: 10px ui-monospace, monospace; color: #ffc265; }
+.rush-howto b { display: block; font-size: 12px; margin-bottom: 5px; }
+.rush-howto li span, .rush-howto p, .rush-rules p { font-size: 11px; line-height: 1.8; color: #9eb8b8; }
+.rush-howto p { border-top: 1px solid #3a4d54; padding-top: 12px; }
+.rush-rules summary { font-size: 12px; font-weight: 700; cursor: pointer; }
+.rush-rules p { margin-top: 12px; }
+.rush-result-score { color: #ffc265; font: 800 clamp(32px,6vw,52px) ui-monospace,monospace; line-height: 1.2; }
+.rush-result-unit { color: #91aeaf; letter-spacing: .18em; font-size: 9px; }
+.rush-result-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 16px 0; margin-top: 8px; }
+.rush-result-stats dt { font-size: 10px; color: #9eb8b8; }
+.rush-result-stats dd { font: 800 22px ui-monospace,monospace; color: #e4e8d9; }
+.rush-overlay .rush-record { min-height: 22px; margin-top: 8px; color: #ffc265; }
+.rush-prototype { margin-top: 30px; padding: 22px 0; border-top: 1px solid #38505a; display: flex; align-items: start; gap: 18px; }
+.rush-prototype > span { color: #ffc265; white-space: nowrap; font: 10px ui-monospace,monospace; padding-top: 4px; }
+.rush-prototype p { color: #8ea9ad; font-size: 11px; line-height: 1.8; }
+.rush-prototype a { white-space: nowrap; font-size: 11px; color: #bbd1cc; }
+.rush-page .site-footer { color: #93b1b4; border-color: #38505a; margin-top: 20px; }
+.rush-page .footer-brand { color: #d4e1da; }
+.rush-page button:focus-visible, #gameCanvas:focus-visible { outline: 3px solid #83ded4; outline-offset: 3px; }
+@media (max-width: 800px) {
+    .rush-main { max-width: 560px; padding: 24px 14px 0; }
+    .rush-heading { margin-bottom: 18px; }
+    .rush-heading h1 { font-size: 29px; }
+    .rush-lead { font-size: 10px; }
+    .rush-layout { grid-template-columns: 1fr; gap: 20px; }
+    .rush-badge { padding: 6px 9px; font-size: 9px; }
+    .rush-prototype { flex-wrap: wrap; gap: 10px; }
+    .rush-prototype p { flex: 1; min-width: 200px; }
+    .rush-prototype a { margin-left: auto; }
+    .rush-stage-label { font-size: 8px; left: 10px; right: 10px; }
+    .rush-hud { top: 62px; gap: 16px; padding: 10px 12px; }
+    .rush-hud strong { font-size: 26px; }
+    .rush-sidebar { grid-template-columns: 1fr; }
+    .rush-live-controls { inset: auto 12px 18px; }
+    .rush-stick { width: 72px; height: 72px; }
+    .rush-stick span { left: 17px; top: 17px; }
+    .rush-attack { width: 70px; height: 70px; font-size: 12px; border-width: 4px; }
+    .rush-skill-buttons { gap: 7px; }
+    .rush-skill-buttons .rush-attack { width: 64px; height: 64px; font-size: 8px; }
+    .rush-skill-buttons .rush-attack b { font-size: 12px; }
+    .rush-overlay h2 { font-size: 32px; margin-bottom: 12px; }
+    .rush-emblem { font-size: 30px; margin-bottom: 10px; }
+    .rush-overlay .rush-kicker { margin-bottom: 8px; font-size: 8px; }
+    .rush-overlay p:not(.rush-kicker) { font-size: 11px; }
+    .rush-primary { margin-top: 16px; padding: 12px 14px; }
+    .rush-overlay small { font-size: 9px; }
+    .rush-modes button { padding: 10px 8px; }
+    .rush-modes strong { font-size: 11px; }
+    .rush-modes small { font-size: 8px; }
+    .rush-result-stats { padding: 8px 0; }
+}
+@media (max-width: 359px) { .rush-heading h1 { font-size: 25px; } .rush-badge { display: none; } .rush-overlay h2 { font-size: 27px; } .rush-emblem { display: none; } .rush-primary { margin-top: 10px; } }
+@media (prefers-reduced-motion: reduce) { .rush-primary:active { transform: none; } }

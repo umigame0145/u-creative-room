@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>歩きスマホラッシュ｜通勤ラッシュの衝突ゲーム - Uの創作部屋</title>
+    <meta name="description" content="駅の通勤ラッシュを舞台にした簡易3Dブラウザゲーム。2種類のワザを使い、連鎖とコンボで60秒間のスコアに挑戦。スマホ・PCで無料で遊べます。">
+    <link rel="canonical" href="https://u-t-on.com/games/smartphone-rush.html">
+    <meta property="og:title" content="歩きスマホラッシュ - Uの創作部屋">
+    <meta property="og:description" content="全員、画面に夢中。60秒の通勤ラッシュでコンボをつなげよう。">
+    <meta property="og:url" content="https://u-t-on.com/games/smartphone-rush.html">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png">
+    <link rel="icon" href="../common/icon/smartphone-rush_icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../common/utilities.css">
+    <link rel="stylesheet" href="../common/style.css">
+    <link rel="stylesheet" href="smartphone-rush.css">
+    <script src="smartphone-rush-engine.js" defer></script>
+    <script src="smartphone-rush-3d.js" defer></script>
+    <script src="smartphone-rush.js" defer></script>
+</head>
+<body class="rush-page">
+    <div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋</a></div>
+    <main id="main-content" class="rush-main">
+        <header class="rush-heading">
+            <div><p class="rush-kicker">U ARCADE / 3D</p><h1>歩きスマホラッシュ</h1><p class="rush-lead">全員、画面に夢中。通勤ラッシュに飛び込もう。</p></div>
+            <span class="rush-badge"><i></i><span id="viewMode">簡易3D</span></span>
+        </header>
+        <div class="rush-layout">
+            <section class="rush-play" aria-label="ゲーム画面と操作">
+                <div class="rush-hud">
+                    <div><span>SCORE</span><strong id="scoreValue">0</strong></div>
+                    <div class="rush-time"><span>TIME</span><strong id="timeValue">60<small>秒</small></strong></div>
+                    <button id="pauseGame" type="button" aria-label="一時停止" disabled>Ⅱ</button>
+                </div>
+                <div class="rush-stage" id="gameStage">
+                    <canvas id="gameCanvas" width="560" height="620" tabindex="0" aria-label="駅のコンコース。矢印キーかWASDで移動、Qでワザ1、Eでワザ2、Spaceで選択中のワザ。スマホでは画面をドラッグして移動。"></canvas>
+                    <canvas id="effectCanvas" width="560" height="620" aria-hidden="true"></canvas>
+                    <div class="rush-stage-label" aria-hidden="true"><span>08:30 AM</span><span>中央駅 / CONCOURSE</span></div>
+                    <div class="rush-live-controls" id="liveControls" hidden>
+                        <div class="rush-stick" id="moveStick" role="group" aria-label="ドラッグして移動"><span id="stickThumb"></span><small>MOVE</small></div>
+                        <div class="rush-skill-buttons"><button class="rush-attack" id="attackButton" type="button" aria-label="ワザ1：スマホ飛ばし"><b>ワザ1</b><span>スマホ飛ばし</span></button><button class="rush-attack rush-flick" id="flickButton" type="button" aria-label="ワザ2：おはじきアタック"><b>ワザ2</b><span>おはじき<br>アタック</span></button></div>
+                    </div>
+                    <div class="rush-overlay" id="gameOverlay">
+                        <div class="rush-start-card" id="startPanel">
+                            <p class="rush-kicker">MORNING MAYHEM</p><div class="rush-emblem" aria-hidden="true">↗<span>!</span></div>
+                            <h2>60秒の、<br>大混乱。</h2><p>歩きスマホの群れにぶつかって、<br>スマホ破壊・おはじき連鎖でスコアを伸ばそう。</p>
+                            <button class="rush-primary" id="startGame" type="button">ラッシュに飛び込む <span>→</span></button>
+                            <small>PC：WASD / 矢印キー + Q・E<br>スマホ：画面をドラッグ + ワザボタン</small>
+                        </div>
+                        <div class="rush-pause-card" id="pausePanel" hidden><p class="rush-kicker">TAKE A BREATH</p><h2>一時停止中</h2><p>時間は止まっています。</p><button class="rush-primary" id="resumeGame" type="button">ゲームに戻る →</button><button class="rush-secondary" id="restartPaused" type="button">最初からやり直す</button></div>
+                        <div class="rush-result-card" id="resultPanel" hidden>
+                            <p class="rush-kicker">RUSH HOUR / FINISH</p><h2>ラッシュ終了！</h2><div class="rush-result-score" id="resultScore">0</div><span class="rush-result-unit">TOTAL SCORE</span>
+                            <p id="recordNotice" class="rush-record"></p>
+                            <dl class="rush-result-stats"><div><dt>接触</dt><dd id="resultHits">0</dd></div><div><dt>被害</dt><dd id="resultDamage">0</dd></div><div><dt>最大コンボ</dt><dd id="resultCombo">0</dd></div></dl>
+                            <button class="rush-primary" id="playAgain" type="button">もう一度プレイ →</button>
+                        </div>
+                    </div>
+                    <p class="rush-flight-status" id="flightStatus" hidden></p><p class="rush-action-feedback" id="actionFeedback" role="status"></p>
+                </div>
+                <div class="rush-energy"><span>STAMINA</span><progress id="energyBar" value="100" max="100" aria-label="スタミナ"></progress><strong id="energyValue">100</strong></div>
+                <fieldset class="rush-modes"><legend>ワザを使う <span>Q：ワザ1 / E：ワザ2（Spaceは選択中のワザ）</span></legend><button type="button" data-mode="phone" aria-pressed="true"><span class="mode-number">ワザ 01</span><strong>スマホ飛ばし</strong><small>スマホ破壊＋800点 / 消費28</small></button><button type="button" data-mode="flick" aria-pressed="false"><span class="mode-number">ワザ 02</span><strong>おはじきアタック</strong><small>10秒反射・連鎖 / 消費35</small></button></fieldset>
+                <p class="rush-mode-hint" id="modeHint">ワザ1：突進してスマホを破壊。破壊ボーナス＋800点。</p>
+                <noscript><p class="rush-nojs">このゲームはJavaScriptが必要です。ブラウザの設定を確認してください。</p></noscript>
+            </section>
+            <aside class="rush-sidebar">
+                <section class="rush-session"><p class="rush-kicker">LIVE REPORT</p><h2>ラッシュの記録</h2>
+                    <div class="rush-combo"><strong id="comboValue">0</strong><span>COMBO<br><small>2.4秒以内で継続</small></span><b id="multiplierValue">×1.00</b></div>
+                    <div class="rush-mini-stats"><div><span>接触回数</span><strong id="hitsValue">0</strong></div><div><span>被害スコア</span><strong id="damageValue">0</strong></div></div>
+                    <div class="rush-effects"><span>衝突 <b id="staggerValue">0</b></span><span>スマホ破壊 <b id="phoneValue">0</b></span><span>おはじき発射 <b id="fallValue">0</b></span><span>連鎖 <b id="chainValue">0</b></span><span>壁・柱の反射 <b id="bounceValue">0</b></span><span>現在飛行中 <b id="flyingValue">0</b></span></div>
+                    <ul class="rush-event-list" id="eventList" aria-label="直近の接触"><li class="rush-event-empty">接触すると、ここに結果が表示されます。</li></ul>
+                    <p class="rush-best">このブラウザのベスト <strong id="bestValue">0</strong></p>
+                </section>
+                <section class="rush-howto"><p class="rush-kicker">HOW TO PLAY</p><h2>体当たり ＋ 2つのワザ</h2><ol><li><b>触れるだけでも加点</b><span>移動してNPCに接触すると跳ね返ります。体はすり抜けません。</span></li><li><b>ワザ1：スマホ飛ばし</b><span>突進してスマホを破壊。壊れたスマホは同じNPCから再加点できません。</span></li><li><b>ワザ2：おはじきアタック</b><span>肩が当たった方向へ飛ばします。10秒間、壁と人で反射して連鎖します。</span></li></ol><p>WASD・矢印キー、または画面のドラッグで移動。Qでワザ1、Eでワザ2を使い、Spaceで選択中のワザ。Pで一時停止。同じNPCに両方のワザを当てると虹色暴走！そのNPCの得点が2倍になり、ラウンド終了まで回転・反射し続けます。スタミナは時間で回復します。</p></section>
+                <details class="rush-rules"><summary>得点と反射のルール</summary><p>通常接触は50点。スマホ飛ばしは接触140点＋スマホ破壊800点。おはじき発射は200点、NPC同士の連鎖衝突は150点です。壁・柱の反射では加点しません。</p><p>おはじきは減速せず10秒間飛行します。巻き込まれたNPCは、発射したNPCと同じ終了時刻まで飛びます。一時停止中は飛行時間も停止します。</p><p>接触後2.4秒以内に続けるとコンボが継続し、3接触ごとに倍率が0.25上がります（最大3倍）。同じ接触で毎フレーム加点しない待ち時間があります。</p></details>
+            </aside>
+        </div>
+        <section class="rush-prototype"><span>BUILD 03 / 3D</span><p>斜め上から見た駅を、立体的なブロックで表現したゲームです。通常の体当たり・スマホ破壊・10秒間のおはじき連鎖・結果画面まで遊べます。3D非対応の環境は2D表示になります。ベストスコアのみ端末内に保存します。</p><a href="../index.html">道具箱へ戻る ↗</a></section>
+    </main>
+    <div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a><a href="../contact.html">お問い合わせ</a></nav></div>
+    <script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script>
+</body>
+</html>

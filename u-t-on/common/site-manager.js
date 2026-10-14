@@ -1,13 +1,14 @@
 /* Shared navigation and progressive enhancements. */
 const siteConfig = typeof SITE_DATA !== 'undefined' ? SITE_DATA : { tools: [], icons: {}, menuGroups: [], news: [] };
-const isSubPage = window.location.pathname.includes('/tools/');
+const isSubPage = /\/(?:tools|games)\//.test(window.location.pathname);
 const basePath = isSubPage ? '../' : './';
 function getIconHtml(key, className = '') {
     const name = siteConfig.icons[key];
     return name ? `<img src="${basePath}common/icon/${name}" class="${className}" alt="" width="24" height="24">` : '';
 }
 function initCommonComponents() {
-    const currentTool = siteConfig.tools.find(tool => window.location.pathname.endsWith('/' + tool.url.split('/').pop()));
+    const entries = [...siteConfig.tools, ...(siteConfig.games || [])];
+    const currentTool = entries.find(tool => window.location.pathname.endsWith('/' + tool.url.split('/').pop()));
     const header = document.getElementById('common-header');
     if (header) header.innerHTML = `
         <a class="skip-link" href="#main-content">本文へスキップ</a>
@@ -28,7 +29,7 @@ function initCommonComponents() {
         share.textContent = '𝕏でこのページをシェア'; footer.querySelector('nav').appendChild(share);
     }
     drawer.id = 'menuDrawer'; drawer.hidden = true; drawer.className = 'menu-drawer';
-    drawer.innerHTML = `<div class="drawer-overlay"></div><div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-heading"><h2 id="drawer-title">ツールを選ぶ</h2><button id="closeBtn" type="button" aria-label="メニューを閉じる">×</button></div><nav aria-label="ツールメニュー"><a class="drawer-home" href="${basePath}index.html">ホーム</a>${siteConfig.menuGroups.map(group => `<section><h3>${group.groupName}</h3>${group.items.map(item => { const tool = siteConfig.tools.find(t => t.url === item.url); return `<a href="${basePath}${item.url}"${tool === currentTool ? ' aria-current="page"' : ''}>${getIconHtml(tool?.icon)}<span>${item.name}</span></a>`; }).join('')}</section>`).join('')}<a href="${basePath}about.html">このサイトについて</a><a href="${basePath}contact.html">お問い合わせ</a></nav></div>`;
+    drawer.innerHTML = `<div class="drawer-overlay"></div><div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-heading"><h2 id="drawer-title">ツールを選ぶ</h2><button id="closeBtn" type="button" aria-label="メニューを閉じる">×</button></div><nav aria-label="ツールメニュー"><a class="drawer-home" href="${basePath}index.html">ホーム</a>${siteConfig.menuGroups.map(group => `<section><h3>${group.groupName}</h3>${group.items.map(item => { const tool = entries.find(t => t.url === item.url); return `<a href="${basePath}${item.url}"${tool === currentTool ? ' aria-current="page"' : ''}>${getIconHtml(tool?.icon)}<span>${item.name}</span></a>`; }).join('')}</section>`).join('')}<a href="${basePath}about.html">このサイトについて</a><a href="${basePath}contact.html">お問い合わせ</a></nav></div>`;
     document.body.appendChild(drawer);
     const menuBtn = document.getElementById('menuBtn');
     const closeBtn = document.getElementById('closeBtn');
