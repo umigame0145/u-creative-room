@@ -27,3 +27,9 @@ Tailwindのクラスを追加・変更した場合は `npm run build:css` を実
 `npm run check` はJavaScript構文、HTML見出し・canonical・重複ID、ローカルリンクなどを検査します。`npm test` はCSVやツールの主要な不具合の回帰テストを実行します。実機と本番の確認事項は [IMPROVEMENTS.md](IMPROVEMENTS.md) を参照してください。
 
 `tests/regressions.test.cjs` では描画・音声・PDFライブラリの一部を代替実装にしているため、ブラウザで保存した画像・PDFの最終確認も行ってください。
+
+## セキュリティ対応後のCSSビルド（2026-10-23）
+
+Tailwind CSS 4.3.3 のNode APIと公式Scannerで一度だけビルドします。監視用CLIは使いません。旧ビルド経路のbracesと古いselector parserを依存ツリーから除外しています。設定の入口はstyles/tailwind.cssとscripts/build-css.mjsです。styles/legacy-reset.cssは既存ページのリセットを保つための互換CSSです。Tailwind v4の対応ブラウザ（Safari 16.4以降、Chrome 111以降、Firefox 128以降）を前提とします。
+
+Cloudflareのヘッダー設定はu-t-on/_headers。HTTPからHTTPSへの強制転送はこのファイルではできず、ゾーンのSSL/TLS → Edge Certificates → Always Use HTTPSを有効にします。既存の証明書とHTTPS応答を確認してから設定し、HTTPの301/308・転送先・パスとクエリの維持を公開後に確認してください。

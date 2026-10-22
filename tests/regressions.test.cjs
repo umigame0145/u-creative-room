@@ -22,7 +22,7 @@ async function setup(file, prepare = () => {}) {
     prepare(w);
     for (const script of w.document.querySelectorAll('script[src]')) {
         const src = script.getAttribute('src').split('?')[0];
-        if (/^https?:/.test(src) || src.endsWith('tool-utils.js')) continue;
+        if (/^https?:/.test(src) || src.includes('/vendor/') || src.endsWith('tool-utils.js')) continue;
         const path = require('node:path').posix.normalize(require('node:path').posix.join(require('node:path').posix.dirname(file), src));
         run(path);
     }
@@ -176,4 +176,27 @@ test('Image editor arrow keys do not hijack number input editing', async t => {
     const event = new env.w.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true });
     env.w.document.getElementById('mosaicWidth').dispatchEvent(event);
     assert.equal(event.defaultPrevented, false); assert.equal(env.w.editor.previewPos.y, 10);
+});
+
+test('Counter, roulette and phrase CSV buttons export protected values without losing backups', async t => {
+    for (const [page, button, inject, value] of [
+        ['any-counter', 'saveCsvBtn', "state.children[0].name = '=1+1';", '=1+1'],
+        ['my-roulette', 'saveCsvBtn', "state.items[0].name = '\\t=1+1';", '\t=1+1'],
+        ['copy-pattan', 'exportCsvBtn', "document.getElementById('mainArea').value = '=1+1';", '=1+1']
+    ]) {
+        const env = await setup('tools/' + page + '.html');
+        try {
+            let blob;
+            env.w.ToolUtils.downloadBlob = output => { blob = output; };
+            if (page === 'copy-pattan') env.w.document.querySelector('textarea').value = value;
+            else env.eval(inject);
+            env.w.document.getElementById(button).click();
+            assert.ok(blob);
+            const reader = new env.w.FileReader();
+            const text = await new Promise((resolve, reject) => { reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(blob); });
+            assert.ok(text.includes('UCR-TEXT-CSV-v1,apostrophe'));
+            const rows = env.w.ToolUtils.parseCSV(text);
+            assert.ok(Array.from(rows).some(row => Array.from(row).includes(value)));
+        } finally { env.dom.window.close(); }
+    }
 });

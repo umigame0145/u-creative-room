@@ -215,14 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportCsvBtn = document.getElementById('exportCsvBtn');
     if (exportCsvBtn) {
         exportCsvBtn.onclick = () => {
-            const mainText = mainArea.value.replace(/"/g, '""');
-            const materials = Array.from(document.querySelectorAll('.material-input'))
-                                   .map(input => `"${input.value.replace(/"/g, '""')}"`)
-                                   .join(',');
-            let csvContent = `"${mainText}"\n${materials}\n`;
-            stockItems.forEach(item => {
-                csvContent += `"${item.replace(/"/g, '""')}"\n`;
-            });
+            const rows = [[mainArea.value], Array.from(document.querySelectorAll('.material-input'), input => input.value), ...stockItems.map(item => [item])];
+            const csvContent = ToolUtils.serializeCSV(rows);
             const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
             ToolUtils.downloadBlob(blob, 'copy_pattan_backup.csv');
         };

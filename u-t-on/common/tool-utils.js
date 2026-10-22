@@ -43,7 +43,19 @@ window.ToolUtils = {
         }
         if (quoted) throw new Error('CSVの引用符が閉じられていません。');
         if (field || row.length) { row.push(field); rows.push(row); }
+        if (rows[0]?.length === 2 && rows[0][0] === 'UCR-TEXT-CSV-v1' && rows[0][1] === 'apostrophe') {
+            rows.shift();
+            for (const row of rows) for (let i = 0; i < row.length; i++) {
+                if (!row[i].startsWith("'")) throw new Error('安全なCSVの形式が不正です。');
+                row[i] = row[i].slice(1);
+            }
+        }
         return rows;
+    },
+    serializeCSV(rows) {
+        // Encode every cell as text, including leading whitespace and apostrophes.
+        // The format marker lets parseCSV restore the exact original backup values.
+        return 'UCR-TEXT-CSV-v1,apostrophe\r\n' + rows.map(row => (row.length ? row : ['']).map(value => ToolUtils.csvField("'" + String(value ?? ''))).join(',')).join('\r\n');
     },
     csvField(value) { return '"' + String(value ?? '').replace(/"/g, '""') + '"'; },
     downloadBlob(blob, filename) {

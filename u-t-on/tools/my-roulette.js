@@ -584,7 +584,7 @@ function setupEventListeners() {
 
 function exportCSV() {
     const rows = [['ID', 'Name', 'Weight', 'Color'], ...state.items.map(i => [i.id, i.name, i.weight, i.color])];
-    const csv = rows.map(row => row.map(ToolUtils.csvField).join(',')).join('\r\n');
+    const csv = ToolUtils.serializeCSV(rows);
     ToolUtils.downloadBlob(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }), 'roulette_config_' + new Date().toISOString().slice(0, 10) + '.csv');
 }
 function importCSV(file) {

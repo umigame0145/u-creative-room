@@ -1,3 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "./legacy-reset.css";
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
