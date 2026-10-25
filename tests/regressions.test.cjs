@@ -200,3 +200,15 @@ test('Counter, roulette and phrase CSV buttons export protected values without l
         } finally { env.dom.window.close(); }
     }
 });
+
+test('Image download uses a Blob with the selected filename and handles encoder failure', async t => {
+    const env = await setup('tools/image-joiner.html'); t.after(() => env.dom.window.close());
+    const d=env.w.document; d.getElementById('fileNameInput').value='sample-output';
+    d.getElementById('saveFormat').value='image/png';
+    let saved;
+    env.w.ToolUtils.downloadBlob=(blob,name)=>{saved={blob,name};};
+    d.getElementById('resultCanvas').toBlob=callback=>callback(new env.w.Blob(['image'],{type:'image/png'}));
+    env.w.downloadResult(); assert.equal(saved.name,'sample-output.png'); assert.equal(saved.blob.type,'image/png');
+    saved=null; d.getElementById('resultCanvas').toBlob=callback=>callback(null);
+    env.w.downloadResult(); assert.equal(saved,null); assert.match(d.getElementById('tool-notice').textContent,/保存できません/);
+});

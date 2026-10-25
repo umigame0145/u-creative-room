@@ -232,6 +232,8 @@ function downloadResult() {
         const ctx = output.getContext('2d'); ctx.fillStyle = document.getElementById('bgColor').value;
         ctx.fillRect(0, 0, output.width, output.height); ctx.drawImage(canvas, 0, 0);
     }
-    link.href = output.toDataURL(format);
-    link.click();
+    output.toBlob(blob => {
+        if (!blob) { ToolUtils.notify('画像を保存できませんでした。'); return; }
+        ToolUtils.downloadBlob(blob, link.download);
+    }, format, 0.92);
 }
