@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.11.03", content: "動画コマ分解を追加しました。全フレーム・間隔指定・コマ送り・ZIP保存・一覧画像に対応しています。" },
         { date: "2026.10.15", content: "7つのツールに具体的な使用例を追加し、歩きスマホラッシュのゲーム内容を完成させました。" },
         { date: "2026.10.13", content: "歩きスマホラッシュに体の衝突・スマホ破壊・おはじき反射を追加しました。" },
         { date: "2026.10.12", content: "歩きスマホラッシュを簡易3D表示に対応しました。" },
@@ -25,9 +26,19 @@ const SITE_DATA = {
         "roulette": "my-roulette_icon.svg",
         "mosaic": "koko-ni-mosaic_icon.svg",
         "transparency": "suke-touka_icon.svg",
+        "video-frames": "video-frames_icon.svg",
         "smartphone-rush": "smartphone-rush_icon.svg"
     },
     tools: [
+        {
+            id: "video-frames",
+            category: "image",
+            name: "動画コマ分解",
+            description: "動画を全フレームまたは指定間隔で画像に。1回200枚まで、コマ送り・ZIP保存・一覧画像に対応。端末内で処理します。",
+            icon: "video-frames",
+            url: "tools/video-frames.html",
+            isUpdate: true
+        },
         {
             id: "image-joiner",
             category: "image",
@@ -99,6 +110,7 @@ const SITE_DATA = {
         {
             groupName: "画像編集ツール",
             items: [
+                { name: "動画コマ分解", url: "tools/video-frames.html" },
                 { name: "画像結合ツール", url: "tools/image-joiner.html" },
                 { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" },
                 { name: "KOKOにモザイク", url: "tools/koko-ni-mosaic.html" },

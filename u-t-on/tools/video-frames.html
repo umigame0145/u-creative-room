@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動画コマ分解 | 全フレーム抽出・コマ送り・画像保存 - Uの創作部屋</title>
+  <meta name="description" content="動画を全フレームまたは指定間隔で画像に分解。1回200枚まで、コマ送り、PNG・JPEG、ZIP保存、一覧画像に対応。動画は端末内で処理します。">
+  <link rel="canonical" href="https://u-t-on.com/tools/video-frames.html">
+  <meta property="og:url" content="https://u-t-on.com/tools/video-frames.html"><meta property="og:type" content="article">
+  <meta property="og:title" content="動画コマ分解 - Uの創作部屋"><meta property="og:description" content="動画の一瞬を、コマごとに。全フレーム抽出からZIP保存まで、端末内で。">
+  <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png"><meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="../common/icon/video-frames_icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../common/style.css"><link rel="stylesheet" href="video-frames.css">
+  <script src="../common/tool-utils.js" defer></script><script src="video-frames-core.js" defer></script>
+  <script type="module" src="video-frames.mjs"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239" crossorigin="anonymous"></script>
+</head>
+<body class="video-frames-page">
+<div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
+<main class="vf-main">
+  <header class="vf-hero"><div><p class="vf-eyebrow">VIDEO → FRAMES</p><h1>動画コマ分解</h1><p>流れる一瞬を、<br class="vf-mobile-break">手に取れる一枚に。</p></div><img src="../common/icon/video-frames_icon.svg" width="92" height="92" alt=""></header>
+  <p class="vf-intro">動画をコマごとの画像に分解し、動きを見比べたり、必要な瞬間だけを選んで保存したりする無料ツールです。動画編集ソフトを開かずに、ブラウザ内でコマ送り・PNG/JPEG出力・ZIP保存まで行えます。</p>
+  <div class="vf-badges"><span>動画は端末内で処理</span><span>1回200枚まで</span><span>全コマ・間隔指定</span></div>
+  <nav class="vf-guide-links" aria-label="使い方と活用例"><a href="#how-to">使い方</a><a href="#worked-example">実際の出力例</a><a href="#choose-settings">設定の選び方</a><a href="#video-faq">困ったとき</a></nav>
+  <p id="capability" class="vf-notice" role="status">ブラウザの対応状況を確認しています…</p>
+  <section class="vf-panel" aria-labelledby="upload-title"><div class="vf-section-heading"><span>01</span><h2 id="upload-title">動画を選ぶ</h2></div>
+    <label id="dropZone" class="vf-drop"><input id="videoInput" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.m4v,.mov,.webm"><strong>動画を選択 / ドロップ</strong><span>MP4・MOV・WebM / 最大512MB</span></label>
+    <p class="vf-hint">対応形式でも、映像の圧縮方式とブラウザによって読み込めない場合があります。まず短い動画でお試しください。</p>
+    <div class="vf-row"><button id="sampleBtn" type="button" class="vf-secondary">サンプル動画で試す</button><button id="resetBtn" type="button" class="vf-text" hidden>動画と結果を消去</button></div>
+    <p id="fileInfo" class="vf-file-info"></p>
+  </section>
+  <section id="editor" class="vf-panel" aria-labelledby="frame-title" hidden>
+    <div class="vf-section-heading"><span>02</span><h2 id="frame-title">コマを確認する</h2></div>
+    <div class="vf-preview"><canvas id="preview" width="640" height="360" aria-label="選択中のフレーム"></canvas></div>
+    <label class="vf-scrub-label" for="scrubber">フレーム位置 <output id="framePosition"></output></label><input id="scrubber" type="range" min="0" max="0" value="0" step="1">
+    <div class="vf-row vf-transport"><button id="prevBtn" type="button" class="vf-secondary">← 前のコマ</button><button id="nextBtn" type="button" class="vf-secondary">次のコマ →</button><button id="saveFrameBtn" type="button" class="vf-primary">このコマを保存</button></div>
+    <div class="vf-row"><button id="setStartBtn" type="button" class="vf-text">このコマから開始</button><button id="setEndBtn" type="button" class="vf-text">このコマまで含める</button></div>
+    <p class="vf-hint">コマ送りは実際のフレーム順です。音声は出力されません。</p>
+  </section>
+  <section id="settings" class="vf-panel" aria-labelledby="settings-title" hidden>
+    <div class="vf-section-heading"><span>03</span><h2 id="settings-title">分解のしかた</h2></div>
+    <fieldset id="settingsFields"><legend class="vf-sr-only">範囲と出力設定</legend>
+    <div class="vf-settings-grid"><label>抽出方法<select id="mode"><option value="all">全フレーム（間引きなし）</option><option value="interval">指定間隔で抽出</option></select></label>
+    <label id="intervalField" hidden>間隔（秒）<input id="interval" type="number" min="0.01" max="3600" step="0.01" value="1"></label>
+    <label>開始（秒・含む）<input id="start" type="number" min="0" step="any" value="0"></label><label>終了（秒・含まない）<input id="end" type="number" min="0" step="any"></label>
+    <label>画像の長辺<select id="maxSide"><option value="640">640px / 軽量</option><option value="1280" selected>1,280px / おすすめ</option><option value="1920">1,920px / 高精細</option></select></label>
+    <label>保存形式<select id="format"><option value="png">PNG / 文字や線に</option><option value="jpeg">JPEG / 写真・容量重視</option></select></label>
+    <label id="qualityField" hidden>JPEG画質<select id="quality"><option value="0.92">高画質（92%）</option><option value="0.8" selected>標準（80%）</option><option value="0.6">軽量（60%）</option></select></label></div>
+    <button id="fullRangeBtn" type="button" class="vf-text">動画全体を指定</button>
+    </fieldset>
+    <div id="planInfo" class="vf-plan" role="status"></div>
+    <p class="vf-hint">拡大せず、縦横比を維持します。全フレームでも解像度は選択値までに縮小します。1回200枚・画像合計96MBまで。容量上限では途中分を残し、続きから再開できます。</p>
+    <div class="vf-row"><button id="extractBtn" type="button" class="vf-primary">画像に分解する</button></div>
+  </section>
+  <div class="vf-progress-wrap"><progress id="progress" max="200" value="0" hidden aria-label="処理の進み具合"></progress><p id="status" role="status" aria-live="polite"></p><button id="cancelBtn" type="button" class="vf-secondary" hidden>処理を中止</button></div>
+  <section id="results" class="vf-panel" aria-labelledby="results-title" hidden>
+    <div class="vf-section-heading"><span>04</span><h2 id="results-title">切り出したコマ</h2></div><p id="resultInfo"></p>
+    <div class="vf-selection-toolbar"><strong id="selectionInfo" role="status" aria-live="polite">0 / 0枚を選択中</strong><div class="vf-row"><button id="selectAllBtn" type="button" class="vf-secondary">全選択</button><button id="deselectAllBtn" type="button" class="vf-secondary" disabled>選択解除</button><button id="selectedZipBtn" type="button" class="vf-primary" disabled>選択した0枚をZIP保存</button></div></div>
+    <div class="vf-filmstrip-heading"><p id="galleryHelp" class="vf-hint">左右にスクロールして、画像をタップして選択。離れたコマも自由に選べます。</p><div class="vf-gallery-nav"><button id="galleryPrevBtn" type="button" class="vf-secondary" aria-label="画像一覧を左へスクロール" aria-controls="gallery">←</button><button id="galleryNextBtn" type="button" class="vf-secondary" aria-label="画像一覧を右へスクロール" aria-controls="gallery">→</button></div></div>
+    <div id="gallery" class="vf-gallery" role="region" aria-label="抽出画像の一覧" aria-describedby="galleryHelp" tabindex="0"></div>
+    <div class="vf-row"><button id="zipBtn" type="button" class="vf-secondary">全画像をZIP保存</button><button id="sheetBtn" type="button" class="vf-secondary">全画像の一覧画像を保存</button><button id="csvBtn" type="button" class="vf-secondary">全画像の時刻表CSVを保存</button><button id="continueBtn" type="button" class="vf-secondary" hidden>続きの200枚を分解</button><button id="clearBtn" type="button" class="vf-text">結果を消去</button></div>
+    <p class="vf-hint">選択した画像のZIPには、選んだコマだけの時刻表が入ります。次の分解で画像と選択状態は置き換わります。必要な画像は先に保存してください。「続き」は前回の範囲・出力設定を引き継ぎます。一覧画像は小さなコマを並べた確認用JPEGです。</p>
+  </section>
+  <section class="vf-guide" aria-labelledby="guide-title"><p class="vf-eyebrow">QUICK GUIDE</p><h2 id="guide-title">一瞬を選ぶ。流れを並べる。</h2>
+    <div class="vf-guide-grid"><div><h3>動きの研究に</h3><p>「全フレーム」で、ダンスやアニメーションをコマごとに確認。200枚を超える動画も、続きを順番に取り出せます。</p></div><div><h3>動画の見どころに</h3><p>「指定間隔」で1秒ごとなどの画像を作り、一覧画像に。間隔の時刻以降にある最初のコマを選び、同じコマの重複は省きます。</p></div><div><h3>欲しい瞬間だけ</h3><p>スライダーと前後のボタンでコマ送り。「このコマを保存」で1枚だけ保存できます。</p></div></div>
+    <section class="vf-article-section" aria-labelledby="how-to"><h2 id="how-to">初めて使うときの手順</h2>
+      <ol class="vf-howto"><li><strong>動画を選んで、最初のコマを確認</strong><p>手元のMP4・MOV・WebMを選びます。まずは「サンプル動画で試す」でも操作できます。読み込み後に動画の大きさ・長さ・コマ数が表示され、スライダーと「前のコマ」「次のコマ」で実際の画像を確認できます。</p></li>
+      <li><strong>必要な範囲と抽出方法を選択</strong><p>動きを細かく追うなら「全フレーム」、全体の流れをつかむなら「指定間隔」を選びます。欲しいコマを表示して「このコマから開始」「このコマまで含める」を押すと、秒数を手入力せず範囲を指定できます。</p></li>
+      <li><strong>分解して、横並びの一覧から画像を選ぶ</strong><p>「画像に分解する」を押すと、最大200枚が一覧に並びます。左右にスクロールし、画像部分かチェックボックスをタップしてください。離れたコマも選択でき、選んだ画像には緑の枠と「選択中」が付きます。</p></li>
+      <li><strong>選んだ画像をZIP保存</strong><p>「選択した○枚をZIP保存」で、画像と選択分の時刻表がまとまります。全コマが必要なら「全画像をZIP保存」を使います。ZIPを展開して画像を確認してから、必要に応じて「続きの200枚」を処理してください。次の分解では画面上の結果が置き換わります。</p></li></ol>
+    </section>
+    <section id="worked-example" class="vf-article-section vf-worked-example" aria-labelledby="worked-title"><p class="vf-eyebrow">REAL OUTPUT / オリジナルサンプル</p><h2 id="worked-title">8秒の動画から、3つの瞬間を選ぶ</h2>
+      <p>丸が移動する640 × 360px・30fps・8秒の動画を、このページの動作確認用に制作しました。全240コマにコマ番号が入っているため、出力した画像がどの瞬間なのかを見比べられます。以下は実際にこのツールで抽出したPNGです。</p>
+      <p><a href="../common/examples/video-frames-sample.mp4" download>入力用サンプル動画を保存（MP4） ↓</a></p>
+      <div class="vf-example-frames"><figure><a href="../common/examples/frame_000001_0us.png" download><img src="../common/examples/frame_000001_0us.png" alt="実出力PNG。最初の1コマ目、0秒。丸は左端にある。" width="640" height="360" loading="lazy" decoding="async"></a><figcaption><strong>1コマ目 / 0秒</strong><span>動き始めの位置</span><a href="../common/examples/frame_000001_0us.png" download>このPNGを保存 ↓</a></figcaption></figure>
+      <figure><a href="../common/examples/frame_000061_2000000us.png" download><img src="../common/examples/frame_000061_2000000us.png" alt="実出力PNG。61コマ目、2秒。丸は中央付近に移動している。" width="640" height="360" loading="lazy" decoding="async"></a><figcaption><strong>61コマ目 / 2秒</strong><span>途中の位置を確認</span><a href="../common/examples/frame_000061_2000000us.png" download>このPNGを保存 ↓</a></figcaption></figure>
+      <figure><a href="../common/examples/frame_000181_6000000us.png" download><img src="../common/examples/frame_000181_6000000us.png" alt="実出力PNG。181コマ目、6秒。画面のFRAME番号で2秒の画像と区別できる。" width="640" height="360" loading="lazy" decoding="async"></a><figcaption><strong>181コマ目 / 6秒</strong><span>似た見た目も番号で区別</span><a href="../common/examples/frame_000181_6000000us.png" download>このPNGを保存 ↓</a></figcaption></figure></div>
+      <h3>同じ動画でも、目的で出力を変える</h3><dl class="vf-recipes"><div><dt>すべての動きを調べる</dt><dd>「全フレーム」で開始0秒・終了8秒にすると対象は240枚。最初の200枚を保存し、「続きの200枚」で残り40枚を保存します。200枚に収めるための自動的な間引きは行いません。</dd></div><div><dt>全体を短時間で見渡す</dt><dd>「指定間隔」を1秒、開始0秒・終了8秒にすると、このサンプルでは0〜7秒の8枚になります。「全画像の一覧画像を保存」で小さなコマを1枚の画像にまとめられます。</dd></div><div><dt>必要な3枚だけを渡す</dt><dd>1秒間隔で取り出した一覧から、1・61・181コマ目を選択。0秒・2秒・6秒の3枚だけをZIP保存できます。選択した順番が前後しても、保存順は動画内の順番です。</dd></div></dl>
+      <p><a class="vf-example-download" href="../common/examples/video-frames-selection-example.zip" download>実際の選択結果を保存：PNG 3枚＋時刻表CSV（ZIP） ↓</a></p>
+      <p class="vf-hint">確認日：2026年11月3日。出力はPNG・640 × 360px。掲載画像は表示用に縮小しており、リンクから元のPNGを保存できます。サンプルは図形と文字で制作し、第三者の動画や個人情報は使用していません。</p>
+    </section>
+    <section class="vf-article-section" aria-labelledby="choose-settings"><h2 id="choose-settings">設定に迷ったら</h2>
+      <h3>「全フレーム」と「指定間隔」の違い</h3><p>全フレームは、元動画に記録されたコマを順番に取り出します。例えば30fpsで一定の動画なら、1秒あたり約30枚です。短い動作の途中経過を見たいときに向いています。間隔指定は、指定した時刻以降にある最初のコマを選びます。0.1秒なら細かい変化、1秒なら大まかな流れを確認しやすくなります。</p><p>元動画に存在しないコマは作りません。間隔を元動画のコマ間隔より短くしても、同じコマの重複は省きます。可変フレームレートの動画ではコマの間隔が一定ではないので、正確な時刻は出力されたCSVで確認してください。</p>
+      <h3>PNG・JPEG・画像の大きさ</h3><table class="vf-format-table"><caption>保存形式の使い分け</caption><thead><tr><th scope="col">形式</th><th scope="col">選びやすい用途</th><th scope="col">注意点</th></tr></thead><tbody><tr><th scope="row">PNG</th><td>画面録画、文字、線画、図解を含む動画</td><td>写真中心ではファイルが大きくなる場合があります。</td></tr><tr><th scope="row">JPEG</th><td>写真や実写動画から大量に取り出すとき</td><td>画質を下げると小さくなりやすい反面、細い文字や輪郭ににじみが出る場合があります。</td></tr></tbody></table>
+      <p>長辺は、まず1,280pxから試してください。スマホで軽く確認するなら640px、細部を見たいなら1,920pxを選べます。ただし、小さい元動画を拡大して画質を上げる機能ではありません。例えば640 × 360pxのサンプルは、1,920pxを選んでも640 × 360pxのままです。</p>
+      <h3>開始・終了時刻と200枚の考え方</h3><p>開始の時刻は含み、終了の時刻は含みません。30fpsのサンプルで0〜1秒を指定すると、0秒から約0.966667秒までの30枚です。1秒ちょうどのコマも欲しい場合は、そのコマを表示して「このコマまで含める」を使うと分かりやすくなります。</p><p>1回の200枚制限と、画像合計96MBの制限は別々に適用します。枚数が200枚未満でも容量上限で止まることがあります。その場合は途中分を保存して続きを処理するか、長辺を小さくする・JPEGにする・範囲を短くする方法を試してください。「続き」は前回の出力設定を引き継ぐため、設定を変えたいときは範囲を指定し直して分解します。</p>
+      <h3>ZIP・一覧画像・時刻表の使い分け</h3><p>ZIPには、加工や再利用に使える個別の画像が入ります。一覧画像は小さなサムネイルを並べた確認用JPEGなので、細部の確認や元の解像度での再利用には個別画像を使ってください。時刻表CSVには元動画のコマ番号、最初のコマからの秒数、元の表示時刻、継続時間、画像名が入ります。選択した画像だけのZIPでは、CSVの行も選択した画像だけになります。</p>
+    </section>
+    <section id="video-faq" class="vf-article-section" aria-labelledby="faq-title"><h2 id="faq-title">うまくいかないとき・よくある質問</h2>
+      <details><summary>MP4なのに読み込めません</summary><p>MP4は動画を入れる形式の名前で、内部の映像の圧縮方式まで同じとは限りません。同じ拡張子でも端末やブラウザによって復元できない動画があります。最初にサンプル動画が開けるか確認してください。サンプルは開けて手元の動画だけが開けない場合は、別の対応ブラウザや、H.264方式のMP4に変換したコピーでお試しください。</p></details>
+      <details><summary>処理が重い・止まってしまいました</summary><p>まず「処理を中止」を押し、抽出済みの結果があれば保存してください。長辺640px、短い範囲、JPEGの組み合わせから試すと負荷を抑えられます。200枚でも端末の空きメモリによっては処理できない場合があります。再読み込みやタブを閉じる操作では結果が失われるため、保存できるものを先に保存してください。</p></details>
+      <details><summary>選択した画像がZIPに入っていません</summary><p>緑の「選択中」と選択枚数を確認し、「選択した○枚をZIP保存」を使ってください。画像の下の「画像を保存」は、その1枚だけを保存するリンクです。次の抽出・続きの処理・結果の消去では選択状態がリセットされます。選択は現在画面にある抽出結果の中で行います。</p></details>
+      <details><summary>動画の再生画面と、明るさや色が違います</summary><p>このツールは通常のSDR画像として出力します。HDR動画や特殊な色空間では、元のプレーヤーと同じ見え方にならない場合があります。また、ピントのずれや被写体のぶれを取り除く機能はありません。保存した画像を開いて、用途に合う見え方か確認してください。</p></details>
+      <details><summary>動画や画像はサーバーに保存されますか？</summary><p>動画の解析・抽出は端末内で行い、選んだ動画と抽出画像を当サイトのサーバーに送信・保存する機能はありません。作業結果の自動バックアップもないため、必要な画像はダウンロードしてください。サイト閲覧時の広告やアクセス解析などの外部通信については、<a href="../privacy.html">プライバシーポリシー</a>で説明しています。</p></details>
+    </section>
+    <details open><summary>「全フレーム」と200枚の制限について</summary><p>対応する映像トラックを表示時刻順に読み出します。再生中のスクリーンショットや固定FPSでの推測ではありません。可変フレームレートにも対応し、元の表示時刻・継続時間をZIP内のCSVに記録します。開始を含み終了を含まない範囲を、最大200枚ずつ処理します。</p><p>200枚だけではメモリ消費は保証できないため、入力512MB・12万コマ、入力解像度は長辺4,096pxかつ約884万画素以下、出力長辺1,920px、保持画像96MBまでに制限しています。画像は1枚ずつ処理し、復元済みの映像データを解放します。高解像度・長い動画や端末の空きメモリによっては、さらに小さい範囲と640pxを選んでください。</p></details>
+    <details><summary>対応ブラウザ・画質・読み込めない動画</summary><p>HTTPSまたはローカル環境でWebCodecsに対応したブラウザが必要です。MP4・MOV・WebMに対応しますが、圧縮方式の対応は端末によって異なります。未対応の動画を「全コマ抽出済み」と表示することはありません。保護された動画や壊れたファイルは扱えません。</p><p>通常のSDR画像として保存します。HDRの明るさや色、特殊な色空間、インターレースのフィールドを元のまま保存する用途には向きません。複数の映像トラックがある場合は主映像1本を対象にします。編集で非表示になったコマがファイルに残っている動画では、再生画面と抽出範囲が異なる場合があります。時刻の0秒は、読み出した最初のコマを基準にしています。動画・抽出画像をサーバーに送信しません。</p></details>
+    <p><a href="image-joiner.html">画像を自由に結合する →</a>　<a href="img-binder-pdf.html">画像をPDFにまとめる →</a></p>
+    <p class="vf-hint">動画の権利や映り込む人のプライバシーに配慮してご利用ください。<a href="../privacy.html">プライバシーポリシー</a> / <a href="../contact.html">不具合の報告</a></p>
+    <p class="vf-hint">動画解析：<a href="https://mediabunny.dev/" target="_blank" rel="noopener noreferrer">Mediabunny</a>（<a href="../common/vendor/mediabunny-LICENSE.txt">MPL-2.0</a>、<a href="../common/vendor/mediabunny-1.65.0-source.tgz" download>ソースコード</a>）</p>
+  </section>
+  <noscript><p>このツールを使うにはJavaScriptを有効にしてください。</p></noscript>
+</main>
+<div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a></nav></div>
+<script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script>
+</body></html>

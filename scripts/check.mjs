@@ -2,6 +2,7 @@ import { readFile, readdir, access } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import vm from 'node:vm';
 import { JSDOM } from 'jsdom';
+import { execFileSync } from 'node:child_process';
 const root = resolve('u-t-on');
 let checks = 0;
 async function inspect(directory) {
@@ -10,6 +11,7 @@ async function inspect(directory) {
         if (entry.isDirectory()) { await inspect(file); continue; }
         const source = await readFile(file, 'utf8');
         if (entry.name.endsWith('.js')) { new vm.Script(source, { filename: file }); checks++; }
+        if (entry.name.endsWith('.mjs')) { execFileSync(process.execPath, ['--check', file]); checks++; }
         if (!entry.name.endsWith('.html')) continue;
         const document = new JSDOM(source).window.document;
         if (document.querySelectorAll('h1').length !== 1) throw new Error(`${file}: expected one h1`);
