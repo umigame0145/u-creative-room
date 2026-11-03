@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.11.04", content: "画像比較を追加しました。2枚の画像の差分率と、赤い差分表示を確認できます。" },
         { date: "2026.11.03", content: "動画コマ分解を追加しました。全フレーム・間隔指定・コマ送り・ZIP保存・一覧画像に対応しています。" },
         { date: "2026.10.15", content: "7つのツールに具体的な使用例を追加し、歩きスマホラッシュのゲーム内容を完成させました。" },
         { date: "2026.10.13", content: "歩きスマホラッシュに体の衝突・スマホ破壊・おはじき反射を追加しました。" },
@@ -27,9 +28,19 @@ const SITE_DATA = {
         "mosaic": "koko-ni-mosaic_icon.svg",
         "transparency": "suke-touka_icon.svg",
         "video-frames": "video-frames_icon.svg",
+        "image-compare": "image-compare_icon.svg",
         "smartphone-rush": "smartphone-rush_icon.svg"
     },
     tools: [
+        {
+            id: "image-compare",
+            category: "image",
+            name: "画像比較",
+            description: "2枚の画像の差分率を数値で表示。違いのある部分に薄い赤を重ね、PNGで保存できます。画像は端末内で処理します。",
+            icon: "image-compare",
+            url: "tools/image-compare.html",
+            isUpdate: true
+        },
         {
             id: "video-frames",
             category: "image",
@@ -111,6 +122,7 @@ const SITE_DATA = {
             groupName: "画像編集ツール",
             items: [
                 { name: "動画コマ分解", url: "tools/video-frames.html" },
+                { name: "画像比較", url: "tools/image-compare.html" },
                 { name: "画像結合ツール", url: "tools/image-joiner.html" },
                 { name: "画像梱包（PDF）", url: "tools/img-binder-pdf.html" },
                 { name: "KOKOにモザイク", url: "tools/koko-ni-mosaic.html" },

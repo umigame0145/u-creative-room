@@ -45,7 +45,7 @@ test('Navigation closes with Escape, returns focus and filters progressively', a
     assert.equal(d.getElementById('menuDrawer').hidden, true);
     assert.equal(d.activeElement.id, 'menuBtn');
     d.querySelector('[data-filter="image"]').click();
-    assert.equal(d.getElementById('tool-count').textContent, '5個のツール');
+    assert.equal(d.getElementById('tool-count').textContent, '6個のツール');
     const input = d.getElementById('tool-search'); input.value = 'モザイク'; input.dispatchEvent(new env.w.Event('input'));
     assert.equal(d.getElementById('tool-count').textContent, '1個のツール');
     input.value = '存在しない'; input.dispatchEvent(new env.w.Event('input'));

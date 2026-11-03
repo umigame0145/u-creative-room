@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>画像比較 | 差分率を数値と赤いハイライトで確認 - Uの創作部屋</title>
+<meta name="description" content="2枚の画像の違いをピクセル単位で比較。差分率をパーセントで表示し、違う部分に薄い赤を重ねます。PNG・JPEG・WebP対応、画像は端末内で処理。">
+<link rel="canonical" href="https://u-t-on.com/tools/image-compare.html"><meta property="og:url" content="https://u-t-on.com/tools/image-compare.html"><meta property="og:type" content="article"><meta property="og:title" content="画像比較 - Uの創作部屋"><meta property="og:description" content="2枚の画像の違いを、差分率と薄い赤で確認。"><meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../common/icon/image-compare_icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../common/style.css"><link rel="stylesheet" href="image-compare.css">
+<script src="../common/tool-utils.js" defer></script><script src="image-compare-core.js" defer></script><script src="image-compare.js" defer></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239" crossorigin="anonymous"></script>
+</head><body class="image-compare-page">
+<div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
+<main class="ic-main"><header class="ic-hero"><div><p class="ic-eyebrow">IMAGE → DIFFERENCE</p><h1>画像比較</h1><p>変わったところを、<br>数字と色で見つける。</p></div><img src="../common/icon/image-compare_icon.svg" width="88" height="88" alt=""></header>
+<p class="ic-intro">2枚の画像を比較し、差分がある部分を薄い赤で表示します。スクリーンショットの更新確認や、制作途中の画像の見比べに。画像はこの端末内で処理し、サーバーへ送信しません。</p>
+<nav class="ic-links" aria-label="ページ内の案内"><a href="#example">サンプルと計算方法</a><a href="#guide">使い方・注意点</a></nav>
+<section class="ic-panel" aria-labelledby="input-title"><div class="ic-heading"><span>01</span><h2 id="input-title">2枚の画像を選ぶ</h2></div>
+<div class="ic-inputs"><div><label class="ic-drop" id="dropA"><input type="file" id="fileA" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"><span class="ic-letter">A</span><strong>比較元の画像</strong><span>選択、またはここにドロップ</span></label><div id="infoA" class="ic-file-info">まだ選択されていません</div><img id="thumbA" class="ic-thumb" alt="比較元Aのプレビュー" hidden></div>
+<div><label class="ic-drop" id="dropB"><input type="file" id="fileB" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"><span class="ic-letter">B</span><strong>比較先の画像</strong><span>選択、またはここにドロップ</span></label><div id="infoB" class="ic-file-info">まだ選択されていません</div><img id="thumbB" class="ic-thumb" alt="比較先Bのプレビュー" hidden></div></div>
+<p class="ic-hint">PNG・JPEG・WebP / 1枚30MB・2,400万画素まで。アニメーションの比較には対応していません。</p>
+<div class="ic-row"><button id="sampleBtn" type="button" class="ic-secondary">サンプル2枚で試す</button><button id="clearBtn" type="button" class="ic-text">画像と結果を消去</button></div>
+</section>
+<section class="ic-panel" aria-labelledby="settings-title"><div class="ic-heading"><span>02</span><h2 id="settings-title">比較する</h2></div>
+<label class="ic-label" for="tolerance">色の違いの許容値 <output id="toleranceValue" for="tolerance">0（完全一致で比較）</output></label><input id="tolerance" type="range" min="0" max="80" step="1" value="0">
+<p class="ic-hint">0なら小さな色の違いも差分です。値を上げるとJPEGの圧縮ノイズなどを除外しやすくなります。設定変更後は「比較する」を押してください。</p>
+<p id="sizeInfo" class="ic-note">左上をそろえて比較します。片方にしかない領域も差分に含めます。</p>
+<div class="ic-row"><button id="compareBtn" type="button" class="ic-primary" disabled>比較する</button><button id="cancelBtn" type="button" class="ic-secondary" hidden>中止する</button></div>
+</section>
+<p id="status" class="ic-status" role="status" aria-live="polite"></p><progress id="progress" max="1" value="0" hidden aria-label="比較処理の進み具合"></progress>
+<section id="result" class="ic-panel" aria-labelledby="result-title" hidden><div class="ic-heading"><span>03</span><h2 id="result-title">比較結果</h2></div>
+<div class="ic-metric"><div><span>差分のある画素の割合</span><strong id="percent">0.00<span>%</span></strong></div><p id="counts"></p></div><p id="resultNote" class="ic-hint"></p>
+<div class="ic-tabs" role="group" aria-label="表示する画像"><button type="button" id="viewDiff" aria-pressed="true">差分（赤）</button><button type="button" id="viewA" aria-pressed="false">画像A</button><button type="button" id="viewB" aria-pressed="false">画像B</button></div>
+<div class="ic-display-settings"><label for="opacity">赤の濃さ <output id="opacityValue" for="opacity">30%</output><input id="opacity" type="range" min="10" max="70" step="5" value="30"></label><label class="ic-check"><input type="checkbox" id="diffOnly">差分だけ表示（元画像を隠す）</label><label class="ic-check"><input type="checkbox" id="actualSize">原寸で見る</label></div>
+<p id="viewLabel" class="ic-hint">画像Bに、差分のある部分を薄い赤で重ねています。</p><div id="canvasWrap" class="ic-canvas-wrap" tabindex="0" role="region" aria-label="比較画像。原寸表示ではスクロールできます。"><canvas id="resultCanvas" width="1" height="1" aria-label="差分の比較画像"></canvas></div>
+<div class="ic-row"><button id="downloadBtn" type="button" class="ic-primary">赤い差分画像をPNG保存</button></div><p class="ic-hint">保存する画像には、現在の赤の濃さを適用します。「差分だけ表示」がオンのときは、差分以外が透明のPNGを保存します（画面では白背景で表示）。オフのときは、表示をA・Bに切り替えていても赤い差分画像を保存します。</p>
+</section>
+<section id="example" class="ic-guide" aria-labelledby="example-title"><p class="ic-eyebrow">TRY & UNDERSTAND</p><h2 id="example-title">イラストで違いを探してみる</h2>
+<p>猫のいる作業部屋を描いた、1,536 × 1,024pxのAI生成イラストです。画像Bではマグカップと本の表紙の色を変えています。細かな色の揺らぎも含まれるため、サンプルでは許容値20を設定します。「サンプル2枚で試す」→「比較する」で、違う部分を確認してみてください。</p>
+<div class="ic-example-grid"><figure><a href="../common/examples/compare-a.png" download><img src="../common/examples/compare-a.png" width="1536" height="1024" alt="画像A。猫のいる部屋。机の上に黄色いマグカップと緑の表紙の本がある。" loading="lazy" decoding="async"></a><figcaption>画像A：変更前 <a href="../common/examples/compare-a.png" download>PNGを保存 ↓</a></figcaption></figure><figure><a href="../common/examples/compare-b.png" download><img src="../common/examples/compare-b.png" width="1536" height="1024" alt="画像B。同じ部屋のマグカップが赤く、本の表紙が水色になったイラスト。" loading="lazy" decoding="async"></a><figcaption>画像B：変更後 <a href="../common/examples/compare-b.png" download>PNGを保存 ↓</a></figcaption></figure><figure><a href="../common/examples/compare-diff.png" download><img src="../common/examples/compare-diff.png" width="1536" height="1024" alt="実際に保存した差分画像。許容値20で差分になった部分に赤を30%重ねた結果。" loading="lazy" decoding="async"></a><figcaption>差分：赤の濃さ30% <a href="../common/examples/compare-diff.png" download>実出力PNGを保存 ↓</a></figcaption></figure></div>
+<div class="ic-formula">49,220画素 ÷ 1,572,864画素 × 100 ≈ <strong>3.13%</strong></div><p>掲載した差分画像は、許容値20・赤の濃さ30%で実際に比較・保存したものです。許容値0では微妙な色の違いも数えるため約99.83%になります。差分率は「意味がどれくらい違う」「画質がどれくらい悪い」という評価ではなく、比較した画素のうち、設定した許容値を超えた画素の割合です。文字1つの変更でも、画像全体が大きければ差分率は小さくなります。</p>
+</section>
+<section id="guide" class="ic-guide" aria-labelledby="guide-title"><h2 id="guide-title">使い方と、結果の読み方</h2>
+<ol><li>比較元Aと比較先Bを選びます。同じ大きさ・同じ位置で撮ったスクリーンショットほど、変更箇所を見つけやすくなります。</li><li>まず許容値0で比較し、薄い赤の場所と差分率を確認します。必要なら許容値を調整して比較し直します。</li><li>画像A・Bの切り替えで内容を見比べ、原寸表示で細部を確認します。必要な結果はPNGで保存してください。</li></ol>
+<h3>差分率の計算</h3><p>同じ座標の赤・緑・青の各値（0〜255）を比べ、いずれかの差が許容値より大きければ、その画素を差分として数えます。透明部分は白い背景に重ねた見た目で比較します。完全に透明な部分に隠れた色や、画像のメタデータは比較しません。</p>
+<h3>画像のサイズが違う場合</h3><p>拡大して一方に合わせる処理や、位置の自動補正はせず、左上をそろえます。片方にしかない領域は、白に見えても差分です。両方に画像がない余白は比較画素数から除外します。切り抜き位置や撮影位置がずれていると、同じ内容でも広い範囲が赤くなることがあります。</p>
+<h3>大きな画像の比較</h3><p>ブラウザの負荷を抑えるため、比較範囲が400万画素または長辺3,000pxを超える場合は、2枚とも同じ倍率で縮小して比較します。結果には縮小後の比較サイズを表示します。この場合の差分率は縮小後の画素に基づき、元画像の細かな違いは消えることがあります。「原寸」は比較に使用した画像の原寸です。</p>
+<h3>0%でも、ファイルが同じとは限りません</h3><p>ファイル形式、撮影日時、圧縮方法などが違っても、読み出した画素が同じなら0%です。また、白い背景上で見た目が同じ透明度の違いや、許容値以下の色の違いは数えません。JPEGの保存し直しや文字のにじみが多く赤くなる場合は、許容値を少しずつ上げてください。</p>
+<h3>利用できる画像と注意点</h3><p>通常の静止画PNG・JPEG・WebPを対象とします。アニメーションは全コマを比較できません。HDRや特殊な色空間の厳密な比較、印刷色の検査には向きません。端末の空きメモリによっては上限内でも処理できない場合があります。画像や結果は自動保存されず、タブを閉じると失われます。</p>
+<p><a href="image-joiner.html">画像を並べて1枚にまとめる →</a>　<a href="video-frames.html">動画から比較用のコマを切り出す →</a></p><p class="ic-hint">第三者の画像や個人情報の取り扱いに配慮してご利用ください。<a href="../privacy.html">プライバシーポリシー</a> / <a href="../contact.html">不具合を報告</a></p>
+</section><noscript><p>このツールを使うにはJavaScriptを有効にしてください。</p></noscript></main>
+<div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a></nav></div><script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script>
+</body></html>
