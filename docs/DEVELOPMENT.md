@@ -33,3 +33,11 @@ Tailwindのクラスを追加・変更した場合は `npm run build:css` を実
 Tailwind CSS 4.3.3 のNode APIと公式Scannerで一度だけビルドします。監視用CLIは使いません。旧ビルド経路のbracesと古いselector parserを依存ツリーから除外しています。設定の入口はstyles/tailwind.cssとscripts/build-css.mjsです。styles/legacy-reset.cssは既存ページのリセットを保つための互換CSSです。Tailwind v4の対応ブラウザ（Safari 16.4以降、Chrome 111以降、Firefox 128以降）を前提とします。
 
 Cloudflareのヘッダー設定はu-t-on/_headers。HTTPからHTTPSへの強制転送はこのファイルではできず、ゾーンのSSL/TLS → Edge Certificates → Always Use HTTPSを有効にします。既存の証明書とHTTPS応答を確認してから設定し、HTTPの301/308・転送先・パスとクエリの維持を公開後に確認してください。
+
+## URLの形式と読み物（2026-11-10）
+
+本番（Cloudflare）は `.html` 付きURLを拡張子なしURLへ307転送するため、canonical・`og:url`・`sitemap.xml`・内部リンクは拡張子なしに統一しています（トップは `/`、`/about`、`/tools/image-compare`、読み物一覧は `/articles/`）。ページ間リンクはルートからの絶対パス、CSS・画像などの資産は従来どおり相対パスです。
+
+- `npm run preview` は本番と同じく `/about` → `about.html`、`/articles/` → `articles/index.html` を返し、`.html` 付きURLは307で転送します。
+- `npm run check` は、`.html` 付きの内部リンク、ファイルの場所と一致しないcanonical、`og:url` の不一致、サイトマップの過不足、`site-data.js` のリンク切れをエラーにします。
+- 読み物は `u-t-on/articles/` にあります。追加時は `articles/index.html` の一覧、トップの読み物欄（任意）、`sitemap.xml` を更新してください。
