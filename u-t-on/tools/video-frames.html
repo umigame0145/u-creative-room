@@ -4,8 +4,8 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>動画コマ分解 | 全フレーム抽出・コマ送り・画像保存 - Uの創作部屋</title>
   <meta name="description" content="動画を全フレームまたは指定間隔で画像に分解。1回200枚まで、コマ送り、PNG・JPEG、ZIP保存、一覧画像に対応。動画は端末内で処理します。">
-  <link rel="canonical" href="https://u-t-on.com/tools/video-frames.html">
-  <meta property="og:url" content="https://u-t-on.com/tools/video-frames.html"><meta property="og:type" content="article">
+  <link rel="canonical" href="https://u-t-on.com/tools/video-frames">
+  <meta property="og:url" content="https://u-t-on.com/tools/video-frames"><meta property="og:type" content="article">
   <meta property="og:title" content="動画コマ分解 - Uの創作部屋"><meta property="og:description" content="動画の一瞬を、コマごとに。全フレーム抽出からZIP保存まで、端末内で。">
   <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png"><meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="../common/icon/video-frames_icon.svg" type="image/svg+xml">
@@ -15,7 +15,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239" crossorigin="anonymous"></script>
 </head>
 <body class="video-frames-page">
-<div id="common-header"><a class="fallback-home" href="../index.html">Uの創作部屋 · ツール一覧</a></div>
+<div id="common-header"><a class="fallback-home" href="/">Uの創作部屋 · ツール一覧</a></div>
 <main class="vf-main">
   <header class="vf-hero"><div><p class="vf-eyebrow">VIDEO → FRAMES</p><h1>動画コマ分解</h1><p>流れる一瞬を、<br class="vf-mobile-break">手に取れる一枚に。</p></div><img src="../common/icon/video-frames_icon.svg" width="92" height="92" alt=""></header>
   <p class="vf-intro">動画をコマごとの画像に分解し、動きを見比べたり、必要な瞬間だけを選んで保存したりする無料ツールです。動画編集ソフトを開かずに、ブラウザ内でコマ送り・PNG/JPEG出力・ZIP保存まで行えます。</p>
@@ -90,16 +90,16 @@
       <details><summary>処理が重い・止まってしまいました</summary><p>まず「処理を中止」を押し、抽出済みの結果があれば保存してください。長辺640px、短い範囲、JPEGの組み合わせから試すと負荷を抑えられます。200枚でも端末の空きメモリによっては処理できない場合があります。再読み込みやタブを閉じる操作では結果が失われるため、保存できるものを先に保存してください。</p></details>
       <details><summary>選択した画像がZIPに入っていません</summary><p>緑の「選択中」と選択枚数を確認し、「選択した○枚をZIP保存」を使ってください。画像の下の「画像を保存」は、その1枚だけを保存するリンクです。次の抽出・続きの処理・結果の消去では選択状態がリセットされます。選択は現在画面にある抽出結果の中で行います。</p></details>
       <details><summary>動画の再生画面と、明るさや色が違います</summary><p>このツールは通常のSDR画像として出力します。HDR動画や特殊な色空間では、元のプレーヤーと同じ見え方にならない場合があります。また、ピントのずれや被写体のぶれを取り除く機能はありません。保存した画像を開いて、用途に合う見え方か確認してください。</p></details>
-      <details><summary>動画や画像はサーバーに保存されますか？</summary><p>動画の解析・抽出は端末内で行い、選んだ動画と抽出画像を当サイトのサーバーに送信・保存する機能はありません。作業結果の自動バックアップもないため、必要な画像はダウンロードしてください。サイト閲覧時の広告やアクセス解析などの外部通信については、<a href="../privacy.html">プライバシーポリシー</a>で説明しています。</p></details>
+      <details><summary>動画や画像はサーバーに保存されますか？</summary><p>動画の解析・抽出は端末内で行い、選んだ動画と抽出画像を当サイトのサーバーに送信・保存する機能はありません。作業結果の自動バックアップもないため、必要な画像はダウンロードしてください。サイト閲覧時の広告やアクセス解析などの外部通信については、<a href="/privacy">プライバシーポリシー</a>で説明しています。</p></details>
     </section>
     <details open><summary>「全フレーム」と200枚の制限について</summary><p>対応する映像トラックを表示時刻順に読み出します。再生中のスクリーンショットや固定FPSでの推測ではありません。可変フレームレートにも対応し、元の表示時刻・継続時間をZIP内のCSVに記録します。開始を含み終了を含まない範囲を、最大200枚ずつ処理します。</p><p>200枚だけではメモリ消費は保証できないため、入力512MB・12万コマ、入力解像度は長辺4,096pxかつ約884万画素以下、出力長辺1,920px、保持画像96MBまでに制限しています。画像は1枚ずつ処理し、復元済みの映像データを解放します。高解像度・長い動画や端末の空きメモリによっては、さらに小さい範囲と640pxを選んでください。</p></details>
     <details><summary>対応ブラウザ・画質・読み込めない動画</summary><p>HTTPSまたはローカル環境でWebCodecsに対応したブラウザが必要です。MP4・MOV・WebMに対応しますが、圧縮方式の対応は端末によって異なります。未対応の動画を「全コマ抽出済み」と表示することはありません。保護された動画や壊れたファイルは扱えません。</p><p>通常のSDR画像として保存します。HDRの明るさや色、特殊な色空間、インターレースのフィールドを元のまま保存する用途には向きません。複数の映像トラックがある場合は主映像1本を対象にします。編集で非表示になったコマがファイルに残っている動画では、再生画面と抽出範囲が異なる場合があります。時刻の0秒は、読み出した最初のコマを基準にしています。動画・抽出画像をサーバーに送信しません。</p></details>
-    <p><a href="image-joiner.html">画像を自由に結合する →</a>　<a href="img-binder-pdf.html">画像をPDFにまとめる →</a></p>
-    <p class="vf-hint">動画の権利や映り込む人のプライバシーに配慮してご利用ください。<a href="../privacy.html">プライバシーポリシー</a> / <a href="../contact.html">不具合の報告</a></p>
+    <p><a href="/tools/image-joiner">画像を自由に結合する →</a>　<a href="/tools/img-binder-pdf">画像をPDFにまとめる →</a></p>
+    <p class="vf-hint">動画の権利や映り込む人のプライバシーに配慮してご利用ください。<a href="/privacy">プライバシーポリシー</a> / <a href="/contact">不具合の報告</a></p>
     <p class="vf-hint">動画解析：<a href="https://mediabunny.dev/" target="_blank" rel="noopener noreferrer">Mediabunny</a>（<a href="../common/vendor/mediabunny-LICENSE.txt">MPL-2.0</a>、<a href="../common/vendor/mediabunny-1.65.0-source.tgz" download>ソースコード</a>）</p>
   </section>
   <noscript><p>このツールを使うにはJavaScriptを有効にしてください。</p></noscript>
 </main>
-<div id="common-footer"><nav class="fallback-footer"><a href="../about.html">このサイトについて</a><a href="../privacy.html">プライバシーポリシー</a></nav></div>
+<div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a></nav></div>
 <script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script>
 </body></html>

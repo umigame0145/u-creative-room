@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url><loc>https://u-t-on.com/</loc></url>
-<url><loc>https://u-t-on.com/about.html</loc></url>
-<url><loc>https://u-t-on.com/privacy.html</loc></url>
-<url><loc>https://u-t-on.com/contact.html</loc></url>
-<url><loc>https://u-t-on.com/tools/image-joiner.html</loc></url>
-<url><loc>https://u-t-on.com/tools/video-frames.html</loc></url>
-<url><loc>https://u-t-on.com/tools/image-compare.html</loc></url>
-<url><loc>https://u-t-on.com/tools/img-binder-pdf.html</loc></url>
-<url><loc>https://u-t-on.com/tools/copy-pattan.html</loc></url>
-<url><loc>https://u-t-on.com/tools/any-counter.html</loc></url>
-<url><loc>https://u-t-on.com/tools/my-roulette.html</loc></url>
-<url><loc>https://u-t-on.com/tools/koko-ni-mosaic.html</loc></url>
-<url><loc>https://u-t-on.com/tools/suke-touka.html</loc></url>
-<url><loc>https://u-t-on.com/games/smartphone-rush.html</loc></url>
+<url><loc>https://u-t-on.com/about</loc></url>
+<url><loc>https://u-t-on.com/privacy</loc></url>
+<url><loc>https://u-t-on.com/contact</loc></url>
+<url><loc>https://u-t-on.com/articles/</loc></url>
+<url><loc>https://u-t-on.com/articles/image-diff-rate</loc></url>
+<url><loc>https://u-t-on.com/articles/mosaic-leak</loc></url>
+<url><loc>https://u-t-on.com/articles/video-frame-rate</loc></url>
+<url><loc>https://u-t-on.com/articles/combine-screenshots</loc></url>
+<url><loc>https://u-t-on.com/articles/image-formats</loc></url>
+<url><loc>https://u-t-on.com/tools/image-joiner</loc></url>
+<url><loc>https://u-t-on.com/tools/video-frames</loc></url>
+<url><loc>https://u-t-on.com/tools/image-compare</loc></url>
+<url><loc>https://u-t-on.com/tools/img-binder-pdf</loc></url>
+<url><loc>https://u-t-on.com/tools/copy-pattan</loc></url>
+<url><loc>https://u-t-on.com/tools/any-counter</loc></url>
+<url><loc>https://u-t-on.com/tools/my-roulette</loc></url>
+<url><loc>https://u-t-on.com/tools/koko-ni-mosaic</loc></url>
+<url><loc>https://u-t-on.com/tools/suke-touka</loc></url>
+<url><loc>https://u-t-on.com/games/smartphone-rush</loc></url>
 </urlset>

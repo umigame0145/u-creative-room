@@ -124,7 +124,7 @@ test('Game page uses two direct skill buttons, body-contact scoring, menu pause 
         for (const path of ['games/smartphone-rush-engine.js', 'games/smartphone-rush.js', 'common/site-data.js', 'common/site-manager.js']) w.eval(fs.readFileSync('u-t-on/' + path, 'utf8'));
         w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
         const d = w.document;
-        assert.equal(d.querySelector('.site-brand').getAttribute('href'), '../index.html'); assert.equal(d.querySelectorAll('[data-mode]').length, 2);
+        assert.equal(d.querySelector('.site-brand').getAttribute('href'), '/'); assert.equal(d.querySelectorAll('[data-mode]').length, 2);
         d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'E', bubbles: true }));
         assert.equal(d.querySelector('[data-mode="flick"]').getAttribute('aria-pressed'), 'true');
         d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'q', bubbles: true }));

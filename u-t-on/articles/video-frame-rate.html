@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>動画のフレームレートと抽出枚数：動画から何枚の画像が取り出せるかを計算する - Uの創作部屋</title><meta name="description" content="fps（フレームレート）の意味、全フレームと指定間隔で抽出したときの枚数の計算方法、開始と終了の扱い、可変フレームレートや画像の容量の考え方を、計算例とともに解説します。"><link rel="canonical" href="https://u-t-on.com/articles/video-frame-rate"><meta property="og:url" content="https://u-t-on.com/articles/video-frame-rate"><meta property="og:title" content="動画のフレームレートと抽出枚数：動画から何枚の画像が取り出せるかを計算する - Uの創作部屋"><meta property="og:description" content="fps（フレームレート）の意味、全フレームと指定間隔で抽出したときの枚数の計算方法、開始と終了の扱い、可変フレームレートや画像の容量の考え方を、計算例とともに解説します。"><meta property="og:type" content="article"><meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../common/utilities.css"><link rel="stylesheet" href="../common/style.css"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239" crossorigin="anonymous"></script></head><body class="info-page"><div id="common-header"><a class="fallback-home" href="/">Uの創作部屋</a></div><main id="main-content"><article class="info-article"><nav aria-label="パンくずリスト"><ol class="breadcrumb"><li><a href="/">ホーム</a></li><li><a href="/articles/">読み物</a></li><li aria-current="page">フレームレートと抽出枚数</li></ol></nav><p class="eyebrow">GUIDE / VIDEO FRAMES</p><h1>動画のフレームレートと抽出枚数：動画から何枚の画像が取り出せるかを計算する</h1><p class="article-meta"><span>公開日：<time datetime="2026-11-10">2026年11月10日</time></span><span>関連ツール：<a href="/tools/video-frames">動画コマ分解</a></span></p><p class="article-lead">動画を画像に分解するとき、「全部で何枚になるのか」「1秒ごとなら何枚か」が事前に分かると、範囲や設定を決めやすくなります。鍵になるのが、フレームレートという数値です。</p>
+<nav class="article-toc" aria-labelledby="toc-fps"><h2 id="toc-fps">この記事の内容</h2><ol><li><a href="#fps">フレームレート（fps）とは</a></li><li><a href="#all">全フレームを取り出すときの枚数</a></li><li><a href="#interval">指定間隔で取り出すときの枚数</a></li><li><a href="#time">コマの時刻と、開始・終了の扱い</a></li><li><a href="#vfr">可変フレームレートの動画</a></li><li><a href="#size">画像の大きさと容量の考え方</a></li></ol></nav>
+
+<h2 id="fps">フレームレート（fps）とは</h2>
+<p>動画は、少しずつ違う静止画を連続して表示することで、動いているように見せています。この1枚1枚の静止画をフレーム（コマ）と呼び、1秒間に何枚のフレームを表示するかをフレームレートと呼びます。単位はfps（frames per second）です。30fpsの動画なら、1秒間に30枚のフレームが含まれ、フレームとフレームの間隔は1 ÷ 30 ≈ 0.0333秒です。</p>
+<p>よく使われるフレームレートには、次のようなものがあります。</p>
+<div class="table-scroll"><table class="article-table"><thead><tr><th>フレームレート</th><th>フレームの間隔</th><th>よく使われる場面</th></tr></thead><tbody><tr><td>24fps（23.976fps）</td><td>約0.0417秒</td><td>映画、映画風の映像作品</td></tr><tr><td>30fps（29.97fps）</td><td>約0.0333秒</td><td>スマートフォンの標準的な撮影、テレビ、配信</td></tr><tr><td>60fps（59.94fps）</td><td>約0.0167秒</td><td>ゲームの録画、動きの速い被写体、なめらかな撮影</td></tr><tr><td>120fps・240fps</td><td>約0.0083秒・約0.0042秒</td><td>スローモーション撮影</td></tr></tbody></table></div>
+<p>29.97fpsや23.976fpsといった半端な値は、テレビ放送の規格に由来するもので、正確には30000/1001fps、24000/1001fpsです。表示上は「30fps」「24fps」とまとめて書かれることも多いため、計算結果が数枚ずれる原因になります。</p>
+
+<h2 id="all">全フレームを取り出すときの枚数</h2>
+<p>フレームレートが一定の動画では、全フレームの枚数はおおよそ次の式で求められます。</p>
+<p class="formula">全フレームの枚数 ≈ 範囲の秒数 × フレームレート</p>
+<div class="table-scroll"><table class="article-table"><thead><tr><th>動画の長さ</th><th>24fps</th><th>30fps</th><th>60fps</th></tr></thead><tbody><tr><td>1秒</td><td>24枚</td><td>30枚</td><td>60枚</td></tr><tr><td>10秒</td><td>240枚</td><td>300枚</td><td>600枚</td></tr><tr><td>1分</td><td>1,440枚</td><td>1,800枚</td><td>3,600枚</td></tr><tr><td>5分</td><td>7,200枚</td><td>9,000枚</td><td>18,000枚</td></tr></tbody></table></div>
+<p>短く感じる動画でも、全フレームを取り出すと大量の画像になることが分かります。<a href="/tools/video-frames">動画コマ分解</a>では、端末の負荷を抑えるため1回の処理を200枚までにしており、それを超える分は「続きの200枚」で順番に処理します。10秒・60fpsの600枚なら3回、1分・60fpsの3,600枚なら18回です。動きを細かく調べたい場面がはっきりしている場合は、先に開始と終了を絞り込むほうが効率的です。</p>
+<p>当サイトのサンプル動画は640 × 360px・30fps・8秒で、全フレームは8 × 30 = 240枚です。全フレームを選ぶと、最初の200枚と、続きの40枚の2回に分けて取り出せます。動画コマ分解は、200枚に収めるために自動でコマを間引くことはしません。</p>
+
+<h2 id="interval">指定間隔で取り出すときの枚数</h2>
+<p>「1秒ごと」「0.5秒ごと」のように間隔を指定すると、枚数を大きく減らせます。枚数はおおよそ次のとおりです。</p>
+<p class="formula">指定間隔の枚数 ≈ 範囲の秒数 ÷ 間隔（秒）</p>
+<p>サンプル動画の0〜8秒を1秒間隔で取り出すと、0秒・1秒・…・7秒の8枚になります。0.5秒間隔なら16枚です。8秒ちょうどのコマが含まれないのは、後述するように終了の時刻を含まない扱いになっているためです。</p>
+<p>動画コマ分解の指定間隔は、それぞれの時刻ちょうど、またはその直後にある最初のコマを選びます。元の動画に存在しないコマを作ることはありません。そのため、間隔を元の動画のフレーム間隔より短くしても、枚数はフレームレートを超えません。たとえば30fpsの動画に0.01秒間隔を指定しても、同じコマを重複して出力することはなく、1秒あたり最大30枚です。</p>
+<p>目的別の目安は次のとおりです。</p>
+<ul><li><strong>動画全体の流れをつかむ・一覧画像を作る</strong>：1秒〜数秒間隔。1分の動画を1秒間隔で取り出すと60枚です。</li><li><strong>サムネイルの候補を探す</strong>：0.5秒程度の間隔で候補を並べ、良さそうな場面の前後をコマ送りで確認します。</li><li><strong>フォームや動作を分析する</strong>：動作の範囲を数秒に絞り、全フレームで取り出します。</li></ul>
+
+<h2 id="time">コマの時刻と、開始・終了の扱い</h2>
+<p>フレームレートが一定の動画で、最初のコマを1コマ目・0秒とすると、n番目のコマの時刻は次の式で表せます。</p>
+<p class="formula">n番目のコマの時刻（秒）＝（n − 1）÷ フレームレート</p>
+<p>30fpsのサンプル動画では、61コマ目が（61 − 1）÷ 30 = 2秒、181コマ目が6秒です。逆に、ある時刻のコマ番号は「時刻 × フレームレート ＋ 1」で求められます。</p>
+<p>動画コマ分解では、開始の時刻は含み、終了の時刻は含みません。30fpsの動画で0〜1秒を指定すると、0秒から約0.966667秒までの30枚が対象です。1秒ちょうどのコマ（31コマ目）は含まれません。この扱いにしておくと、0〜1秒、1〜2秒と続けて処理したときに、境目のコマが重複せずに済みます。1秒ちょうどのコマまで欲しい場合は、そのコマを表示して「このコマまで含める」を押すと、秒数を計算せずに範囲を指定できます。</p>
+
+<h2 id="vfr">可変フレームレートの動画</h2>
+<p>ここまでの計算は、フレームの間隔が一定の動画（固定フレームレート、CFR）を前提にしています。一方、スマートフォンで撮影した動画や画面録画などでは、フレームの間隔が場面によって変わる可変フレームレート（VFR）になっていることがあります。画面に動きがないときにフレームを減らしたり、処理が追いつかないときにフレームが抜けたりするためです。</p>
+<p>可変フレームレートの動画に表示される「30fps」などの値は平均や目安であることが多く、「秒数 × fps」で計算した枚数と、実際のフレーム数は一致しないことがあります。動画コマ分解は、再生画面のスクリーンショットや固定のfpsから推測するのではなく、動画に記録された各フレームの表示時刻を読み取って順番に取り出します。ZIPに含まれる時刻表（CSV）には、コマ番号、最初のコマからの秒数、元の表示時刻、継続時間が記録されるので、正確な時刻はCSVで確認できます。</p>
+
+<h2 id="size">画像の大きさと容量の考え方</h2>
+<p>枚数と同じくらい気をつけたいのが、画像1枚あたりの大きさです。フルHD（1,920 × 1,080px）の画像を圧縮せずにメモリ上に展開すると、1画素あたり4バイト（赤・緑・青・透明度）として 1,920 × 1,080 × 4 = 8,294,400バイト、約8.3MBになります。200枚を同時に展開すると約1.66GBで、スマートフォンでは負担の大きい量です。</p>
+<p>動画コマ分解では、画像を1枚ずつPNGまたはJPEGに変換して、変換が終わったフレームのデータを解放しながら処理しています。それでも保存する画像の合計には上限（1回96MBまで）があり、枚数が200枚未満でも容量の上限で止まることがあります。その場合は途中までの画像を保存し、続きを処理してください。</p>
+<p>容量を抑えたい場合は、次の3つが効果的です。</p>
+<ul><li><strong>長辺を小さくする</strong>：長辺を1,920pxから1,280pxにすると、画素数は約44%になります（1,280² ÷ 1,920² ≈ 0.44）。確認用なら640pxでも十分な場合があります。</li><li><strong>実写はJPEGにする</strong>：写真のような映像はJPEGのほうが小さくなりやすい形式です。画面録画や文字・線が多い映像は、にじみの出にくいPNGが向いています。</li><li><strong>範囲を短くする・間隔を空ける</strong>：枚数そのものを減らすのが、最も確実な方法です。</li></ul>
+<p>なお、長辺の設定は縮小のみで、元の動画より大きく拡大することはありません。640 × 360pxの動画は、1,920pxを選んでも640 × 360pxのまま出力されます。</p>
+<p>フレームレートと範囲から枚数を見積もり、目的に合った抽出方法と画像の大きさを選ぶ。この順番で考えると、動画から必要な画像だけを効率よく取り出せます。</p>
+<div class="article-cta"><a class="primary-link" href="/tools/video-frames">動画コマ分解を開く →</a></div></article></main><div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a><a href="/contact">お問い合わせ</a></nav></div><script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script></body></html>
