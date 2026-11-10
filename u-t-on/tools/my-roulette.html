@@ -5,12 +5,12 @@
     <script src="../common/tool-utils.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>myルーレット | 自作できる多機能ルーレット（減算モード搭載） - Uの創作部屋</title>
-    <meta name="description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。毎回リセットされる完全確率モードと、一度出た項目を減らしていく減算モードを搭載。">
+    <meta name="description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。重みを維持する完全確率モードと、SET時に比率なら重みを1減らし、％なら当選項目を除外する減算モードを搭載。">
 
     <meta property="og:url" content="https://u-t-on.com/tools/my-roulette" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="myルーレット | 自作できる多機能ルーレット（減算モード搭載） - Uの創作部屋" />
-    <meta property="og:description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。毎回リセットされる完全確率モードと、一度出た項目を減らしていく減算モードを搭載。" />
+    <meta property="og:description" content="項目・確率・色を自由にカスタマイズできるオンラインルーレット。重みを維持する完全確率モードと、SET時に比率なら重みを1減らし、％なら当選項目を除外する減算モードを搭載。" />
     <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -105,7 +105,7 @@
 
                 <!-- 全体残数表示（一律表示時などに利用） -->
                 <div id="totalCountContainer" class="mt-2 px-6 py-2 bg-gray-100 rounded-full border border-gray-200 hidden">
-                    <span class="text-xs font-bold text-gray-500">全体残数: </span>
+                    <span class="text-xs font-bold text-gray-500">残り重み合計: </span>
                     <span id="totalCountValue" class="text-sm font-black text-blue-600">0</span>
                 </div>
             </div>
@@ -147,7 +147,7 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
+                    <p class="text-xs text-gray-500">減算はSET時：比率は重みを1減らして0で除外、％は当選項目を除外します。</p></div>
 
                     <div class="border-t pt-6">
                         <div class="flex items-center justify-between mb-4">
@@ -184,7 +184,7 @@
                             選べる2つの動作モード
                         </h3>
                         <p class="text-gray-600 text-sm leading-relaxed">
-                            毎回同じ確率で抽選する「完全確率モード」と、当選した項目を母数から減らしていく「減算モード」を搭載。抽選の結果を次に反映させたい場合（くじ引きなど）に「減算モード」が威力を発揮します。
+                            設定した重みを維持する「完全確率モード」と、SETで確定すると比率指定では重みを1減らし、％指定では当選項目を除外する「減算モード」を搭載。抽選の結果を次に反映させたい場合（くじ引きなど）に「減算モード」が威力を発揮します。
                         </p>
                     </div>
                     <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-50">
@@ -206,7 +206,7 @@
                         <span class="text-blue-500 font-bold">・</span>
                         <div>
                             <p class="font-bold text-gray-800 text-sm">イベントや飲み会の景品抽選</p>
-                            <p class="text-xs">減算モードを使えば、一度当たった景品を自動的に除外しながら次々と抽選を進めることができます。</p>
+                            <p class="text-xs">減算モードの比率指定では、SETごとに当選景品の残り重みを1減らし、0で除外します。％指定ではSETで当選項目を除外します。</p>
                         </div>
                     </li>
                     <li class="flex items-start gap-3">
@@ -229,11 +229,11 @@
             <section class="text-center pb-20">
                 <h2 class="text-xl font-black text-gray-800 mb-4">プライバシーとデータについて</h2>
                 <p class="text-gray-500 text-xs max-w-2xl mx-auto leading-relaxed">
-                    作成したルーレットの設定や当選履歴はすべてお客様のブラウザ（LocalStorage）に保存され、サーバーへ送信されることはありません。オフライン環境でも安心してご利用いただけます。
+                    作成したルーレットの設定や当選履歴はすべてお客様のブラウザ（LocalStorage）に保存され、サーバーへ送信されることはありません。必要なページとスクリプトを読み込み済みなら、通信が切れても画面内の操作を続けられます。初回の読み込みや再アクセス時のオフライン動作は保証しません。保存データは同じブラウザでページを再表示した際に復元されますが、ブラウザのデータ削除や保存制限で失われる場合があります。
                 </p>
             </section>
         </div>
-    <section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">項目と重みを決めて、抽選を作る</h2><p>今日の作業、食事の候補、イベントの順番などを決める抽選に使えます。同じ項目を繰り返し選ぶ完全確率モードと、確定するたびに残数を減らす減算モードを選べます。</p><ol><li>項目名、色、重みを設定します。重みが0の項目は抽選対象になりません。</li><li>STARTで回転、STOPで停止します。結果が表示されたらSETで確定します。</li><li>減算モードでは確定後に残数が減ります。履歴クリアで履歴と残数をリセットできます。</li></ol><div class="guide-note"><h3>利用時のポイント</h3><p>重みは相対的な比率として扱います。例えば1と3なら25%と75%です。％表示でも合計を100に正規化して抽選します。「見た目を一律にする」は円の見た目だけを変え、抽選の重みは変えません。</p></div><details><summary>停止しただけで残数は減りますか？</summary><p>SETで確定したときに減ります。比率指定では1つ減り、％指定の減算モードでは当選した項目が次の抽選対象から外れます。</p></details><section class="tool-example" aria-labelledby="example-title"><p class="eyebrow">具体的な使用例</p><h2 id="example-title">重み1と3で、候補を抽選する</h2><p>「散歩」と「読書」を登録し、完全確率モードで比率を設定する例です。</p><p class="example-caption">以下は操作を説明するためのサンプルです。</p><dl class="example-steps"><div><dt>散歩：重み1</dt><dd>1 ÷ (1＋3) ＝ 25%</dd></div><div><dt>読書：重み3</dt><dd>3 ÷ (1＋3) ＝ 75%</dd></div><div><dt>操作</dt><dd>START → STOP → 結果を確認してSET。</dd></div></dl><p>25%は4回に必ず1回当たるという意味ではありません。同じ結果が続くこともあります。「見た目を一律にする」を選んでも抽選の重みは変わりません。減算モードではSETで確定したときに残数を減らします。</p><a class="example-related" href="/tools/any-counter">あわせて使える道具：抽選結果の回数を記録する →</a></section><p>CSVは数式を実行しないテキスト形式で保存します。このサイトへ読み込むと元の値に戻ります。以前のCSVも読み込めます。表計算ソフトで編集・保存し直すと保護が失われる場合があります。</p><p class="guide-bottom">画像・入力内容はブラウザで処理します。サイト閲覧時の外部サービスについては<a href="/privacy">プライバシーポリシー</a>をご確認ください。<a href="/contact">不具合を報告する →</a></p></section>
+    <section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">項目と重みを決めて、抽選を作る</h2><p>今日の作業、食事の候補、イベントの順番などを決める抽選に使えます。同じ項目を繰り返し選ぶ完全確率モードと、確定するたびに比率指定の残り重みを減らす、または％指定の当選項目を除外する減算モードを選べます。</p><ol><li>項目名、色、重みを設定します。重みが0の項目は抽選対象になりません。</li><li>STARTで回転、STOPで停止します。結果が表示されたらSETで確定します。</li><li>減算モードではSET後、比率指定は当選項目の重みを1減らし（下限0）、0で除外します。％指定は当選項目を除外します。履歴クリアで履歴と残数をリセットできます。</li></ol><div class="guide-note"><h3>利用時のポイント</h3><p>重みは相対的な比率として扱います。例えば1と3なら25%と75%です。％指定でも有効な項目の重みの合計で正規化して抽選します。入力値の合計が100でなければ、入力値そのものが当選確率になるわけではありません。これは設定から求める理論確率で、履歴での当選割合とは異なります。「見た目を一律にする」は円の見た目だけを変え、抽選の重みは変えません。</p></div><details><summary>停止しただけで残数は減りますか？</summary><p>SETで確定したときに減ります。比率指定では重みを1減らし、0になるまで対象に残ります。例えばAが2、Bが1でAをSETするとAは1、Bは1となり、次回は各50%です。％指定では当選項目が次の抽選対象から外れ、残った項目の重みで再計算します。STOPだけでは変更しません。</p></details><section class="tool-example" aria-labelledby="example-title"><p class="eyebrow">具体的な使用例</p><h2 id="example-title">重み1と3で、候補を抽選する</h2><p>「散歩」と「読書」を登録し、完全確率モードで比率を設定する例です。</p><p class="example-caption">以下は操作を説明するためのサンプルです。</p><dl class="example-steps"><div><dt>散歩：重み1</dt><dd>1 ÷ (1＋3) ＝ 25%</dd></div><div><dt>読書：重み3</dt><dd>3 ÷ (1＋3) ＝ 75%</dd></div><div><dt>操作</dt><dd>START → STOP → 結果を確認してSET。</dd></div></dl><p>25%は4回に必ず1回当たるという意味ではありません。同じ結果が続くこともあります。「見た目を一律にする」を選んでも抽選の重みは変わりません。減算モードではSETで確定したときに、比率指定は重みを1減らし、％指定は当選項目を除外します。</p><a class="example-related" href="/tools/any-counter">あわせて使える道具：抽選結果の回数を記録する →</a></section><p>CSVは数式を実行しないテキスト形式で保存します。このサイトへ読み込むと元の値に戻ります。以前のCSVも読み込めます。表計算ソフトで編集・保存し直すと保護が失われる場合があります。</p><p class="guide-bottom">画像・入力内容はブラウザで処理します。サイト閲覧時の外部サービスについては<a href="/privacy">プライバシーポリシー</a>をご確認ください。<a href="/contact">不具合を報告する →</a></p></section>
 </main>
 
     <div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a><a href="/contact">お問い合わせ</a></nav></div>

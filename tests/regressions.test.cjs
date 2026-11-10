@@ -212,3 +212,49 @@ test('Image download uses a Blob with the selected filename and handles encoder 
     saved=null; d.getElementById('resultCanvas').toBlob=callback=>callback(null);
     env.w.downloadResult(); assert.equal(saved,null); assert.match(d.getElementById('tool-notice').textContent,/保存できません/);
 });
+
+test('Counter shows observed ratios for items and groups, including zero counts', async t => {
+    const env = await setup('tools/any-counter.html'); t.after(() => env.dom.window.close());
+    env.eval("state.children = [{id:'a',name:'はい',count:15},{id:'b',name:'いいえ',count:5},{id:'z',name:'未観測',count:0}]; state.groups = [{id:'g',name:'まとめ',memberIds:['b']}]; renderChildren(); renderGroups()");
+    const d = env.w.document;
+    assert.equal(d.querySelectorAll('#childContainer .prob-display')[1].textContent, '観測比率: 1/4.00');
+    assert.equal(d.querySelectorAll('#childContainer .ratio-display')[1].textContent, '割合: 25.0%');
+    assert.equal(d.querySelectorAll('#childContainer .prob-display')[2].textContent, '観測比率: -');
+    assert.equal(d.querySelector('#groupContainer .group-prob').textContent, '観測比率: 1/4.00');
+    env.eval('state.children.forEach(c => c.count = 0); renderChildren(); renderGroups()');
+    assert.equal(d.querySelector('#childContainer .prob-display').textContent, '観測比率: -');
+    assert.equal(d.querySelector('#groupContainer .group-prob').textContent, '観測比率: -');
+});
+
+test('Roulette SET retains ratio stock until zero and excludes percent winners immediately', async t => {
+    for (const type of ['ratio', 'percent']) {
+        const env = await setup('tools/my-roulette.html'); t.after(() => env.dom.window.close());
+        env.eval(`state.items = [{id:'a',name:'A',weight:2,color:'#ffffff'},{id:'b',name:'B',weight:1,color:'#000000'}]; state.config.mode = 'subtraction'; state.config.weightType = '${type}'; resetCurrentWeights(); state.pendingWinner = state.items[0]`);
+        env.w.document.getElementById('startBtn').click();
+        assert.equal(env.eval('state.history.length'), 1);
+        assert.equal(env.eval("getActiveItems().some(i => i.id === 'a')"), type === 'ratio');
+        if (type === 'ratio') {
+            assert.equal(env.eval("state.currentWeights.find(i => i.id === 'a').weight"), 1);
+            env.eval('state.pendingWinner = state.items[0]'); env.w.handleSet();
+            assert.equal(env.eval("getActiveItems().some(i => i.id === 'a')"), false);
+        }
+    }
+});
+
+test('Mosaic inversion draws the pixelated canvas with an inversion filter', async t => {
+    const env = await setup('tools/koko-ni-mosaic.html'); t.after(() => env.dom.window.close());
+    env.eval('globalThis.editor = new KokoNiMosaic()');
+    const source = env.w.document.createElement('canvas');
+    const output = env.w.document.createElement('canvas');
+    const ctx = output.getContext('2d');
+    for (const invert of [false, true]) {
+        ctx.filter = 'none'; env.draws.length = 0;
+        env.w.editor.applyPixelation(ctx, 0, 0, 100, 60, 10, source, undefined, undefined, undefined, invert);
+        const sample = env.draws[0], result = env.draws.at(-1);
+        assert.equal(sample.args[0], source);
+        assert.equal(result.args[0].width, 10);
+        assert.equal(result.args[0].height, 6);
+        assert.equal(ctx.filter, invert ? 'invert(100%)' : 'none');
+        assert.equal(result.canvas, output);
+    }
+});
