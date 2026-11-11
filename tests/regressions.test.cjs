@@ -258,3 +258,56 @@ test('Mosaic inversion draws the pixelated canvas with an inversion filter', asy
         assert.equal(result.canvas, output);
     }
 });
+
+test('Published counter examples restore members and counts; cancel and errors preserve data', async t => {
+    const env = await setup('tools/any-counter.html'); t.after(() => env.dom.window.close());
+    const load = async file => {
+        env.w.importCSV(new env.w.File([fs.readFileSync('u-t-on/common/examples/' + file, 'utf8')], file));
+        await new Promise(r => setTimeout(r, 50));
+    };
+    await load('counter-traffic.csv');
+    assert.equal(env.eval('state.children.reduce((n,c)=>n+c.count,0)'), 20);
+    assert.deepEqual(Array.from(env.eval('state.groups[0].memberIds')), ['car','bike']);
+    assert.equal(env.w.document.querySelector('.group-count').textContent, '15');
+    assert.equal(env.w.document.querySelector('.group-ratio').textContent, '合計の 75.0%');
+    const before = env.eval('JSON.stringify(state)');
+    env.w.confirm = () => false;
+    await load('counter-zero.csv');
+    assert.equal(env.eval('JSON.stringify(state)'), before);
+    env.w.confirm = () => true;
+    await load('roulette-ratio.csv');
+    assert.equal(env.eval('JSON.stringify(state)'), before);
+    await load('counter-zero.csv');
+    assert.equal(env.w.document.querySelector('.group-prob').textContent, '観測比率: -');
+});
+
+test('Published phrase CSV restores three materials and a multiline stock', async t => {
+    const env = await setup('tools/copy-pattan.html'); t.after(() => env.dom.window.close());
+    const input = env.w.document.getElementById('csvFileInput');
+    const file = new env.w.File([fs.readFileSync('u-t-on/common/examples/copy-pattan.csv','utf8')], 'copy.csv');
+    Object.defineProperty(input, 'files', {value:[file]});
+    const main = env.w.document.getElementById('mainTextArea'); main.value = '既存の文章';
+    env.w.confirm = () => false;
+    input.dispatchEvent(new env.w.Event('change'));
+    await new Promise(r => setTimeout(r, 50));
+    assert.equal(main.value, '既存の文章');
+    env.w.confirm = () => true;
+    input.dispatchEvent(new env.w.Event('change'));
+    await new Promise(r => setTimeout(r, 50));
+    assert.equal(main.value, 'こんにちは。\n開催日時：11月20日 14:00\n場所：架空の空色ホール');
+    assert.equal(env.w.document.querySelectorAll('.material-input').length, 3);
+    assert.deepEqual(Array.from(env.eval('stockItems')), [main.value]);
+});
+
+test('Published roulette CSVs reproduce ratio decrement and percent exclusion on SET', async t => {
+    const env = await setup('tools/my-roulette.html'); t.after(() => env.dom.window.close());
+    for (const type of ['ratio','percent']) {
+        env.w.importCSV(new env.w.File([fs.readFileSync(`u-t-on/common/examples/roulette-${type}.csv`,'utf8')], 'roulette.csv'));
+        await new Promise(r => setTimeout(r, 50));
+        env.eval(`state.config.mode='subtraction';state.config.weightType='${type}';resetCurrentWeights();state.pendingWinner=state.items[0];`);
+        assert.equal(env.eval('state.currentWeights[0].weight'), type === 'ratio' ? 2 : 60);
+        env.w.handleSet();
+        assert.equal(env.eval('state.currentWeights[0].weight'), type === 'ratio' ? 1 : 60);
+        assert.equal(env.eval('state.currentWeights[0].active'), type === 'ratio');
+    }
+});

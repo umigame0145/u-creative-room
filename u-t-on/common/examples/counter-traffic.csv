@@ -1,0 +1,6 @@
+UCR-TEXT-CSV-v1,apostrophe
+"'Type","'ID","'Name","'Value/Members"
+"'Child","'car","'車","'12"
+"'Child","'bike","'自転車","'3"
+"'Child","'walk","'歩行者","'5"
+"'Group","'vehicles","'車両","'car|bike"

@@ -2,7 +2,9 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { resolve, dirname, join, relative, sep } from 'node:path';
 import vm from 'node:vm';
 import { JSDOM } from 'jsdom';
-import { execFileSync } from 'node:child_process';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+const execFileAsync = promisify(execFile);
 const root = resolve('u-t-on');
 const origin = 'https://u-t-on.com';
 let checks = 0;
@@ -31,7 +33,7 @@ async function inspect(directory) {
         if (entry.isDirectory()) { await inspect(file); continue; }
         const source = await readFile(file, 'utf8');
         if (entry.name.endsWith('.js')) { new vm.Script(source, { filename: file }); checks++; }
-        if (entry.name.endsWith('.mjs')) { execFileSync(process.execPath, ['--check', file]); checks++; }
+        if (entry.name.endsWith('.mjs')) { await execFileAsync(process.execPath, ['--check', file]); checks++; }
         if (!entry.name.endsWith('.html')) continue;
         const document = new JSDOM(source).window.document;
         if (document.querySelectorAll('h1').length !== 1) throw new Error(`${file}: expected one h1`);
