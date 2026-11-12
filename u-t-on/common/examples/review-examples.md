@@ -59,3 +59,39 @@ CSVはToolUtilsの保護ヘッダーを含む実出力で、手書きの疑似CS
 モザイクの粒度や文字サイズ、透過度を情報秘匿の安全基準として扱わない。
 CSV読込はユーザーの確認後に既存データを置換する既存機能を使用し、自動サンプル読込は追加していない。
 ルーレットCSVにはモード・履歴・減算残数が入らず、再読込で現在の重みは初期化される。
+
+# P0-4 記事作例（2026-11-12）
+
+`python3 scripts/generate-article-examples.py` で追加素材を生成。
+Python 3 / Pillow 13.0.0（libjpeg 6.2、libwebp 1.6.0）、FFmpeg 7.1.5。
+DejaVuSans.ttfを使用。再生成は同名ファイルを上書きする。
+日本語名「空野 サンプル」と英字 Sorano Sample は架空の名前。全画面・動画は自作ダミー。
+モザイク記事は上記P0-2で本体JSから生成済みの名札・粒度2/10/30を使用する。
+文字高さは再現条件であり、安全基準ではない。
+
+- `format-source.png`：640×360 RGBA。透明外周、文字、1px線、グラデーション。
+- `format-q75.jpg`：同じ画素を白背景へ合成し品質75、4:2:0、optimizeなしで1回保存。
+- `format-q75.webp`：同じRGBAを非可逆品質75、method 6で1回保存。
+- `format-*.{png,jpg,webp}-zoom.png`：(24,28)から320×64pxを切り出し最近傍で3倍。圧縮画像を再読込して作成。
+- `format-*.{png,jpg,webp}-background.png`：各実出力を再読込して#65b8d0へ合成。外周alphaをassert。
+- `article-measurements.json`：実ファイルのバイト数、エンコーダのバージョン。
+  この素材はPNG 9,197 / JPEG 18,500 / WebP 4,632バイト。
+  エンコーダやフォントが変われば容量も変わり、異形式の品質75は同じ画質ではない。
+- `workflow-{1,2}-input.png`：架空の問い合わせの選択画面・保存完了画面、各640×360。
+- `workflow-{1,2}-redacted.png`：上部80pxを不透明な画素で置換した別ファイル。
+- `workflow-joined.png`：秘匿済みだけを01→02の順で無拡縮縦結合、640×720。
+- `workflow.pdf`：同じ秘匿済み素材のみ、A4相当1240×1754px・150ppi、余白約10mm・中央、2ページ。
+  Pillowの参照出力で、サイト本体のPDF出力ではない。実送信や受信確認は行っていない。
+- `timing-{cfr,vfr}.mp4`：同じ320×180px・12枚の連番ダミーをH.264 / yuv420p / Bフレーム0で保存。
+  時間基準1/1000、CFR setpts=N*100、VFR setpts=if(lt(N,6),N*100,600+(N-6)*200)。
+- `timing-{cfr,vfr}.csv`：ffprobe -show_packets -select_streams v:0 の実PTSとdurationを取得。
+  Bフレームなしなのでパケット順が表示順。サイト本体のCSVとは異なる列構成。
+  12パケット、CFR隣接差0.1秒、VFR隣接差0.1/0.2秒をassertする。
+  最終行の隣接差と取得できないdurationは空欄。デコーダが全12枚を表示した実測ではない。
+
+差分記事の既存A/B、許容値20の49,220画素・3.13%、許容値0の99.83%、サイズ等は変更していない。
+追加素材には既存の差分用イラストを流用していない。
+
+一次資料は `bash scripts/verify-article-sources.sh` でcurl GET・転送追跡・証明書検証を実施。
+2026-11-12の全8件の最終200を `article-sources-curl.txt` に記録。
+公式仕様・公式文書、およびモザイク照合手法の実装者自身のリポジトリを参照。
