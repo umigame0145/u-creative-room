@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <script src="../common/tool-utils.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あみだくじ | 名前と当たり数を設定して抽選 - Uの創作部屋</title>
+    <meta name="description" content="2〜20人の名前と当たり数を設定できる無料のあみだくじ。横線と当たりをランダム生成し、経路アニメーションと結果一覧で確認できます。">
+
+    <meta property="og:url" content="https://u-t-on.com/tools/amidakuji" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="あみだくじ | 名前と当たり数を設定して抽選 - Uの創作部屋" />
+    <meta property="og:description" content="2〜20人の名前と当たり数を設定できる無料のあみだくじ。横線と当たりをランダム生成し、経路アニメーションと結果一覧で確認できます。" />
+    <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="../common/utilities.css">
+    <link rel="stylesheet" href="../common/style.css">
+    <link rel="stylesheet" href="amidakuji.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
+     crossorigin="anonymous"></script>
+<link rel="canonical" href="https://u-t-on.com/tools/amidakuji">
+<link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+<div id="common-header"><a class="fallback-home" href="/">Uの創作部屋 · ツール一覧</a></div>
+<main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+<div class="tool-page-heading"><p class="eyebrow">カウント・抽選</p><h1>あみだくじ</h1><p>名前と当たり数を決めて、線をたどって抽選。2〜20人で使えます。</p></div>
+<div class="amida-layout">
+<section class="amida-panel" aria-labelledby="settings-title"><h2 id="settings-title">参加者と当たり数</h2><div id="names"></div><button id="add-name" type="button">＋ 名前を追加</button><p class="amida-hint">名前は20文字まで。空欄は「参加者＋番号」で表示します。設定を変えると新しい抽選になります。</p><label for="win-count">当たり数</label> <input id="win-count" type="number" min="1" max="4" value="2" step="1"><p class="amida-hint">人数より1つ少ない数まで指定できます。名前や結果は保存しません。</p></section>
+<section class="amida-panel" aria-labelledby="board-title"><h2 id="board-title">上端の名前を選んでスタート</h2><div class="amida-actions"><button id="show-all" class="primary" type="button">全員の結果を見る</button><button id="regenerate" type="button">横線を作り直す</button><button id="toggle-bottom" type="button" aria-pressed="true">当たりを表示</button></div><p class="amida-hint">横線を作り直すと当たり位置と結果もリセットされます。人数が多いときは図を横にスクロールしてください。</p><div class="amida-scroll" tabindex="0" role="region" aria-label="あみだくじ。横にスクロールできます"><div id="board-wrap"><div id="starts" class="amida-starts"></div><svg id="board" class="amida-board" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="あみだくじの線と下端の当たり位置"></svg></div></div><p id="status" class="amida-status" role="status" aria-live="polite"></p><h2>結果一覧</h2><ol id="results" class="amida-results"></ol></section>
+</div>
+<section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">あみだくじの使い方</h2><ol><li>参加者の名前を追加・編集します。削除ボタンで人数を減らせます。</li><li>当たり数を決めます。横線と下端の当たり・はずれが自動で配置されます。</li><li>上端の名前を押すと、その人の経路をアニメーションで表示します。「全員の結果を見る」では全員の線を同時にたどります。</li><li>結果一覧で当たりを確認します。次の抽選は「横線を作り直す」を押してください。</li></ol>
+<h3>使用例：掃除当番を5人から2人決める</h3><p>「あおい」「けん」「さき」「たく」「なお」の5人を入力し、当たり数を2にします。全員が名前を確認したら「全員の結果を見る」を押し、一覧で「当たり」と出た2人を今日の掃除当番にします。これは操作例で、特定の人が当たることを示すものではありません。景品の割り当てや、サークルの係決めにも使えます。</p>
+<div class="guide-note"><h3>公平性とランダムの仕組み</h3><p>横線は隣り合う2本の縦線を結び、1段につき1本ずつランダムに作ります。経路が重なって分岐しないため、全員が別々の下端に到着します。当たり位置は横線とは別にFisher–Yates法でシャッフルします。乱数が一様であるという前提では、どのスタートも当たる確率は「当たり数÷人数」です。5人で2つなら各40%で、繰り返した実績が必ず40%になるという意味ではありません。</p><p>乱数には利用可能ならcrypto.getRandomValuesを使い、整数化の偏りを避けるため範囲外の値を引き直します。使えない環境ではMath.randomに切り替えます。横線の形や全ての経路の組み合わせが等確率になる保証はありません。結果は図を作った時点で確定し、クリックの順番やアニメーションで変わりません。第三者による抽選の証明や改ざん防止機能はありません。</p></div>
+<h3>よくある質問</h3><details><summary>当たりを隠すと結果も変わりますか？</summary><p>変わりません。下端のラベルだけを「？」にします。たどり終えた人の結果は一覧に表示されます。表示を隠すだけなので、秘密を技術的に保護する機能ではありません。</p></details><details><summary>横線だけを作り直せますか？</summary><p>「横線を作り直す」は横線と当たり位置の両方を再抽選し、結果一覧をリセットします。参加者と当たり数は維持します。</p></details><details><summary>同じ名前を使えますか？</summary><p>使えますが、結果を区別できるよう番号などを付けるのがおすすめです。上端と結果一覧の番号でも区別できます。</p></details><details><summary>スマホで20人分の線が見えません</summary><p>図を左右にスクロールしてください。読みやすさのため縦線の間隔を維持しています。名前の編集や全員表示もスマホから操作できます。</p></details><details><summary>名前は送信・保存されますか？</summary><p>このツールの入力と抽選処理はブラウザ内で行い、名前はサーバーに送信せず、localStorageにも保存しません。再読み込みで消えます。サイトの広告などについては<a href="/privacy">プライバシーポリシー</a>をご覧ください。</p></details></section>
+<aside class="tool-guide" aria-label="関連記事・関連ツール"><h2>関連記事・関連ツール</h2><p><a href="/tools/my-roulette">重み付きの抽選ならmyルーレット →</a></p><p><a href="/tools/any-counter">回数や割合を記録するならなんでもカウンター →</a></p><p><a href="/articles/">ほかのツールの使い方を読む →</a></p></aside>
+<noscript><p>このツールを使うにはJavaScriptを有効にしてください。</p></noscript></main>
+<div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a><a href="/contact">お問い合わせ</a></nav></div>
+<script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script><script src="amidakuji-core.js"></script><script src="amidakuji.js"></script>
+</body></html>
