@@ -2,7 +2,7 @@
     'use strict';
     const $ = id => document.getElementById(id);
     const names = ['あおい', 'けん', 'さき', 'たく', 'なお'];
-    let board, hidden = true, busy = false;
+    let board, hidden = true, linesHidden = false, busy = false;
     const revealed = new Set();
     const svgNS = 'http://www.w3.org/2000/svg';
     function svg(tag, attrs, text) {
@@ -13,7 +13,19 @@
     }
     const label = i => `${i + 1}. ${names[i].trim() || '参加者' + (i + 1)}`;
     const x = i => 48 + i * 96;
-    const y = fraction => 12 + fraction * 480;
+    // Reserve clear vertical segments above and below every possible rung.
+    const y = fraction => fraction === 0 ? 12 : fraction === 1 ? 492 : 44 + fraction * 416;
+    function setLinesHidden(value) {
+        linesHidden = value;
+        $('toggle-lines').textContent = value ? '横線を表示' : '横線を隠す';
+        $('toggle-lines').setAttribute('aria-pressed', String(value));
+        const cover = $('board').querySelector('.amida-mosaic');
+        if (cover) {
+            cover.style.display = value ? '' : 'none';
+            // Also cover previously revealed paths when hiding the board again.
+            if (value) $('board').append(cover);
+        }
+    }
     function renderNames() {
         $('names').replaceChildren();
         names.forEach((name, i) => {
@@ -34,7 +46,7 @@
         $('results').replaceChildren();
         names.forEach((_, i) => {
             const li = document.createElement('li');
-            li.textContent = `${label(i)}：${revealed.has(i) ? (AmidakujiCore.trace(board, i).win ? '当たり' : 'はずれ') : '未確認'}`;
+            li.textContent = `${names[i].trim() || '参加者' + (i + 1)}：${revealed.has(i) ? (AmidakujiCore.trace(board, i).win ? '当たり' : 'はずれ') : '未確認'}`;
             $('results').append(li);
         });
     }
@@ -52,6 +64,18 @@
         const drawing = $('board'); drawing.replaceChildren(); drawing.setAttribute('viewBox', `0 0 ${width} 530`);
         names.forEach((_, i) => drawing.append(svg('line', { x1: x(i), y1: y(0), x2: x(i), y2: y(1), stroke: '#94a3b8', 'stroke-width': 2 })));
         board.rows.forEach((left, i) => drawing.append(svg('line', { x1: x(left), x2: x(left + 1), y1: y((i + 1) / (board.rows.length + 1)), y2: y((i + 1) / (board.rows.length + 1)), stroke: '#94a3b8', 'stroke-width': 2 })));
+        // Opaque tiles are independent of the rungs: no blurred line can leak through.
+        const defs = svg('defs', {});
+        const pattern = svg('pattern', { id: 'amida-mosaic-pattern', width: 64, height: 64, patternUnits: 'userSpaceOnUse' });
+        const colors = ['#cbd5e1', '#94a3b8', '#e2e8f0', '#64748b'];
+        for (let row = 0; row < 4; row++) {
+            for (let col = 0; col < 4; col++) {
+                pattern.append(svg('rect', { x: col * 16, y: row * 16, width: 16, height: 16, fill: colors[(row * 3 + col * 5 + row * col) % colors.length] }));
+            }
+        }
+        defs.append(pattern); drawing.append(defs);
+        drawing.append(svg('rect', { x: 0, y: 40, width, height: 424, fill: 'url(#amida-mosaic-pattern)', class: 'amida-mosaic', 'aria-hidden': 'true', 'shape-rendering': 'crispEdges' }));
+        setLinesHidden(linesHidden);
         board.bottoms.forEach((win, i) => drawing.append(svg('text', { x: x(i), y: 518, 'text-anchor': 'middle', class: 'amida-bottom' + (!hidden && win ? ' winner' : '') }, hidden ? '？' : win ? '当たり' : 'はずれ')));
     }
     function reset() {
@@ -71,6 +95,7 @@
     }
     async function run(indices) {
         if (busy) return;
+        setLinesHidden(false);
         lock(true); $('status').textContent = '線をたどっています…';
         $('board').querySelectorAll('.amida-path').forEach(node => node.remove());
         try {
@@ -90,6 +115,7 @@
     $('win-count').addEventListener('change', reset);
     $('regenerate').addEventListener('click', reset);
     $('show-all').addEventListener('click', () => run(names.map((_, i) => i)));
+    $('toggle-lines').addEventListener('click', () => setLinesHidden(!linesHidden));
     $('toggle-bottom').addEventListener('click', () => {
         hidden = !hidden; $('toggle-bottom').textContent = hidden ? '当たりを表示' : '当たりを隠す';
         $('toggle-bottom').setAttribute('aria-pressed', String(hidden));
