@@ -1,5 +1,6 @@
 const SITE_DATA = {
     news: [
+        { date: "2026.11.12", content: "名前と当たり数を設定できる「あみだくじ」を公開しました。経路アニメーションと結果一覧で抽選できます。" },
         { date: "2026.11.10", content: "読み物ページを公開しました。画像の差分率、モザイクの注意点、動画のフレームレートなど5本の解説と使い方ガイドを掲載しています。" },
         { date: "2026.11.10", content: "「このサイトについて」に運営者と制作方針を、プライバシーポリシーに免責事項を追加しました。" },
         { date: "2026.11.04", content: "画像比較を追加しました。2枚の画像の差分率と、違う部分を赤く重ねた画像を確認できます。" },
@@ -14,6 +15,7 @@ const SITE_DATA = {
         { date: "2026.03.04", content: "「Uの創作部屋」を公開しました。" }
     ],
     icons: {
+        "amidakuji": "amidakuji_icon.svg",
         "home": "home_icon.svg",
         "image-joiner": "image-joiner_icon.svg",
         "image-binder": "image-binder_icon.svg",
@@ -27,6 +29,7 @@ const SITE_DATA = {
         "smartphone-rush": "smartphone-rush_icon.svg"
     },
     tools: [
+        { id: "amidakuji", category: "count", name: "あみだくじ", description: "2〜20人の名前と当たり数を設定。線をたどるアニメーションと結果一覧で抽選できます。", icon: "amidakuji", url: "tools/amidakuji", isUpdate: true },
         {
             id: "image-compare",
             category: "image",
@@ -128,7 +131,8 @@ const SITE_DATA = {
             groupName: "カウントツール",
             items: [
                 { name: "なんでもカウンター", url: "tools/any-counter" },
-                { name: "myルーレット", url: "tools/my-roulette" }
+                { name: "myルーレット", url: "tools/my-roulette" },
+                { name: "あみだくじ", url: "tools/amidakuji" }
             ]
         },
         {
