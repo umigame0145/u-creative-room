@@ -111,20 +111,20 @@ function renderChildren() {
         nameInput.value = child.name;
         countValue.textContent = child.count;
 
-        // 割合と確率の計算
+        // 記録から観測比率を計算
         if (total > 0) {
             const ratio = (child.count / total * 100).toFixed(1);
             ratioDisplay.textContent = `割合: ${ratio}%`;
 
             if (child.count > 0) {
                 const prob = (total / child.count).toFixed(2);
-                probDisplay.textContent = `確率: 1/${prob}`;
+                probDisplay.textContent = `観測比率: 1/${prob}`;
             } else {
-                probDisplay.textContent = `確率: -`;
+                probDisplay.textContent = `観測比率: -`;
             }
         } else {
             ratioDisplay.textContent = `割合: 0%`;
-            probDisplay.textContent = `確率: -`;
+            probDisplay.textContent = `観測比率: -`;
         }
 
         // イベントリスナー設定
@@ -199,13 +199,13 @@ function renderGroups() {
 
             if (groupTotal > 0) {
                 const prob = (total / groupTotal).toFixed(2);
-                probDisplay.textContent = `出現率 1/${prob}`;
+                probDisplay.textContent = `観測比率: 1/${prob}`;
             } else {
-                probDisplay.textContent = `出現率 -`;
+                probDisplay.textContent = `観測比率: -`;
             }
         } else {
             ratioDisplay.textContent = `合計の 0%`;
-            probDisplay.textContent = `出現率 -`;
+            probDisplay.textContent = `観測比率: -`;
         }
 
         // メンバー選択ボタン（トグル）

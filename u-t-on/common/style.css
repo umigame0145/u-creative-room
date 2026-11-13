@@ -415,3 +415,11 @@ main input[type="range"] { min-height: 32px; }
     .article-card { padding: 18px; }
     .home-articles { margin-top: 40px; }
 }
+
+/* Review examples reuse the existing guide cards and colors. */
+.review-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.review-example .example-screen { margin: 16px 0; }
+.review-gallery .example-screen { margin: 0; }
+.review-example .example-screen img { background: #fff; }
+.review-example .example-screen a { display: inline-block; margin-left: .4em; }
+@media (max-width: 700px) { .review-gallery { grid-template-columns: 1fr; } }
