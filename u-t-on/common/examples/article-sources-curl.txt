@@ -1,0 +1,8 @@
+200 https://www.w3.org/TR/png-3/
+200 https://www.w3.org/Graphics/JPEG/itu-t81.pdf
+200 https://developers.google.com/speed/webp/docs/compression
+200 https://html.spec.whatwg.org/multipage/canvas.html
+200 https://www.w3.org/TR/webcodecs/
+200 https://ffmpeg.org/ffprobe.html
+200 https://github.com/spipm/Depixelization_poc
+200 https://helpx.adobe.com/acrobat/desktop/protect-documents/redact-pdfs/redact.html
