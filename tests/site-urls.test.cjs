@@ -26,15 +26,50 @@ test('Article pages resolve shared assets from the articles folder', () => {
         const d = dom.window.document;
         assert.equal(d.querySelector('#menuDrawer [aria-current="page"]').getAttribute('href'), '/articles/');
         assert.match(d.querySelector('.drawer-panel img').getAttribute('src'), /^\.\.\/common\/icon\//);
-        assert.equal(d.querySelectorAll('.article-card').length, 5);
+        assert.equal(d.querySelectorAll('.article-card').length, 6);
     } finally { dom.window.close(); }
 });
 test('Canonical URLs and the sitemap use extensionless URLs', () => {
     const sitemap = fs.readFileSync('u-t-on/sitemap.xml', 'utf8');
     assert.doesNotMatch(sitemap, /\.html</);
-    for (const slug of ['image-diff-rate', 'mosaic-leak', 'video-frame-rate', 'combine-screenshots', 'image-formats']) {
+    for (const slug of ['image-diff-rate', 'mosaic-leak', 'video-frame-rate', 'combine-screenshots', 'image-formats', 'roulette-weights']) {
         const html = fs.readFileSync(`u-t-on/articles/${slug}.html`, 'utf8');
         assert.match(html, new RegExp(`<link rel="canonical" href="https://u-t-on.com/articles/${slug}">`));
         assert.ok(sitemap.includes(`<loc>https://u-t-on.com/articles/${slug}</loc>`));
     }
+});
+
+test('Roulette guide is linked from the article list and both related tools', () => {
+    const href = '/articles/roulette-weights';
+    for (const file of ['articles/index.html', 'tools/my-roulette.html', 'tools/any-counter.html']) {
+        const dom = new JSDOM(fs.readFileSync('u-t-on/' + file, 'utf8'));
+        try {
+            const selector = file.startsWith('articles/') ? '.article-card' : '[aria-label="関連記事"] a';
+            assert.ok([...dom.window.document.querySelectorAll(selector)].some(a => a.getAttribute('href') === href), file);
+        } finally { dom.window.close(); }
+    }
+    const dom = new JSDOM(fs.readFileSync('u-t-on/articles/roulette-weights.html', 'utf8'));
+    try {
+        const d = dom.window.document;
+        for (const tool of ['my-roulette', 'any-counter']) {
+            assert.ok(d.querySelector(`main a[href="/tools/${tool}"]`));
+        }
+        assert.equal(d.querySelector('meta[property="og:type"]').content, 'article');
+        assert.ok(d.querySelector('.article-meta a[href="/about"]'));
+        for (const a of d.querySelectorAll('.article-toc a')) {
+            assert.ok(d.getElementById(a.hash.slice(1)), a.hash);
+        }
+        const measurement = JSON.parse(fs.readFileSync('u-t-on/common/examples/roulette-weights-measurement.json', 'utf8'));
+        const rows = [...d.querySelector('#measurement + p + .table-scroll').querySelectorAll('tbody tr')];
+        assert.equal(rows.length, measurement.samples.length);
+        measurement.samples.forEach((sample, i) => {
+            assert.equal(sample.a + sample.b, sample.n);
+            const cells = [...rows[i].querySelectorAll('td')].map(td => td.textContent.replaceAll(',', ''));
+            assert.equal(cells[0], String(sample.n));
+            assert.equal(cells[1], `${sample.a}・${sample.b}`);
+            assert.equal(cells[2], sample.percentage.replace('割合: ', '').replace('%', '％'));
+            assert.equal(cells[3], sample.observedRatio.replace('観測比率: ', ''));
+            assert.equal(sample.sdCount, Math.sqrt(sample.n * 0.25 * 0.75));
+        });
+    } finally { dom.window.close(); }
 });

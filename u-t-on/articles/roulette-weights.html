@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ルーレットの重みで当選確率を決める方法：比率・％とカウンターでの確かめ方 - Uの創作部屋</title><meta name="description" content="重み1対3が25％になる計算、減算の比率と％の違い、カウンターで結果を記録する手順を解説。既存JSの実測例と二項分布の標準偏差から、観測比率のぶれを確かめます。"><link rel="canonical" href="https://u-t-on.com/articles/roulette-weights"><meta property="og:url" content="https://u-t-on.com/articles/roulette-weights"><meta property="og:title" content="ルーレットの重みで当選確率を決める方法：比率・％とカウンターでの確かめ方 - Uの創作部屋"><meta property="og:description" content="重み1対3が25％になる計算、減算の比率と％の違い、カウンターで結果を記録する手順を解説。既存JSの実測例と二項分布の標準偏差から、観測比率のぶれを確かめます。"><meta property="og:type" content="article"><meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../common/utilities.css"><link rel="stylesheet" href="../common/style.css"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239" crossorigin="anonymous"></script></head><body class="info-page"><div id="common-header"><a class="fallback-home" href="/">Uの創作部屋</a></div><main id="main-content"><article class="info-article"><nav aria-label="パンくずリスト"><ol class="breadcrumb"><li><a href="/">ホーム</a></li><li><a href="/articles/">読み物</a></li><li aria-current="page">ルーレットの重みと観測比率</li></ol></nav>
+<p class="eyebrow">GUIDE / ROULETTE &amp; COUNTER</p>
+<h1>ルーレットの重みで当選確率を決める方法：比率・％とカウンターでの確かめ方</h1>
+<p class="article-meta"><span>公開日：<time datetime="2026-11-17">2026年11月17日</time></span><span>更新日：<time datetime="2026-11-17">2026年11月17日</time></span><span>著者：<a href="/about">U</a></span><span>関連ツール：<a href="/tools/my-roulette">myルーレット</a>、<a href="/tools/any-counter">なんでもカウンター</a></span></p>
+<p class="article-lead">「景品Aは少なめ、景品Bは多めに当てたい」「当番を同じ確率で選びたい」「25％にしたのに100回で32回出たのはおかしい？」。まず重みから1回ごとの確率を計算し、抽選結果を別のカウンターに記録すると、設定と結果を分けて確かめられます。ここでは架空の景品A・Bを例に、設定、確定、記録、結果の読み方まで進めます。</p>
+<nav class="article-toc" aria-labelledby="toc-weights"><h2 id="toc-weights">この記事の内容</h2><ol><li><a href="#probability">重みから確率を計算する</a></li><li><a href="#subtraction">減算で次回の確率はどう変わるか</a></li><li><a href="#steps">2ツールで抽選と記録を行う手順</a></li><li><a href="#variation">試行回数と観測比率のぶれ</a></li><li><a href="#measurement">既存JSで試した実測の一例</a></li><li><a href="#mistakes">よくある失敗と確認事項</a></li></ol></nav>
+<h2 id="probability">重みから確率を計算する：％でも合計で割る</h2>
+<p>myルーレットは、有効な項目の重みを合計し、各項目の重みが占める割合で当選を決めます。0の項目は抽選対象外です。重みの合計が正であることを確認してください。</p>
+<p class="formula">項目の当選確率 ＝ その項目の有効な重み ÷ 有効な重みの合計<br>当選確率（％）＝ 上の値 × 100</p>
+<div class="table-scroll"><table class="article-table"><thead><tr><th>入力A・B</th><th>Aの計算</th><th>A・Bの理論確率</th></tr></thead><tbody><tr><td>比率：1・3</td><td>1 ÷ (1＋3) ＝ 0.25</td><td>25％・75％</td></tr><tr><td>比率：2・6</td><td>2 ÷ (2＋6) ＝ 0.25</td><td>25％・75％</td></tr><tr><td>％：25・75</td><td>25 ÷ (25＋75) ＝ 0.25</td><td>25％・75％</td></tr><tr><td>％：20・30</td><td>20 ÷ (20＋30) ＝ 0.4</td><td>40％・60％</td></tr></tbody></table></div>
+<p>この表は計算値です。％指定も合計100への自動補完や残りを「はずれ」にする機能ではありません。20・30を入れても20％・30％・はずれ50％にはならず、2項目で40％・60％になります。はずれも抽選したいなら、独立した項目として追加します。</p>
+<p>当番を3候補から等確率で選ぶなら、各候補を1にして各1/3にします。ただし同じ確率でも、短期間で担当回数がそろうとは限りません。全員を一巡させたいなら、後述の減算で比率を各1にする方法が合います。「公平」を1回の確率にするか、一巡での担当回数にするか、先に決めておきましょう。</p>
+<p>「見た目を一律にする」は円の区画を同じ大きさに描く設定で、抽選確率は変えません。STOP時に既存JSのMath.random()を使って重みに沿った当選項目を決め、その項目へ停止するアニメーションを行います。停止のタイミングを目で狙う操作ではありません。この記事の試行結果は乱数品質や抽選全体の公正さを保証する監査ではありません。</p>
+<h2 id="subtraction">減算で次回の確率はどう変わるか</h2>
+<p><strong>完全確率</strong>は、SET後も重みを維持します。A=1・B=3なら次もAは25％です。<strong>減算モード</strong>は、STOP後の当選表示だけでは変化せず、<strong>SET（確定）した時点</strong>で状態が変わります。比率と％は、抽選時の割り算は同じでも、SET後の処理が異なります。</p>
+<h3>比率：当選項目の重みを1減らす</h3>
+<p>景品Aの残数2、景品Bの残数1なら、初回はAが2/3（約66.67％）、Bが1/3（約33.33％）です。Aが当選してSETするとA=1・B=1となり、次回は1/(1＋1)=50％ずつ。次にAが当選してSETすればA=0・B=1となり、次回のBは100％です。初回にBが当たった場合はA=2・B=0になり、次回のAが100％になります。</p>
+<p>整数の重みを在庫数として使い、途中で設定を変えず全数を確定するなら、この例は3回でAが2回、Bが1回になります。比率の重みは小数も入力できますが、減算は常に1（下限0）なので、在庫として扱う場合は整数にします。たとえば0.5も1回のSETで0になるため、小数の重みはそのまま配布個数にはなりません。</p>
+<div class="review-gallery"><figure class="example-screen"><img src="/common/examples/roulette-ratio-before.png" alt="景品Aが当選したSET前。Aの重み2、Bの重み1" loading="lazy"><figcaption>既存JSのSET処理を示す作例：確定前は2対1。</figcaption></figure><figure class="example-screen"><img src="/common/examples/roulette-ratio-after.png" alt="SET後。Aの重み1、Bの重み1" loading="lazy"><figcaption>確定後は1対1。表示値の抜粋図で、画面配置とは異なります。</figcaption></figure></div>
+<h3>％：当選項目を丸ごと除外する</h3>
+<p>A=50・B=30・C=20なら初回のAは50％。Aが当選してSETするとAは除外され、次回はBが30/(30＋20)=60％、Cが20/(30＋20)=40％です。Aの値を50から49へ減らす処理ではありません。比率の2対1と％の50対25は初回の確率が同じでも、SET後の動作は同じになりません。</p>
+<p>減算中は毎回の確率が変わるため、すべての回を合算した割合を「初回の設定確率」と単純比較できません。固定25％のぶれを調べる次の手順では、完全確率を使います。</p>
+<h2 id="steps">2ツールで抽選と記録を行う手順</h2>
+<ol><li><strong>既存データを退避する。</strong>両ツールで必要なデータを先にCSV保存します。カウンターは回数とグループを保存できます。ルーレットCSVは項目名・初期重み・色・IDのみで、モード、履歴、減算後の残数は保存しません。必要な履歴や設定は別に控えます。</li>
+<li><strong>抽選条件と試行数を先に決める。</strong><a href="/tools/my-roulette">myルーレット</a>で「完全確率」「比率」を選び、項目を景品A=1・景品B=3の2つだけにします。今回は100回を1組として、途中で重みやモードを変えません。履歴を今回の記録だけにするなら、試行開始前にクリアします。</li>
+<li><strong>カウンターを用意する。</strong>別タブで<a href="/tools/any-counter">なんでもカウンター</a>を開き、子カウンターを景品A・景品Bの2つにします。不要な子項目を削除し、「すべてリセット」で両方を0にします。合計はすべての子カウンターの合計なので、今回と関係ない数を残さないでください。</li>
+<li><strong>1回ずつ確定して記録する。</strong>START→STOPで結果を読み、SETで確定してから、対応する子カウンターを「+1」します。自動連携はありません。1確定につき必ずどちらか片方を1回だけ増やし、履歴の件数とカウンター合計を照合します。誤入力は「-1」で訂正できます。</li>
+<li><strong>決めた回数で止めて読む。</strong>合計100ならAの割合を25％と比較します。たとえばA=32・B=68ならAの割合は32/100×100=32.0％、観測比率は1/(100/32)で、画面では「1/3.13」です。これは約3.13回あたり1回だったという過去の集計です。</li>
+<li><strong>結果を保存する。</strong>試行数、モード、重み、実施日を控え、カウンターのCSVを保存します。次の組を試すなら先に結果を保存してからカウントをリセットし、組ごとの結果を分けます。ルーレットの履歴クリアは減算状態も初期化するため、残数を保ちたい途中では使いません。</li></ol>
+<p>サブグループは子カウンターの集計です。3項目以上で「AとBの合計当選」を見たいときは、グループにA・Bを選びます。分母はグループ内ではなく全子カウンターの合計で、グループを追加しても全体の回数が二重加算されることはありません。重複するグループ同士の割合は足さないでください。</p>
+<p>割合は小数第1位、観測比率の分母は小数第2位に丸めて表示します。全体0件のときは割合0％・観測比率「-」、全体が正でもその項目が0件なら0.0％・「-」です。0件は未来の当選確率が0という意味ではありません。</p>
+<h2 id="variation">試行回数と観測比率のぶれ：25％でも毎回4回に1回ではない</h2>
+<p>固定確率pで各回が独立と仮定すると、n回中のAの当選回数Xは二項分布で考えられます。理論値と観測値の差を読む目安として、平均と標準偏差を計算します。以下は実測ではなく計算値です。</p>
+<p class="formula">平均回数 E[X] ＝ np<br>回数の標準偏差 σ ＝ √(np(1−p))<br>観測割合 X/n の標準偏差 ＝ √(p(1−p)/n)<br>％表示の標準偏差（ポイント）＝ 100 × √(p(1−p)/n)</p>
+<p>p=0.25・n=100なら、平均25回、σ=√(100×0.25×0.75)=√18.75≈4.33回です。観測割合の標準偏差は約4.33ポイント。32回なら理論値より7回多く、7/4.33≈1.62σの差なので、この1組だけで設定が誤っているとは言えません。</p>
+<div class="table-scroll"><table class="article-table"><thead><tr><th>試行数n</th><th>平均回数np</th><th>回数のσ</th><th>割合のσ</th><th>25％±2σの目安</th></tr></thead><tbody><tr><td>100</td><td>25</td><td>約4.33回</td><td>約4.33ポイント</td><td>約16.34〜33.66％</td></tr><tr><td>1,000</td><td>250</td><td>約13.69回</td><td>約1.37ポイント</td><td>約22.26〜27.74％</td></tr><tr><td>10,000</td><td>2,500</td><td>約43.30回</td><td>約0.43ポイント</td><td>約24.13〜25.87％</td></tr></tbody></table></div>
+<p>最後の列は、p=0.25を正しいと仮定した観測割合の散らばりで、未知のpを推定する信頼区間ではありません。この条件では正規近似でおよそ95％が±2σの範囲に入る目安ですが、必ず入る境界や合否判定にはできません。回数は整数であり、近似には誤差もあります。範囲外も偶然に起こり、範囲内でも不具合がない証明にはなりません。低確率・少数試行や、減算でpが変わる場合にこの表を流用しないでください。</p>
+<p>回数自体のぶれは増えても、割合のぶれは1/√nで小さくなります。回数を10倍にすると割合の標準偏差は1/√10≈0.316倍、半分にするには4倍の回数が必要です。都合のよい割合になったところで打ち切ったり、外れた組だけ捨てたりせず、先に試行数を決めて残します。</p>
+<p><strong>観測比率は未来を予測しません。</strong>完全確率でAが続けて外れても、重み1対3を維持している限り、次回のAの理論確率は25％です。「そろそろ当たる」「不足分が戻る」とは言えません。減算で次回の確率が変わるのは、過去の偏りを補うためではなく、SETで有効な重みが変わるためです。</p>
+<h2 id="measurement">既存JSで試した実測の一例</h2>
+<p>2026年11月17日、Node.js v24.22.1・jsdom 26.1.0で両ツールのHTMLと既存JSを読み込みました。完全確率、A=1・B=3で、実装のpickWinnerByWeight()を標準のMath.random()のまま反復し、得た回数をカウンターの既存描画処理で表示しています。100回・1,000回・10,000回はそれぞれ別の組で、途中経過の累積値ではありません。</p>
+<div class="table-scroll"><table class="article-table"><thead><tr><th>試行数</th><th>A・Bの実測回数</th><th>Aの表示割合</th><th>Aの表示観測比率</th></tr></thead><tbody><tr><td>100</td><td>32・68</td><td>32.0％</td><td>1/3.13</td></tr><tr><td>1,000</td><td>257・743</td><td>25.7％</td><td>1/3.89</td></tr><tr><td>10,000</td><td>2,445・7,555</td><td>24.4％</td><td>1/4.09</td></tr></tbody></table></div>
+<p>この表は乱数の偶然でぶれる<strong>実測値の一例</strong>で、再実行すると変わります。10,000回の正確な観測割合は2,445/10,000×100=24.45％ですが、JSの浮動小数点数とtoFixed(1)による実表示は24.4％でした。比較するときは丸めた表示だけでなく、元の回数を使ってください。</p>
+<p><a href="/common/examples/roulette-weights-measurement.json">測定条件・回数・表示値と標準偏差の記録（JSON）</a>を公開しています。リポジトリのscripts/measure-roulette-weights.mjsをルートからnodeで実行すると同じ条件で再試行できます。記録のa・b・percentage・observedRatioは実測と実表示、expectedA・sdCount・sdPercentagePointsは式からの計算値です。描画用canvasは代替し、回転アニメーション・手動クリック・ブラウザごとの動作はこの検証には含めていません。連続試行機能が画面にあるという意味でもありません。</p>
+<h2 id="mistakes">よくある失敗と確認事項</h2>
+<ul><li><strong>％の入力値をそのまま確率と読む。</strong>有効な値の合計で割ります。除外後も残った項目で再計算します。</li><li><strong>STOPの時点で履歴や残数が更新済みと思う。</strong>SETで初めて履歴に入り、減算します。カウンターにも確定した結果だけを記録します。</li><li><strong>減算の残数を途中で編集する。</strong>重み変更、項目追加・削除、モードや比率/％の切替は残数を初期設定からリセットします。設定を直すなら別の試行として記録します。</li><li><strong>カウンター合計を増やし忘れる、別項目を残す。</strong>子カウンター全部が分母です。履歴と合計を照合し、グループを別の試行回数として数えないでください。</li><li><strong>両ツールのCSVを交換する。</strong>書式が異なり、抽選履歴の自動集計には使えません。CSV読込は現在の内容を上書きするため、先に自分のデータを保存します。ルーレットCSV読込は残数を戻しますが既存履歴は消さないので、履歴を混ぜないようにします。</li><li><strong>少数回の一致で正しさを断定する。</strong>理論値にぴったり一致する必要はありません。大きく外れたら、まず重み・モード・記録漏れを確認し、条件を固定して追加の組を記録します。</li></ul>
+<div class="article-cta"><a class="primary-link" href="/tools/my-roulette">myルーレットを開く →</a><p><a href="/tools/any-counter">なんでもカウンターで結果を記録する →</a></p></div>
+</article></main><div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a><a href="/contact">お問い合わせ</a></nav></div><script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script></body></html>
