@@ -26,13 +26,13 @@ test('Article pages resolve shared assets from the articles folder', () => {
         const d = dom.window.document;
         assert.equal(d.querySelector('#menuDrawer [aria-current="page"]').getAttribute('href'), '/articles/');
         assert.match(d.querySelector('.drawer-panel img').getAttribute('src'), /^\.\.\/common\/icon\//);
-        assert.equal(d.querySelectorAll('.article-card').length, 6);
+        assert.equal(d.querySelectorAll('.article-card').length, 7);
     } finally { dom.window.close(); }
 });
 test('Canonical URLs and the sitemap use extensionless URLs', () => {
     const sitemap = fs.readFileSync('u-t-on/sitemap.xml', 'utf8');
     assert.doesNotMatch(sitemap, /\.html</);
-    for (const slug of ['image-diff-rate', 'mosaic-leak', 'video-frame-rate', 'combine-screenshots', 'image-formats', 'roulette-weights']) {
+    for (const slug of ['image-diff-rate', 'mosaic-leak', 'video-frame-rate', 'combine-screenshots', 'image-formats', 'roulette-weights', 'images-to-pdf']) {
         const html = fs.readFileSync(`u-t-on/articles/${slug}.html`, 'utf8');
         assert.match(html, new RegExp(`<link rel="canonical" href="https://u-t-on.com/articles/${slug}">`));
         assert.ok(sitemap.includes(`<loc>https://u-t-on.com/articles/${slug}</loc>`));
