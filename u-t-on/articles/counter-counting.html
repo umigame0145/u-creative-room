@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>数取りカウンターで来場者数・通行量・アンケートの票を数える手順と数え間違いを減らすコツ - Uの創作部屋</title><meta name="description" content="数える単位と担当範囲の決め方から、±1・±10での入力、グループ集計、CSV保存まで。架空の来場・通行・投票データで数え方と集計表を示します。"><link rel="canonical" href="https://u-t-on.com/articles/counter-counting"><meta property="og:url" content="https://u-t-on.com/articles/counter-counting"><meta property="og:title" content="数取りカウンターで来場者数・通行量・アンケートの票を数える手順と数え間違いを減らすコツ - Uの創作部屋"><meta property="og:description" content="数える単位と担当範囲の決め方から、±1・±10での入力、グループ集計、CSV保存まで。架空の来場・通行・投票データで数え方と集計表を示します。"><meta property="og:type" content="article"><meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml"><link rel="stylesheet" href="../common/utilities.css"><link rel="stylesheet" href="../common/style.css"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239" crossorigin="anonymous"></script></head><body class="info-page"><div id="common-header"><a class="fallback-home" href="/">Uの創作部屋</a></div><main id="main-content"><article class="info-article">
+<nav aria-label="パンくずリスト"><ol class="breadcrumb"><li><a href="/">ホーム</a></li><li><a href="/articles/">読み物</a></li><li aria-current="page">数取りカウンターの手順</li></ol></nav>
+<p class="eyebrow">GUIDE / COUNTER</p>
+<h1>数取りカウンターで来場者数・通行量・アンケートの票を数える手順と数え間違いを減らすコツ</h1>
+<p class="article-meta"><span>公開日：<time datetime="2026-11-24">2026年11月24日</time></span><span>更新日：<time datetime="2026-11-24">2026年11月24日</time></span><span>著者：<a href="/about">U</a></span><span>関連ツール：<a href="/tools/any-counter">なんでもカウンター</a></span></p>
+<p class="article-lead">「入口が2つあると二重に数えそう」「人と車を同時に数えたい」「アンケートの合計が回答者数と合わない」。数取りは、押す速さより先に「何を1件とするか」をそろえると記録を見直しやすくなります。なんでもカウンターを使い、準備・計測・訂正・保存までを順に説明します。会場名・選択肢・数値はすべて架空の作例で、実地調査の結果ではありません。</p>
+<nav class="article-toc" aria-labelledby="toc-counter"><h2 id="toc-counter">この記事の内容</h2><ol><li><a href="#rules">数える単位と担当を決める</a></li><li><a href="#steps">カウンターを準備して数える</a></li><li><a href="#examples">来場・通行・投票の数え方と集計表</a></li><li><a href="#mistakes">数え間違いの訂正と引き継ぎ</a></li><li><a href="#save">CSVを保存して集計を残す</a></li></ol></nav>
+<h2 id="rules">最初に「1件」の意味と担当範囲を決める</h2>
+<p>紙や別のメモに、場所、開始・終了時刻、対象、再通過の扱い、担当範囲を書きます。たとえば架空の「こもれび展示室」で10:00以上10:15未満に入口を内向きに通過した人を数えるなら、10:15ちょうどの通過は次の区間に入れます。複数担当なら境界の線と方向を共有し、同じ通過を2人が数えないようにします。</p>
+<ul><li><strong>来場：</strong>入るたびに数えるなら「延べ入場回数」です。同じ人の再入場を含むため、実人数とは一致しません。初回来場者だけを数えるには、受付などで初回と再入場を区別する別の運用が必要です。</li><li><strong>通行：</strong>線を越えた歩行者1人、車1台、自転車1台など単位を固定します。自転車を押して歩く人の分類も先に決め、1回の通過を1項目だけに記録します。往復を数える場合は延べ通行です。</li><li><strong>アンケート：</strong>単一回答は有効回答1枚につき1項目に1票。複数回答は選ばれた各項目に1票ずつなので、合計票数と回答者数を分けて記録します。</li></ul>
+<p>入場と退場を両方プラスで記録すると全体合計は通過回数です。在場人数は別途「開始時の在場人数＋入場−退場」で計算します。退場を入場項目のマイナスで処理すると退場の内訳が残らず、0未満にもできないので、別項目に分けておくと確認できます。</p>
+<h2 id="steps">なんでもカウンターを準備して数える手順</h2>
+<ol><li><a href="/tools/any-counter">なんでもカウンター</a>を開きます。以前の記録があれば先に「CSV保存」で退避し、保存したファイルを確認します。</li><li>「項目を追加」で必要な項目を作り、名前欄を変更します。たとえば「入口A・入場」「入口B・入場」。不要な項目は削除できますが、最後の1項目は削除できません。</li><li>試しに+1、-1を押して担当項目を確かめます。「すべてリセット」の確認後、全項目0で開始します。リセットは名前とグループ構成を残して数値を0にします。</li><li>対象を1件確認するたび、該当項目の「+1」を1回押します。まとめて入力するのは数が確定した束だけにします。23票なら「+10」を2回、「+1」を3回。見ながら頭の中で10件ためる方法は、途中で分からなくなりやすいため避けます。</li><li>必要ならサブグループの「作成」でまとめを作り、含めたい項目のボタンを選択します。グループは選んだ項目の合計で、全体合計に追加されません。</li><li>決めた終了時刻で止め、担当メモと数値を照合してCSV保存します。端末間の自動同期や担当別履歴はないため、複数端末の記録は別途まとめます。</li></ol>
+<h2 id="examples">用途別の数え方と集計表の例</h2>
+<h3>来場：2つの入口の延べ入場回数</h3>
+<p>10:00〜10:15の各入口を別担当が数え、入口Aは24回、入口Bは16回だったとします。1人が入口Aから2回入ればAに2回加算します。以下は同じカウンターに集約した表示値の計算例です。</p>
+<div class="table-scroll"><table class="article-table"><caption>架空の来場記録：単位は延べ入場回数</caption><thead><tr><th>項目</th><th>回数</th><th>全体に占める割合</th><th>観測比率</th></tr></thead><tbody><tr><td>入口A・入場</td><td>24</td><td>60.0%</td><td>1/1.67</td></tr><tr><td>入口B・入場</td><td>16</td><td>40.0%</td><td>1/2.50</td></tr><tr><td>全体合計</td><td>40</td><td>—</td><td>—</td></tr></tbody></table></div>
+<p>割合は24÷40×100＝60.0%、観測比率の分母は40÷24を小数第2位まで丸めて1.67です。どちらも記録の内訳で、次の来場者が入口Aを選ぶ確率ではありません。</p>
+<h3>通行：車・自転車・歩行者を分ける</h3>
+<p>同じ観測線・同じ時間帯で、車12台、自転車3台、歩行者5人を数える例です。車12は+10を1回、+1を2回でも入力できます。サブグループ「車両」で車と自転車を選びます。</p>
+<div class="table-scroll"><table class="article-table"><caption>架空の通行記録：合計は人数ではなく通行件数</caption><thead><tr><th>項目・集計</th><th>件数</th><th>全体に占める割合</th></tr></thead><tbody><tr><td>車（台）</td><td>12</td><td>60.0%</td></tr><tr><td>自転車（台）</td><td>3</td><td>15.0%</td></tr><tr><td>歩行者（人）</td><td>5</td><td>25.0%</td></tr><tr><td>全体合計</td><td>20</td><td>—</td></tr><tr><td>サブグループ：車両</td><td>15</td><td>75.0%</td></tr></tbody></table></div>
+<p>車の乗員は数えていないため「20人」とは報告できません。車両15は内訳の再集計なので、全体20に足して35にしません。同じ項目を複数グループに入れられるので、グループ同士を足す場合も重複を確認します。<a href="/common/examples/counter-traffic.csv" download>この内訳の既存サンプルCSV</a>を試す際は、現在の記録を退避してから読み込んでください。</p>
+<h3>アンケート：単一回答と複数回答で分母を変える</h3>
+<p>架空の展示の人気投票を単一回答で数えます。用紙を未集計・集計済みに分け、1枚読むたび該当項目の+1を押して集計済みに移します。無効票や無回答は別メモに残すと、有効票だけの割合を保てます。</p>
+<div class="table-scroll"><table class="article-table"><caption>単一回答の有効票20票の計算例</caption><thead><tr><th>選択肢</th><th>票数</th><th>カウンターの割合</th></tr></thead><tbody><tr><td>展示A</td><td>10</td><td>50.0%</td></tr><tr><td>展示B</td><td>6</td><td>30.0%</td></tr><tr><td>展示C</td><td>4</td><td>20.0%</td></tr></tbody></table></div>
+<p>無効票2枚を含めた回収用紙が22枚なら、「回収22枚・有効20票・無効2枚」と別記します。無効票をカウンターの独立項目に加えると、表示割合の分母も22に変わります。</p>
+<p>複数回答の例では回答者10人がAを6票、Bを5票、Cを3票選んだとします。全体は14票、画面の割合は42.9%・35.7%・21.4%です。回答者に対する選択率は別計算で60%・50%・30%。合計140%でも矛盾しません。「回答者10人」を同じカウンターの項目として加えると全体が24になってしまうため、回答者数は別メモに記録します。</p>
+<h2 id="mistakes">数え間違いを減らし、訂正の理由を残す</h2>
+<ul><li><strong>押し間違いは直後に訂正。</strong>+1を2回押したら-1を1回、誤って+10なら-10を1回。項目を取り違えたら誤った項目を-1、正しい項目を+1にします。数値は0未満になりません。</li><li><strong>不明な数は推測で埋めない。</strong>見失った時間帯は「10:07〜10:08は欠測」などと別記し、記録できた範囲を報告します。正確な全数として扱わないようにします。</li><li><strong>区間ごとに照合。</strong>15分など固定区間で記録を止め、CSVと時刻メモを残してから次へ進みます。区間ごとにリセットする方法か累積する方法かを統一し、累積なら前回との差で区間件数を求めます。</li><li><strong>交代時に二重計上を防ぐ。</strong>担当範囲、時刻、現在値、訂正事項を伝え、旧担当が止めた後に新担当が数え始めます。端末を替えるならCSVを渡し、どちらが続きの正本か決めます。</li></ul>
+<p>操作履歴や訂正前の値、時刻は自動記録されません。「入口B、10:12、二重押しで-1」のように理由を別に残すと、後から数値を説明できます。項目削除はカウントを消してグループからも外すので、訂正用の操作として使わず、必要な記録を保存してから行います。</p>
+<h2 id="save">CSV保存と集計表への転記</h2>
+<p>「CSV保存」で出るファイル名は <code>any-counter_YYYY-MM-DD.csv</code> です。日付はUTC基準なので、日本時間の早朝などは現地の日付とずれる場合があります。保存後に観測日・場所・時間帯をファイル名や別メモへ追記し、同日の複数ファイルを区別してください。</p>
+<p>CSVの列は <code>Type,ID,Name,Value/Members</code>。Child行は項目の数値、Group行は選択した項目IDを <code>|</code> で連結したものです。以下は上記の交通量を表す構造例で、IDは説明用のダミーです。</p>
+<pre><code>Type,ID,Name,Value/Members
+Child,demo-car,車,12
+Child,demo-bike,自転車,3
+Child,demo-walk,歩行者,5
+Group,demo-vehicles,車両,demo-car|demo-bike</code></pre>
+<p>CSVに全体合計、割合、観測比率、グループ合計の行は出ません。報告書には上の集計表のように転記し、全体20、車両15、車両割合15÷20×100＝75.0%を再計算します。表示割合は丸めるため、足しても100%にならない場合があります。合計0のときは割合0%、観測比率は「-」で、発生しないことを意味しません。</p>
+<p>「CSV読込」は追加や結合ではなく、確認後に現在の項目・数値・グループを置き換えます。バックアップを残してから操作してください。記録は同じブラウザに自動保存されますが、ブラウザのデータ削除や保存制限で失われることがあります。作業途中にもCSVを保存しましょう。</p>
+<p>抽選の結果を数える用途なら、<a href="/tools/my-roulette">myルーレット</a>と<a href="/articles/roulette-weights">重みと観測比率を確かめる手順</a>も使えます。共有用に集計画面をまとめる場合は、CSVの原本を残したうえで<a href="/articles/combine-screenshots">スクリーンショットを画像・PDFにまとめる手順</a>を参照してください。</p>
+<div class="article-cta"><a class="primary-link" href="/tools/any-counter">なんでもカウンターで記録を始める →</a></div>
+</article></main><div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a><a href="/contact">お問い合わせ</a></nav></div><script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script></body></html>

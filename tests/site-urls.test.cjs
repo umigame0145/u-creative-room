@@ -26,13 +26,13 @@ test('Article pages resolve shared assets from the articles folder', () => {
         const d = dom.window.document;
         assert.equal(d.querySelector('#menuDrawer [aria-current="page"]').getAttribute('href'), '/articles/');
         assert.match(d.querySelector('.drawer-panel img').getAttribute('src'), /^\.\.\/common\/icon\//);
-        assert.equal(d.querySelectorAll('.article-card').length, 7);
+        assert.equal(d.querySelectorAll('.article-card').length, 8);
     } finally { dom.window.close(); }
 });
 test('Canonical URLs and the sitemap use extensionless URLs', () => {
     const sitemap = fs.readFileSync('u-t-on/sitemap.xml', 'utf8');
     assert.doesNotMatch(sitemap, /\.html</);
-    for (const slug of ['image-diff-rate', 'mosaic-leak', 'video-frame-rate', 'combine-screenshots', 'image-formats', 'roulette-weights', 'images-to-pdf']) {
+    for (const slug of ['image-diff-rate', 'mosaic-leak', 'video-frame-rate', 'combine-screenshots', 'image-formats', 'roulette-weights', 'images-to-pdf', 'counter-counting']) {
         const html = fs.readFileSync(`u-t-on/articles/${slug}.html`, 'utf8');
         assert.match(html, new RegExp(`<link rel="canonical" href="https://u-t-on.com/articles/${slug}">`));
         assert.ok(sitemap.includes(`<loc>https://u-t-on.com/articles/${slug}</loc>`));
@@ -71,5 +71,23 @@ test('Roulette guide is linked from the article list and both related tools', ()
             assert.equal(cells[3], sample.observedRatio.replace('観測比率: ', ''));
             assert.equal(sample.sdCount, Math.sqrt(sample.n * 0.25 * 0.75));
         });
+    } finally { dom.window.close(); }
+});
+
+test('Counting guide has reciprocal links and working contents anchors', () => {
+    const href = '/articles/counter-counting';
+    for (const file of ['articles/index.html', 'tools/any-counter.html', 'articles/roulette-weights.html']) {
+        const dom = new JSDOM(fs.readFileSync('u-t-on/' + file, 'utf8'));
+        try { assert.ok(dom.window.document.querySelector(`a[href="${href}"]`), file); }
+        finally { dom.window.close(); }
+    }
+    const dom = new JSDOM(fs.readFileSync('u-t-on/articles/counter-counting.html', 'utf8'));
+    try {
+        const d = dom.window.document;
+        for (const href of ['/tools/any-counter', '/tools/my-roulette', '/articles/roulette-weights', '/articles/combine-screenshots']) {
+            assert.ok(d.querySelector(`main a[href="${href}"]`), href);
+        }
+        for (const a of d.querySelectorAll('.article-toc a')) assert.ok(d.getElementById(a.hash.slice(1)), a.hash);
+        assert.equal(d.querySelectorAll('script:not([src])').length, 0);
     } finally { dom.window.close(); }
 });
