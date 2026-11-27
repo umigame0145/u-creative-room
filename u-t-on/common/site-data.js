@@ -15,6 +15,7 @@ const SITE_DATA = {
         { date: "2026.03.04", content: "「Uの創作部屋」を公開しました。" }
     ],
     icons: {
+        "team-split": "team-split_icon.svg",
         "amidakuji": "amidakuji_icon.svg",
         "home": "home_icon.svg",
         "image-joiner": "image-joiner_icon.svg",
@@ -29,6 +30,7 @@ const SITE_DATA = {
         "smartphone-rush": "smartphone-rush_icon.svg"
     },
     tools: [
+        { id: "team-split", category: "count", name: "チーム分け・グループ分け", description: "人数や名簿から人数差が最大1人になるようランダムに班分け。結果コピー・再シャッフルに対応。", icon: "team-split", url: "tools/team-split", isUpdate: true },
         { id: "amidakuji", category: "count", name: "あみだくじ", description: "2〜20人の名前と当たり数を設定。線をたどるアニメーションと結果一覧で抽選できます。", icon: "amidakuji", url: "tools/amidakuji", isUpdate: true },
         {
             id: "image-compare",
@@ -132,6 +134,7 @@ const SITE_DATA = {
             items: [
                 { name: "なんでもカウンター", url: "tools/any-counter" },
                 { name: "myルーレット", url: "tools/my-roulette" },
+                { name: "チーム分け・グループ分け", url: "tools/team-split" },
                 { name: "あみだくじ", url: "tools/amidakuji" }
             ]
         },

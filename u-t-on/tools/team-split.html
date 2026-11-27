@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <script src="../common/tool-utils.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チーム分け・グループ分け | 人数差なくランダムに班分け - Uの創作部屋</title>
+    <meta name="description" content="2〜500人を人数差が最大1人になるようランダムにチーム分け。名前の一括入力、結果コピー、再シャッフルに対応します。">
+
+    <meta property="og:url" content="https://u-t-on.com/tools/team-split" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="チーム分け・グループ分け | 人数差なくランダムに班分け - Uの創作部屋" />
+    <meta property="og:description" content="2〜500人を人数差が最大1人になるようランダムにチーム分け。名前の一括入力、結果コピー、再シャッフルに対応します。" />
+    <meta property="og:image" content="https://u-t-on.com/common/icon/home_ogp.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="../common/utilities.css">
+    <link rel="stylesheet" href="../common/style.css">
+    <link rel="stylesheet" href="team-split.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6820046630207239"
+     crossorigin="anonymous"></script>
+<link rel="canonical" href="https://u-t-on.com/tools/team-split">
+<link rel="icon" href="../common/icon/home_icon.svg" type="image/svg+xml">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
+<div id="common-header"><a class="fallback-home" href="/">Uの創作部屋 · ツール一覧</a></div>
+<main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+<div class="tool-page-heading"><p class="eyebrow">カウント・抽選</p><h1>チーム分け・グループ分け</h1><p>2〜500人をランダムに班分け。各チームの人数差は最大1人です。</p></div>
+<div class="team-layout">
+<section class="team-panel" aria-labelledby="settings-title"><h2 id="settings-title">人数・メンバーとチーム数</h2>
+<form id="settings"><label for="member-count">人数（名前を入力しない場合）</label><input id="member-count" type="number" min="2" max="500" step="1" value="10" required>
+<label for="member-names">メンバー名（任意・1行1名）</label><textarea id="member-names" rows="8" aria-describedby="names-hint" placeholder="あおい&#10;けん&#10;さき"></textarea>
+<p id="names-hint" class="team-hint">名前は1人40文字まで、空行は無視します。名前があれば名簿の人数を優先し、未入力なら「メンバー1」から番号を付けます。同名も別の参加者として扱うため、番号などで区別してください。</p>
+<label for="team-count">チーム数</label><input id="team-count" type="number" min="2" max="500" step="1" value="3" required>
+<p class="team-hint">チーム数は2〜人数。入力とチーム分けはブラウザ内で処理し、名前や結果は送信・保存しません。</p><button class="primary" type="submit">チーム分けする</button></form></section>
+<section class="team-panel" aria-labelledby="results-title"><h2 id="results-title">チーム分けの結果</h2><div class="team-actions"><button id="regenerate" type="button" disabled>作り直す（再シャッフル）</button><button id="copy-result" type="button" disabled>結果をコピー</button></div><p id="status" class="team-status" role="status" aria-live="polite"></p><div id="results" class="team-results"></div></section></div>
+<section class="tool-guide" aria-labelledby="guide-title"><p class="eyebrow">使い方とヒント</p><h2 id="guide-title">チーム分け・グループ分けの使い方</h2>
+<ol><li>人数を指定するか、メンバー名を1行に1名ずつ入力します。</li><li>チーム数を指定して「チーム分けする」を押します。</li><li>結果を確認し、「結果をコピー」でチャットや案内文に貼り付けます。</li><li>もう一度抽選する場合は「作り直す（再シャッフル）」を押します。設定を編集すると結果が消えるので、再度チーム分けしてください。</li></ol>
+<h3>出力例：5人を2チームに分ける</h3><p>架空の名簿「あおい・けん・さき・たく・なお」を入力した場合の出力例です。抽選のたびに組み合わせは変わります。</p><pre class="team-example">チーム1（3人）
+さき
+あおい
+なお
+
+チーム2（2人）
+たく
+けん</pre>
+<h3>具体的な使い方</h3><ul><li>授業の班分け：31人を6班にすると、6人の班が1つ、5人の班が5つできます。名簿を入力すれば、そのまま班の一覧をコピーできます。</li><li>社内レク：18人を4チームにすると、5人・5人・4人・4人に分かれます。コピーした結果を案内チャットに貼り付けて共有できます。</li><li>フットサルのチーム分け：10人を2チームにすると5人ずつになります。実力やポジションは考慮しないため、必要に応じて結果を見て調整してください。</li></ul>
+<div class="guide-note"><h3>ランダムと人数のバランスについて</h3><p>Fisher–Yates法で名簿をシャッフルし、チーム1から順に1人ずつ配ります。余りがある場合は番号の小さいチームから1人ずつ多くなります。乱数が一様なら、同じ人数枠への割り当ては偏りなく行われます。実力・性別・所属や過去の組み合わせは考慮しません。</p><p>乱数は利用可能ならcrypto.getRandomValuesを使用し、整数化の偏りを避けるため範囲外の値を引き直します。使えない環境ではMath.randomを使います。再シャッフルで同じ結果になることもあります。</p></div>
+<h3>よくある質問</h3><details><summary>人数が割り切れない場合は？</summary><p>人数差が最大1人になるよう配分します。空のチームは作りません。</p></details><details><summary>コピーできない場合は？</summary><p>ブラウザの権限などでコピーに失敗することがあります。結果の文字を選択して手動でコピーしてください。</p></details><details><summary>名前や結果は保存されますか？</summary><p>このツールでは保存しません。ページを再読み込みすると消えます。サイトの広告などについては<a href="/privacy">プライバシーポリシー</a>をご覧ください。</p></details></section>
+<aside class="tool-guide" aria-label="関連記事・関連ツール"><h2>関連記事・関連ツール</h2><p><a href="/tools/amidakuji">当番や当たりを決めるならあみだくじ →</a></p><p><a href="/tools/my-roulette">項目を抽選するならmyルーレット →</a></p><p><a href="/articles/roulette-weights">ルーレットの重みで当選確率を決める方法 →</a></p></aside>
+<noscript><p>このツールを使うにはJavaScriptを有効にしてください。</p></noscript></main>
+<div id="common-footer"><nav class="fallback-footer"><a href="/articles/">読み物</a><a href="/about">このサイトについて</a><a href="/privacy">プライバシーポリシー</a><a href="/contact">お問い合わせ</a></nav></div>
+<script src="../common/site-data.js"></script><script src="../common/site-manager.js"></script><script src="team-split-core.js"></script><script src="team-split.js"></script>
+</body></html>
